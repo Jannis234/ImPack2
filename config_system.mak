@@ -17,5 +17,8 @@
 
 CC = gcc
 CCLD = $(CC)
+AR = ar
+RANLIB = ranlib
+
 CFLAGS = -O2 -pipe -ggdb
 

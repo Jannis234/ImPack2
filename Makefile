@@ -16,25 +16,34 @@
 include config_build.mak
 include config_system.mak
 
-CFLAGS += -std=c99
+CFLAGS += -Wall -std=c99 -Isrc/include
 
 CLI_SRC = src/cli/main.c
+LIB_SRC = src/lib/encode.c
 
-.PHONY: all clean
+.PHONY: all depend clean
 
 all: impack
+
+depend: depend.mak
 
 clean:
 	rm -f $(CLI_SRC:.c=.o)
 	rm -f $(CLI_SRC:.c=.d)
-	rm -f impack
+	rm -f $(LIB_SRC:.c=.o)
+	rm -f $(LIB_SRC:.c=.d)
+	rm -f impack libimpack.a
 	rm -f depend.mak
 
-impack: $(CLI_SRC:.c=.o)
-	$(CCLD) -o impack $(CLI_SRC:.c=.o)
+impack: libimpack.a $(CLI_SRC:.c=.o)
+	$(CCLD) -o impack $(CLI_SRC:.c=.o) libimpack.a
 
-depend.mak: $(CLI_SRC:.c=.d)
-	cat $(CLI_SRC:.c=.d) > depend.mak
+libimpack.a: $(LIB_SRC:.c=.o)
+	$(AR) cr libimpack.a $(LIB_SRC:.c=.o)
+	$(RANLIB) libimpack.a
+
+depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
+	cat $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d) > depend.mak
 
 %.d: %.c
 	$(CC) $(CFLAGS) -M -MT $(<:.c=.o) -o $@ $<

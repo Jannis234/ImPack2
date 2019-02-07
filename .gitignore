@@ -1,5 +1,6 @@
 *.o
 *.d
+*.a
 depend.mak
 impack
 

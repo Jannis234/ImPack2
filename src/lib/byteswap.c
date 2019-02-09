@@ -13,18 +13,24 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef __IMPACK_INTERNAL_H__
-#define __IMPACK_INTERNAL_H__
+#include <stdint.h>
 
-#define IMPACK_FORMAT_VERSION 0
+uint64_t impack_endian(uint64_t val) {
+	
+	uint32_t test = 1;
+	uint8_t *test2 = (uint8_t*) &test;
 
-#define IMPACK_MAGIC_NUMBER { 73, 109, 80, 50 } // ASCII string "ImP2"
-#define IMPACK_MAGIC_NUMBER_LEN 4
-
-// Get the filename from a path (similar to basename())
-char* impack_filename(char *path);
-// Convert numbers to network byte order, if needed (like htonl()/ntohl())
-uint64_t impack_endian(uint64_t val);
-
-#endif
+	if (test2[0] == 0) { // Host is big-endian
+		return val;
+	} else { // Host is little endian
+		uint64_t res = 0;
+		uint8_t *val_bytes = (uint8_t*) &val;
+		uint8_t *res_bytes = (uint8_t*) &res;
+		for (int i = 0; i < 8; i++) {
+			res_bytes[i] = val_bytes[7 - i];
+		}
+		return res;
+	}
+	
+}
 

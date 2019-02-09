@@ -19,7 +19,9 @@ include config_system.mak
 CFLAGS += -Wall -std=c99 -Isrc/include
 
 CLI_SRC = src/cli/main.c
-LIB_SRC = src/lib/encode.c
+LIB_SRC = src/lib/encode.c \
+	src/lib/filename.c \
+	src/lib/byteswap.c
 
 .PHONY: all depend clean
 

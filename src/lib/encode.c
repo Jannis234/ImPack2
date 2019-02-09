@@ -107,12 +107,37 @@ impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_f
 	pixeldata[0] = 0xFF;
 	pixeldata[1] = 0xFF;
 	pixeldata[2] = 0xFF;
+	
 	uint8_t magic[] = IMPACK_MAGIC_NUMBER;
-	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, magic, IMPACK_MAGIC_NUMBER_LEN); // This will not fail, the buffer is large enough
+	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, magic, IMPACK_MAGIC_NUMBER_LEN); // These will not fail, the buffer is large enough
+	uint8_t format_version = IMPACK_FORMAT_VERSION;
+	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &format_version, 1);
+	uint8_t encryption_flag = 0; // TODO: Encryption
+	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &encryption_flag, 1);
+	uint8_t compression_flag = 0; // TODO: Compression
+	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &compression_flag, 1);
 	uint64_t length_offset = pixeldata_pos;
 	for (int i = 0; i < 8; i++) { // Add a dummy value that will be replaced when the length is known
 		uint8_t dummy = 0;
 		pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &dummy, 1);
+	}
+	char *input_filename = impack_filename(input_path);
+	uint32_t input_filename_length = strlen(input_filename);
+	uint32_t input_filename_length_add = impack_endian(input_filename_length);
+	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, (uint8_t*) &input_filename_length_add, 4);
+	uint64_t crc_offset = pixeldata_pos;
+	for (int i = 0; i < 4; i++) { // More dummy bytes for the CRC
+		uint8_t dummy = 0;
+		pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &dummy, 1);
+	}
+
+	// TODO: Pad and encrypt the filename
+	if (!pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, (uint8_t*) input_filename, input_filename_length)) {
+		free(pixeldata);
+		free(input_buf);
+		fclose(input_file);
+		fclose(output_file);
+		return ERROR_MALLOC;
 	}
 
 	size_t bytes_read;

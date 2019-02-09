@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
+include config_build.mak
+
 # Host-specific options (programs, paths, etc.)
 
 CC = gcc
@@ -21,4 +23,10 @@ AR = ar
 RANLIB = ranlib
 
 CFLAGS = -O2 -pipe -ggdb
+LIBS =
+
+ifeq ($(WITH_LIBPNG), 1)
+CFLAGS += $(shell pkg-config --cflags libpng)
+LIBS += $(shell pkg-config --libs libpng)
+endif
 

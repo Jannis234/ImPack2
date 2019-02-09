@@ -13,16 +13,14 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
-#include <stdio.h>
-#include "impack.h"
+#ifndef __IMPACK_CONFIG_H__
+#define __IMPACK_CONFIG_H__
 
-int main(int argc, char **argv) {
+#include "config_generated.h"
 
-	// TODO: Dummy code for testing
-	impack_error_t res = impack_encode(argv[1], "-", IMPACK_CHANNEL_RED | IMPACK_CHANNEL_GREEN | IMPACK_CHANNEL_BLUE);
-	fprintf(stderr, "%d\n", res);
+#if (IMPACK_CONFIG_PNG == 0)
+#error "No image formats enabled"
+#endif
 
-	return 0;
-	
-}
+#endif
 

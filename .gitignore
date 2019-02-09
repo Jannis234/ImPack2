@@ -2,5 +2,6 @@
 *.d
 *.a
 depend.mak
+src/include/config_generated.h
 impack
 

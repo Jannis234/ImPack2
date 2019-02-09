@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-include config_build.mak
 include config_system.mak
 
 CFLAGS += -Wall -std=c99 -Isrc/include
@@ -36,16 +35,20 @@ clean:
 	rm -f $(LIB_SRC:.c=.d)
 	rm -f impack libimpack.a
 	rm -f depend.mak
+	rm -f src/include/config_generated.h
 
 impack: libimpack.a $(CLI_SRC:.c=.o)
-	$(CCLD) -o impack $(CLI_SRC:.c=.o) libimpack.a
+	$(CCLD) -o impack $(CLI_SRC:.c=.o) libimpack.a $(LIBS)
 
 libimpack.a: $(LIB_SRC:.c=.o)
 	$(AR) cr libimpack.a $(LIB_SRC:.c=.o)
 	$(RANLIB) libimpack.a
 
-depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
+depend.mak: src/include/config_generated.h $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
 	cat $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d) > depend.mak
+
+src/include/config_generated.h: config_build.mak src/gen_config.sh
+	sh src/gen_config.sh $(WITH_LIBPNG) > src/include/config_generated.h
 
 %.d: %.c
 	$(CC) $(CFLAGS) -M -MT $(<:.c=.o) -o $@ $<

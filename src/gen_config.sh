@@ -13,8 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-# Options to control features that need additional dependencies
-# Change any option to 0 to disable it
-
-WITH_LIBPNG = 1
+echo "// Auto-generated, edit config_build.mak instead"
+echo
+echo "#ifndef __IMPACK_CONFIG_GENERATED_H__"
+echo "#define __IMPACK_CONFIG_GENERATED_H__"
+echo
+echo "#define IMPACK_CONFIG_PNG $1"
+echo
+echo "#endif"
 

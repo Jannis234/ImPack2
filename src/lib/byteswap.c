@@ -13,22 +13,44 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
+#include <stdbool.h>
 #include <stdint.h>
 
-uint64_t impack_endian(uint64_t val) {
+bool host_big_endian() {
 	
 	uint32_t test = 1;
 	uint8_t *test2 = (uint8_t*) &test;
+	return (test2[0] == 0);
+	
+}
 
-	if (test2[0] == 0) { // Host is big-endian
+void swap(uint8_t *src, uint8_t *dst, int len) {
+	
+	for (int i = 0; i < len; i++) {
+		dst[i] = src[len - 1 - i];
+	}
+	
+}
+
+uint64_t impack_endian64(uint64_t val) {
+	
+	if (host_big_endian()) {
 		return val;
-	} else { // Host is little endian
+	} else {
 		uint64_t res = 0;
-		uint8_t *val_bytes = (uint8_t*) &val;
-		uint8_t *res_bytes = (uint8_t*) &res;
-		for (int i = 0; i < 8; i++) {
-			res_bytes[i] = val_bytes[7 - i];
-		}
+		swap((uint8_t*) &val, (uint8_t*) &res, 8);
+		return res;
+	}
+	
+}
+
+uint32_t impack_endian32(uint32_t val) {
+	
+	if (host_big_endian()) {
+		return val;
+	} else {
+		uint32_t res = 0;
+		swap((uint8_t*) &val, (uint8_t*) &res, 4);
 		return res;
 	}
 	

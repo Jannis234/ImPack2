@@ -38,8 +38,8 @@ various metadata:
 6.) Filename length (4 bytes)
     An unsigned 32-bit integer (big endian) that contains the length of the
     filename (without padding)
-7.) Checksum (4 bytes)
-    A CRC-32 checksum of the file before compression and encryption (big
+7.) Checksum (8 bytes)
+    A CRC-64 checksum of the file before compression and encryption (big
     endian).
 8.) Filename (variable length)
     The filename of the original file (or any placeholder if the filename

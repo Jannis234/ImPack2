@@ -13,25 +13,36 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef __IMPACK_INTERNAL_H__
-#define __IMPACK_INTERNAL_H__
-
 #include <stdint.h>
 #include <stdlib.h>
 
-#define IMPACK_FORMAT_VERSION 0
+#define CRC_POLY 0xC96C5795D7870F42ULL
 
-#define IMPACK_MAGIC_NUMBER { 73, 109, 80, 50 } // ASCII string "ImP2"
-#define IMPACK_MAGIC_NUMBER_LEN 4
+uint64_t crc_table[256];
 
-// Get the filename from a path (similar to basename())
-char* impack_filename(char *path);
-// Convert numbers to network byte order, if needed (like htonl()/ntohl())
-uint64_t impack_endian64(uint64_t val);
-uint32_t impack_endian32(uint32_t val);
-// CRC-64 calculation
-void impack_crc_init();
-void impack_crc(uint64_t *crc, uint8_t *buf, size_t buflen);
+void impack_crc_init() {
 
-#endif
+	for (int i = 0; i < 256; i++) {
+		uint64_t crc = i;
+		for (int j = 0; j < 8; j++) {
+			if (crc & 1) {
+				crc = (crc >> 1) ^ CRC_POLY;
+			} else {
+				crc >>= 1;
+			}
+		}
+		crc_table[i] = crc;
+	}
+
+}
+
+void impack_crc(uint64_t *crc, uint8_t *buf, size_t buflen) {
+	
+	*crc = ~(*crc);
+	for (size_t i = 0; i < buflen; i++) {
+		*crc = crc_table[buf[i] ^ (*crc & 255)] ^ (*crc >> 8);
+	}
+	*crc = ~(*crc);
+	
+}
 

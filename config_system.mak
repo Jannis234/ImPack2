@@ -21,12 +21,13 @@ CC = gcc
 CCLD = $(CC)
 AR = ar
 RANLIB = ranlib
+PKG_CONFIG = pkg-config
 
 CFLAGS = -O2 -pipe -ggdb
 LIBS =
 
 ifeq ($(WITH_LIBPNG), 1)
-CFLAGS += $(shell pkg-config --cflags libpng)
-LIBS += $(shell pkg-config --libs libpng)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libpng)
+LIBS += $(shell $(PKG_CONFIG) --libs libpng)
 endif
 

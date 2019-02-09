@@ -41,7 +41,7 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 		if (((*pixeldata_pos % 3 == 0) && (channels & IMPACK_CHANNEL_RED)) || \
 			((*pixeldata_pos % 3 == 1) && (channels & IMPACK_CHANNEL_GREEN)) || \
 			((*pixeldata_pos % 3 == 2) && (channels & IMPACK_CHANNEL_BLUE))) { // Current channel enabled
-			**pixeldata = *data;
+			(*pixeldata)[*pixeldata_pos] = *data;
 			data++;
 			len--;
 		}
@@ -108,7 +108,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_f
 	pixeldata[0] = 0xFF;
 	pixeldata[1] = 0xFF;
 	pixeldata[2] = 0xFF;
-	
+
 	uint8_t magic[] = IMPACK_MAGIC_NUMBER;
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, magic, IMPACK_MAGIC_NUMBER_LEN); // These will not fail, the buffer is large enough
 	uint8_t format_version = IMPACK_FORMAT_VERSION;
@@ -124,10 +124,10 @@ impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_f
 	}
 	char *input_filename = impack_filename(input_path);
 	uint32_t input_filename_length = strlen(input_filename);
-	uint32_t input_filename_length_add = impack_endian(input_filename_length);
+	uint64_t input_filename_length_add = impack_endian32(input_filename_length);
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, (uint8_t*) &input_filename_length_add, 4);
 	uint64_t crc_offset = pixeldata_pos;
-	for (int i = 0; i < 4; i++) { // More dummy bytes for the CRC
+	for (int i = 0; i < 8; i++) { // More dummy bytes for the CRC
 		uint8_t dummy = 0;
 		pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &dummy, 1);
 	}
@@ -141,6 +141,9 @@ impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_f
 		return ERROR_MALLOC;
 	}
 
+	impack_crc_init();
+	uint64_t crc = 0;
+	uint64_t data_length = 0;
 	size_t bytes_read;
 	do {
 		bytes_read = fread(input_buf, 1, BUFSIZE, input_file);
@@ -152,6 +155,8 @@ impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_f
 			fclose(output_file);
 			return ERROR_MALLOC;
 		}
+		data_length += bytes_read;
+		impack_crc(&crc, input_buf, bytes_read);
 	} while (bytes_read == BUFSIZE);
 	free(input_buf);
 	if (!feof(input_file)) {
@@ -161,6 +166,11 @@ impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_f
 		return ERROR_INPUT_IO;
 	}
 	fclose(input_file);
+
+	data_length = impack_endian64(data_length);
+	pixelbuf_add(&pixeldata, &pixeldata_size, &length_offset, channels, (uint8_t*) &data_length, 8);
+	crc = impack_endian64(crc);
+	pixelbuf_add(&pixeldata, &pixeldata_size, &crc_offset, channels, (uint8_t*) &crc, 8);
 
 	free(pixeldata);
 	fclose(output_file);

@@ -20,7 +20,8 @@ CFLAGS += -Wall -std=c99 -Isrc/include
 CLI_SRC = src/cli/main.c
 LIB_SRC = src/lib/encode.c \
 	src/lib/filename.c \
-	src/lib/byteswap.c
+	src/lib/byteswap.c \
+	src/lib/crc.c
 
 .PHONY: all depend clean
 
@@ -44,8 +45,9 @@ libimpack.a: $(LIB_SRC:.c=.o)
 	$(AR) cr libimpack.a $(LIB_SRC:.c=.o)
 	$(RANLIB) libimpack.a
 
-depend.mak: src/include/config_generated.h $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
-	cat $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d) > depend.mak
+depend.mak: config_build.mak config_system.mak src/include/config_generated.h $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
+	cat $(CLI_SRC:.c=.d) > depend.mak
+	cat $(LIB_SRC:.c=.d) >> depend.mak
 
 src/include/config_generated.h: config_build.mak src/gen_config.sh
 	sh src/gen_config.sh $(WITH_LIBPNG) > src/include/config_generated.h

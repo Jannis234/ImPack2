@@ -19,7 +19,7 @@
 int main(int argc, char **argv) {
 
 	// TODO: Dummy code for testing
-	impack_error_t res = impack_encode(argv[1], "-", IMPACK_CHANNEL_RED | IMPACK_CHANNEL_GREEN | IMPACK_CHANNEL_BLUE);
+	impack_error_t res = impack_encode(argv[1], argv[2]);
 	fprintf(stderr, "%d\n", res);
 
 	return 0;

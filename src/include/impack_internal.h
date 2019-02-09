@@ -17,7 +17,9 @@
 #define __IMPACK_INTERNAL_H__
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include "impack.h"
 
 #define IMPACK_FORMAT_VERSION 0
 
@@ -32,6 +34,9 @@ uint32_t impack_endian32(uint32_t val);
 // CRC-64 calculation
 void impack_crc_init();
 void impack_crc(uint64_t *crc, uint8_t *buf, size_t buflen);
+// Image writing helpers (with library/format-specific code)
+impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos);
+impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 
 #endif
 

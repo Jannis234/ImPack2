@@ -18,8 +18,12 @@
 
 #include "config_generated.h"
 
-#if (IMPACK_CONFIG_PNG == 0)
-#error "No image formats enabled"
+#if (IMPACK_CONFIG_PNG != 1)
+#error "No image formats selected in config_build.mak"
+#endif
+
+#if (IMPACK_CONFIG_PNG == 1)
+#define IMPACK_WITH_PNG
 #endif
 
 #endif

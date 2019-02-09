@@ -16,8 +16,6 @@
 #ifndef __IMPACK_H__
 #define __IMPACK_H__
 
-#include <stdint.h>
-
 typedef enum {
 	ERROR_OK, // Success
 	ERROR_MALLOC, // malloc() failed
@@ -28,14 +26,15 @@ typedef enum {
 	ERROR_OUTPUT_NOT_FOUND, // Output path not found
 	ERROR_OUTPUT_PERMISSION, // Access to output file denied
 	ERROR_OUTPUT_DIRECTORY, // Output path is a directory
-	ERROR_OUTPUT_IO // I/O error while writing output file
+	ERROR_OUTPUT_IO, // I/O error while writing output file
+	ERROR_IMG_SIZE // Invalid size for output image
 } impack_error_t;
 
 #define IMPACK_CHANNEL_RED 1
 #define IMPACK_CHANNEL_GREEN 2
 #define IMPACK_CHANNEL_BLUE 4
 
-impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_format);
+impack_error_t impack_encode(char *input_path, char *output_path);
 
 #endif
 

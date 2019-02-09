@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
 #include "impack.h"
 #include "impack_internal.h"
 
@@ -51,7 +50,7 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 	
 }
 
-impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_format) {
+impack_error_t impack_encode(char *input_path, char *output_path) {
 	
 	FILE *input_file, *output_file;
 	if (strlen(input_path) == 1 && input_path[0] == '-') {
@@ -172,9 +171,10 @@ impack_error_t impack_encode(char *input_path, char *output_path, uint32_t img_f
 	crc = impack_endian64(crc);
 	pixelbuf_add(&pixeldata, &pixeldata_size, &crc_offset, channels, (uint8_t*) &crc, 8);
 
+	impack_error_t res = impack_write_img(output_path, output_file, &pixeldata, pixeldata_size, pixeldata_pos);
 	free(pixeldata);
 	fclose(output_file);
-	return ERROR_OK;
+	return res;
 	
 }
 

@@ -21,7 +21,9 @@ CLI_SRC = src/cli/main.c
 LIB_SRC = src/lib/encode.c \
 	src/lib/filename.c \
 	src/lib/byteswap.c \
-	src/lib/crc.c
+	src/lib/crc.c \
+	src/lib/write_img.c \
+	src/lib/write_img_png.c
 
 .PHONY: all depend clean
 

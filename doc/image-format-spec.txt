@@ -1,0 +1,53 @@
+ImPack2 image format
+====================
+
+ImPack2 stores data in images by storing the data in the values of the 3 color
+channels. Data is stored row by row: A row is read/written from left to right
+and the image from top to bottom. Each pixel can hold upto 3 bytes (1 byte per
+channel) in the following order: red, green, blue.
+
+First pixel
+-----------
+The first pixel (top left corner) defines what color channels are enabled. If
+a channel is used to hold data, that channel's value is set to 255. If all 3
+channels are set to 0, the image is grayscale and all 3 channels hold the same
+value (any channel can be used while decoding).
+
+Header/metadata
+---------------
+
+The bytestream encoded inside the image starts with a header that contains
+various metadata:
+
+1.) Magic number (4 bytes)
+    The ASCII string "ImP2" (without quotes).
+2.) Version number (1 byte)
+    Currently, this number is always set to 0. It may be increased in the
+    future to indicate an incompatible change to the image format.
+3.) Encryption flag (1 byte)
+    If this is set to 0, the data is not encrypted and set to 1 if it is.
+    This number may have a higher value in the future if a different
+    encryption algorithm is added.
+4.) Compression flag (1 byte)
+    If this is set to 0, the data is not compressed. If compression is
+    enabled, this number contains the ID of the compression algorithm (see
+    below).
+5.) Data length (8 bytes)
+    An unsigned 64-bit integer (big endian) that contains the length of the
+    actual data (after compression, without padding)
+6.) Filename length (4 bytes)
+    An unsigned 32-bit integer (big endian) that contains the length of the
+    filename (without padding)
+7.) Checksum (4 bytes)
+    A CRC-32 checksum of the file before compression and encryption (big
+    endian).
+8.) Filename (variable length)
+    The filename of the original file (or any placeholder if the filename
+    should not be included). Can be encrypted. (If encrypted, padding is added
+    to fill up the last block.)
+9.) Data (variable length)
+    The actual file. Can be compressed and encrypted. (If encrypted, padding
+    is added to fill up the last block.)
+
+TODO: Document encryption and compression
+

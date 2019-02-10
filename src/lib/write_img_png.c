@@ -56,6 +56,7 @@ impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint6
 	}
 
 	png_init_io(write_struct, output_file);
+	png_set_user_limits(write_struct, INT32_MAX, INT32_MAX);
 	png_set_IHDR(write_struct, info_struct, img_width, img_height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	png_set_rows(write_struct, info_struct, row_pointers);
 	png_write_png(write_struct, info_struct, PNG_TRANSFORM_IDENTITY, NULL);

@@ -13,17 +13,38 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
+#include "config.h"
 #include "impack.h"
+#include "impack_internal.h"
 
-int main(int argc, char **argv) {
+#define MAGIC_PNG { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }
 
-	// TODO: Dummy code for testing
-	//impack_error_t res = impack_encode(argv[1], argv[2]);
-	//impack_error_t res = impack_decode(argv[1], argv[2]);
-	//fprintf(stderr, "%d\n", res);
+impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+	
+	uint8_t magic_png[] = MAGIC_PNG;
+	
+	uint8_t buf[8];
+	if (fread(buf, 1, 8, input_file) != 8) {
+		return ERROR_INPUT_IO;
+	}
 
-	return 0;
+	bool ispng = true;
+	for (int i = 0; i < 8; i++) {
+		ispng &= (buf[i] == magic_png[i]);
+	}
+
+	if (ispng) {
+#ifdef IMPACK_WITH_PNG
+		return impack_read_img_png(input_file, pixeldata, pixeldata_size);
+#else
+		return ERROR_IMG_FORMAT_UNSUPPORTED;
+#endif
+	}
+
+	return ERROR_IMG_FORMAT_UNKNOWN;
 	
 }
 

@@ -41,13 +41,15 @@ various metadata:
 7.) Checksum (8 bytes)
     A CRC-64 checksum of the file before compression and encryption (big
     endian).
-8.) Filename (variable length)
+8.) IV (16 bytes, optional)
+    AES-CBC initialization vector (only if encryption is enabled)
+9.) Filename (variable length)
     The filename of the original file (or any placeholder if the filename
     should not be included). Can be encrypted. (If encrypted, padding is added
     to fill up the last block.)
-9.) Data (variable length)
-    The actual file. Can be compressed and encrypted. (If encrypted, padding
-    is added to fill up the last block.)
+10.) Data (variable length)
+     The actual file. Can be compressed and encrypted. (If encrypted, padding
+     is added to fill up the last block.)
 
 TODO: Document encryption and compression
 

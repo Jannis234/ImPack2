@@ -49,6 +49,7 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 	}
 	memset((*pixeldata) + pixeldata_pos, 0, pixeldata_size - pixeldata_pos);
 
+	// TODO: Allow user to select the output format
 	size_t pathlen = strlen(output_path);
 	// Try to select format based on file extension
 #ifdef IMPACK_WITH_PNG

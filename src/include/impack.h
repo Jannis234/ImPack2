@@ -33,7 +33,8 @@ typedef enum {
 	ERROR_IMG_FORMAT_UNSUPPORTED, // File format not compiled in
 	ERROR_IMG_FORMAT_UNKNOWN, // Unknown file format
 	ERROR_INPUT_IMG_INVALID, // Invalid image contents
-	ERROR_INPUT_IMG_VERSION // Incompatible format, created with a newer version of ImPack2
+	ERROR_INPUT_IMG_VERSION, // Incompatible format, created with a newer version of ImPack2
+	ERROR_CRC // CRC mismatch after decoding
 } impack_error_t;
 
 #define IMPACK_CHANNEL_RED 1

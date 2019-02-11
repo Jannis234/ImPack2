@@ -218,6 +218,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 		return ERROR_MALLOC;
 	}
 	impack_crc_init();
+	uint64_t crc = 0;
 	while (state->data_length > 0) {
 		uint64_t remaining = BUFSIZE;
 		if (state->data_length < remaining) {
@@ -236,12 +237,16 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 			fclose(output_file);
 			return ERROR_OUTPUT_IO;
 		}
+		impack_crc(&crc, buf, remaining);
 		state->data_length -= remaining;
 	}
 
 	fclose(output_file);
 	free(buf);
 	free(state->pixeldata);
+	if (crc != state->crc) {
+		return ERROR_CRC;
+	}
 	return ERROR_OK;
 
 }

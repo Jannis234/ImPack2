@@ -21,6 +21,8 @@
 #include "impack.h"
 #include "impack_internal.h"
 
+#define BUFSIZE 16384 // 16 KiB
+
 bool pixelbuf_read(impack_decode_state_t *state, uint8_t *buf, uint64_t len) {
 	
 	while (len > 0) {
@@ -119,26 +121,24 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 
 impack_error_t impack_decode_stage2(impack_decode_state_t *state) {
 
-	uint64_t data_length;
-	uint32_t filename_length;
-	if (!pixelbuf_read(state, (uint8_t*) &data_length, 8)) {
+	if (!pixelbuf_read(state, (uint8_t*) &state->data_length, 8)) {
 		free(state->pixeldata);
 		return ERROR_INPUT_IMG_INVALID;
 	}
-	if (!pixelbuf_read(state, (uint8_t*) &filename_length, 4)) {
+	if (!pixelbuf_read(state, (uint8_t*) &state->filename_length, 4)) {
 		free(state->pixeldata);
 		return ERROR_INPUT_IMG_INVALID;
 	}
-	data_length = impack_endian64(data_length);
-	filename_length = impack_endian32(filename_length);
+	state->data_length = impack_endian64(state->data_length);
+	state->filename_length = impack_endian32(state->filename_length);
 
 	// Quick sanity check to avoid allocating giant buffers
 	uint64_t bytes_remaining = state->pixeldata_size - state->pixeldata_pos;
-	if (filename_length > bytes_remaining) {
+	if (state->filename_length > bytes_remaining) {
 		free(state->pixeldata);
 		return ERROR_INPUT_IMG_INVALID;
 	}
-	if (data_length > bytes_remaining - filename_length) {
+	if (state->data_length > bytes_remaining - state->filename_length) {
 		free(state->pixeldata);
 		return ERROR_INPUT_IMG_INVALID;
 	}
@@ -155,13 +155,15 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state) {
 			return ERROR_INPUT_IMG_INVALID;
 		}
 	}
-	state->filename = malloc(filename_length);
+	state->filename = malloc(state->filename_length);
 	if (state->filename == NULL) {
 		free(state->pixeldata);
 		return ERROR_MALLOC;
 	}
-	if (!pixelbuf_read(state, (uint8_t*) state->filename, filename_length)) {
+	// TODO: Decrypt filename
+	if (!pixelbuf_read(state, (uint8_t*) state->filename, state->filename_length)) {
 		free(state->pixeldata);
+		free(state->filename);
 		return ERROR_INPUT_IMG_INVALID;
 	}
 
@@ -170,9 +172,76 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state) {
 }
 
 impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_path) {
-
-	// TODO
 	
+	FILE *output_file;
+	if (strlen(output_path) == 1 && output_path[0] == '-') {
+		output_file = stdout;
+	} else {
+		output_file = fopen(output_path, "wb");
+		if (output_file == NULL) {
+			if (errno == EISDIR) { // Used selected a directory, append the filename from the image
+				size_t output_path_length = strlen(output_path);
+				char *newname = malloc(state->filename_length + output_path_length + 2);
+				if (newname == NULL) {
+					free(state->pixeldata);
+					free(state->filename);
+					return ERROR_MALLOC;
+				}
+				strcpy(newname, output_path);
+				newname[output_path_length] = '/';
+				strncpy(newname + output_path_length + 1, state->filename, state->filename_length);
+				newname[output_path_length + state->filename_length + 1] = 0;
+				output_file = fopen(newname, "wb");
+				free(newname);
+			}
+			if (output_file == NULL) {
+				free(state->filename);
+				free(state->pixeldata);
+				if (errno == ENOENT) {
+					return ERROR_OUTPUT_NOT_FOUND;
+				} else if (errno == EACCES) {
+					return ERROR_OUTPUT_PERMISSION;
+				} else if (errno == EISDIR) {
+					return ERROR_OUTPUT_DIRECTORY;
+				} else {
+					return ERROR_OUTPUT_IO;
+				}
+			}
+		}
+	}
+	free(state->filename);
+
+	uint8_t *buf = malloc(BUFSIZE);
+	if (buf == NULL) {
+		free(state->pixeldata);
+		fclose(output_file);
+		return ERROR_MALLOC;
+	}
+	impack_crc_init();
+	while (state->data_length > 0) {
+		uint64_t remaining = BUFSIZE;
+		if (state->data_length < remaining) {
+			remaining = state->data_length;
+		}
+		if (!pixelbuf_read(state, buf, remaining)) {
+			free(state->pixeldata);
+			free(buf);
+			fclose(output_file);
+			return ERROR_INPUT_IMG_INVALID;
+		}
+		// TODO: Decompress and decrypt
+		if (fwrite(buf, 1, remaining, output_file) != remaining) {
+			free(state->pixeldata);
+			free(buf);
+			fclose(output_file);
+			return ERROR_OUTPUT_IO;
+		}
+		state->data_length -= remaining;
+	}
+
+	fclose(output_file);
+	free(buf);
+	free(state->pixeldata);
 	return ERROR_OK;
 
 }

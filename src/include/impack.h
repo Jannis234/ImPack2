@@ -50,6 +50,8 @@ typedef struct {
 	uint64_t crc;
 	uint8_t aes_key[32];
 	uint8_t aes_iv[16];
+	uint64_t data_length;
+	uint32_t filename_length;
 	char *filename;
 } impack_decode_state_t;
 

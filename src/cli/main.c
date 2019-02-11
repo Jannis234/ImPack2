@@ -20,8 +20,13 @@ int main(int argc, char **argv) {
 
 	// TODO: Dummy code for testing
 	//impack_error_t res = impack_encode(argv[1], argv[2]);
-	//impack_error_t res = impack_decode(argv[1], argv[2]);
-	//fprintf(stderr, "%d\n", res);
+	impack_decode_state_t state;
+	impack_error_t res = impack_decode_stage1(&state, argv[1]);
+	fprintf(stderr, "%d\n", res);
+	res = impack_decode_stage2(&state);
+	fprintf(stderr, "%d\n", res);
+	res = impack_decode_stage3(&state, argv[2]);
+	fprintf(stderr, "%d\n", res);
 
 	return 0;
 	

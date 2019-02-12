@@ -21,11 +21,25 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#ifdef IMPACK_WINDOWS
+#include <windows.h>
+#include <wincrypt.h>
+#endif
 
 bool impack_random(uint8_t *dst, size_t count) {
-	
-	// TODO: Windows support
-	
+
+#ifdef IMPACK_WINDOWS
+	HCRYPTPROV provider;
+	if (CryptAcquireContext(&provider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == 0) {
+		return false;
+	}
+	if (CryptGenRandom(provider, count, dst) == 0) {
+		CryptReleaseContext(provider, 0);
+		return false;
+	}
+	CryptReleaseContext(provider, 0);
+	return true;
+#else
 	FILE *devurandom = fopen("/dev/urandom", "rb");
 	if (devurandom == NULL) {
 		return false;
@@ -35,7 +49,8 @@ bool impack_random(uint8_t *dst, size_t count) {
 	}
 	fclose(devurandom);
 	return true;
-	
+#endif
+
 }
 
 #endif

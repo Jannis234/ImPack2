@@ -24,7 +24,6 @@
 
 impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos) {
 
-	pixeldata_pos--;
 	// TODO: Allow selecting custom image size
 	uint64_t width = 1;
 	uint64_t height = 1;

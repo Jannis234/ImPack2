@@ -31,7 +31,7 @@
 #define PIXELBUF_STEP 1048576 // 1 MiB
 
 bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixeldata_pos, uint8_t channels, uint8_t *data, uint64_t len) {
-	
+
 	while (len > 0) {
 		if (*pixeldata_pos == *pixeldata_size) {
 			uint8_t *newbuf = realloc(*pixeldata, *pixeldata_size + PIXELBUF_STEP);

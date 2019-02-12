@@ -34,9 +34,9 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/random.c \
 	src/lib/crypt.c
 
-.PHONY: all depend clean
+.PHONY: all depend clean cli
 
-all: impack$(EXEEXT)
+all: cli
 
 depend: depend.mak
 
@@ -48,6 +48,8 @@ clean:
 	rm -f impack$(EXEEXT) libimpack.a
 	rm -f depend.mak
 	rm -f src/include/config_generated.h
+
+cli: impack$(EXEEXT)
 
 impack$(EXEEXT): libimpack.a $(CLI_SRC:.c=.o)
 	$(CCLD) -o impack$(EXEEXT) $(CLI_SRC:.c=.o) libimpack.a $(LIBS)

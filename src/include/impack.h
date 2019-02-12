@@ -16,8 +16,12 @@
 #ifndef __IMPACK_H__
 #define __IMPACK_H__
 
+#include "config.h"
 #include <stdbool.h>
 #include <stdint.h>
+#ifdef IMPACK_WITH_CRYPTO
+#include <nettle/aes.h>
+#endif
 
 typedef enum {
 	ERROR_OK, // Success
@@ -36,7 +40,9 @@ typedef enum {
 	ERROR_INPUT_IMG_INVALID, // Invalid image contents
 	ERROR_INPUT_IMG_VERSION, // Incompatible format, created with a newer version of ImPack2
 	ERROR_CRC, // CRC mismatch after decoding
-	ERROR_RANDOM // Can't get random data for encryption
+	ERROR_RANDOM, // Can't get random data for encryption
+	ERROR_ENCRYPTION_UNAVAILABLE, // Image encrypted, but encryption not compiled in
+	ERROR_ENCRYPTION_UNKNOWN // Unknown encryption algorithm
 } impack_error_t;
 
 #define IMPACK_CHANNEL_RED 1
@@ -51,8 +57,10 @@ typedef struct {
 	uint8_t encryption;
 	uint8_t compression;
 	uint64_t crc;
-	uint8_t aes_key[32];
-	uint8_t aes_iv[16];
+#ifdef IMPACK_WITH_CRYPTO
+	uint8_t aes_key[AES256_KEY_SIZE];
+	uint8_t aes_iv[AES_BLOCK_SIZE];
+#endif
 	uint64_t data_length;
 	uint32_t filename_length;
 	char *filename;
@@ -62,7 +70,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 // Decode stage 1: Load the image and check if the content is encrypted (may ask for the passphrase after this)
 impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_path);
 // Decode stage 2: Extract the included filename (select final output path after this)
-impack_error_t impack_decode_stage2(impack_decode_state_t *state);
+impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphrase);
 // Decode stage 3: Extract and save the actual content
 impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_path);
 

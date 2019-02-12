@@ -18,6 +18,14 @@
 
 #include "config_generated.h"
 
+#if defined(WIN32) || defined(_WIN32)
+#define IMPACK_WINDOWS
+#endif
+
+#if (IMPACK_CONFIG_NETTLE == 1)
+#define IMPACK_WITH_CRYPTO
+#endif
+
 #if (IMPACK_CONFIG_PNG != 1)
 #error "No image formats selected in config_build.mak"
 #endif

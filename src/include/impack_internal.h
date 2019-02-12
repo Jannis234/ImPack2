@@ -16,6 +16,8 @@
 #ifndef __IMPACK_INTERNAL_H__
 #define __IMPACK_INTERNAL_H__
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,6 +41,12 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
+// Get secure random data
+bool impack_random(uint8_t *dst, size_t count);
+// Zero-out an area of memory, without the compiler optimizing it out
+void impack_secure_erase(uint8_t *buf, size_t len);
+// Derive a key from a passphrase using PBKDF2
+void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
 
 #endif
 

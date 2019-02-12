@@ -16,6 +16,7 @@
 #ifndef __IMPACK_H__
 #define __IMPACK_H__
 
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef enum {
@@ -34,7 +35,8 @@ typedef enum {
 	ERROR_IMG_FORMAT_UNKNOWN, // Unknown file format
 	ERROR_INPUT_IMG_INVALID, // Invalid image contents
 	ERROR_INPUT_IMG_VERSION, // Incompatible format, created with a newer version of ImPack2
-	ERROR_CRC // CRC mismatch after decoding
+	ERROR_CRC, // CRC mismatch after decoding
+	ERROR_RANDOM // Can't get random data for encryption
 } impack_error_t;
 
 #define IMPACK_CHANNEL_RED 1
@@ -56,7 +58,7 @@ typedef struct {
 	char *filename;
 } impack_decode_state_t;
 
-impack_error_t impack_encode(char *input_path, char *output_path);
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase);
 // Decode stage 1: Load the image and check if the content is encrypted (may ask for the passphrase after this)
 impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_path);
 // Decode stage 2: Extract the included filename (select final output path after this)

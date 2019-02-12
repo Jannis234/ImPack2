@@ -16,5 +16,9 @@
 # Options to control features that need additional dependencies
 # Change any option to 0 to disable it
 
+# Required to create and unpack image with encrypted data
+WITH_NETTLE = 1
+
+# Image formats, at least one must be enabled
 WITH_LIBPNG = 1
 

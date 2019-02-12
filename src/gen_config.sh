@@ -18,7 +18,9 @@ echo
 echo "#ifndef __IMPACK_CONFIG_GENERATED_H__"
 echo "#define __IMPACK_CONFIG_GENERATED_H__"
 echo
-echo "#define IMPACK_CONFIG_PNG $1"
+echo "#define IMPACK_VERSION $1"
+echo "#define IMPACK_CONFIG_NETTLE $2"
+echo "#define IMPACK_CONFIG_PNG $3"
 echo
 echo "#endif"
 

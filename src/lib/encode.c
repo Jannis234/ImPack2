@@ -13,12 +13,17 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
+#include "config.h"
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef IMPACK_WITH_CRYPTO
+#include <nettle/aes.h>
+#include <nettle/cbc.h>
+#endif
 #include "impack.h"
 #include "impack_internal.h"
 
@@ -50,7 +55,7 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 	
 }
 
-impack_error_t impack_encode(char *input_path, char *output_path) {
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase) {
 	
 	FILE *input_file, *output_file;
 	if (strlen(input_path) == 1 && input_path[0] == '-') {
@@ -58,6 +63,11 @@ impack_error_t impack_encode(char *input_path, char *output_path) {
 	} else {
 		input_file = fopen(input_path, "rb");
 		if (input_file == NULL) {
+#ifdef IMPACK_WITH_CRYPTO
+			if (encrypt) {
+				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
+			}
+#endif
 			if (errno == ENOENT) {
 				return ERROR_INPUT_NOT_FOUND;
 			} else if (errno == EACCES) {
@@ -75,6 +85,11 @@ impack_error_t impack_encode(char *input_path, char *output_path) {
 		output_file = fopen(output_path, "wb");
 		if (output_file == NULL) {
 			fclose(input_file);
+#ifdef IMPACK_WITH_CRYPTO
+			if (encrypt) {
+				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
+			}
+#endif
 			if (errno == ENOENT) {
 				return ERROR_OUTPUT_NOT_FOUND;
 			} else if (errno == EACCES) {
@@ -89,12 +104,22 @@ impack_error_t impack_encode(char *input_path, char *output_path) {
 
 	uint8_t *input_buf = malloc(BUFSIZE);
 	if (input_buf == NULL) {
+#ifdef IMPACK_WITH_CRYPTO
+		if (encrypt) {
+			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
+		}
+#endif
 		fclose(input_file);
 		fclose(output_file);
 		return ERROR_MALLOC;
 	}
 	uint8_t *pixeldata = malloc(PIXELBUF_STEP);
 	if (pixeldata == NULL) {
+#ifdef IMPACK_WITH_CRYPTO
+		if (encrypt) {
+			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
+		}
+#endif
 		free(input_buf);
 		fclose(input_file);
 		fclose(output_file);
@@ -112,7 +137,7 @@ impack_error_t impack_encode(char *input_path, char *output_path) {
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, magic, IMPACK_MAGIC_NUMBER_LEN); // These will not fail, the buffer is large enough
 	uint8_t format_version = IMPACK_FORMAT_VERSION;
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &format_version, 1);
-	uint8_t encryption_flag = 0; // TODO: Encryption
+	uint8_t encryption_flag = (encrypt ? 1 : 0);
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &encryption_flag, 1);
 	uint8_t compression_flag = 0; // TODO: Compression
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &compression_flag, 1);
@@ -123,21 +148,81 @@ impack_error_t impack_encode(char *input_path, char *output_path) {
 	}
 	char *input_filename = impack_filename(input_path);
 	uint32_t input_filename_length = strlen(input_filename);
-	uint64_t input_filename_length_add = impack_endian32(input_filename_length);
-	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, (uint8_t*) &input_filename_length_add, 4);
+	uint32_t input_filename_length_endian = impack_endian32(input_filename_length);
+	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, (uint8_t*) &input_filename_length_endian, 4);
 	uint64_t crc_offset = pixeldata_pos;
 	for (int i = 0; i < 8; i++) { // More dummy bytes for the CRC
 		uint8_t dummy = 0;
 		pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &dummy, 1);
 	}
 
-	// TODO: Pad and encrypt the filename
-	if (!pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, (uint8_t*) input_filename, input_filename_length)) {
+#ifdef IMPACK_WITH_CRYPTO
+	struct CBC_CTX(struct aes256_ctx, AES_BLOCK_SIZE) encrypt_ctx;
+	if (encrypt) {
+		if (!impack_random(encrypt_ctx.iv, AES_BLOCK_SIZE)) {
+			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
+			free(pixeldata);
+			free(input_buf);
+			fclose(input_file);
+			fclose(output_file);
+			return ERROR_RANDOM;
+		}
+		if (!pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, encrypt_ctx.iv, AES_BLOCK_SIZE)) {
+			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
+			free(pixeldata);
+			free(input_buf);
+			fclose(input_file);
+			fclose(output_file);
+			return ERROR_MALLOC;
+		}
+		uint8_t key[AES256_KEY_SIZE];
+		impack_derive_key(passphrase, key, AES256_KEY_SIZE, encrypt_ctx.iv, AES_BLOCK_SIZE);
+		aes256_set_encrypt_key(&encrypt_ctx.ctx, key);
+		impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
+		impack_secure_erase(key, AES256_KEY_SIZE);
+	}
+#endif
+
+	char *input_filename_add = input_filename;
+	uint64_t input_filename_add_length = input_filename_length;
+#ifdef IMPACK_WITH_CRYPTO
+	if (encrypt) {
+		if (input_filename_length % AES_BLOCK_SIZE != 0) {
+			uint32_t padding = AES_BLOCK_SIZE - (input_filename_length % AES_BLOCK_SIZE);
+			char *input_filename_padded = malloc(input_filename_length + padding);
+			if (input_filename_padded == NULL) {
+				impack_secure_erase((uint8_t*) &encrypt_ctx.ctx, sizeof(struct aes256_ctx));
+				free(pixeldata);
+				free(input_buf);
+				fclose(input_file);
+				fclose(output_file);
+				return ERROR_MALLOC;
+			}
+			strncpy(input_filename_padded, input_filename, input_filename_length);
+			memset(input_filename_padded + input_filename_length, 0, padding);
+			input_filename_add = input_filename_padded;
+			input_filename_add_length += padding;
+		}
+		CBC_ENCRYPT(&encrypt_ctx, aes256_encrypt, input_filename_add_length, (uint8_t*) input_filename_add, (uint8_t*) input_filename_add);
+	}
+#endif
+	if (!pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, (uint8_t*) input_filename_add, input_filename_add_length)) {
+#ifdef IMPACK_WITH_CRYPTO
+		if (encrypt) {
+			impack_secure_erase((uint8_t*) &encrypt_ctx.ctx, sizeof(struct aes256_ctx));
+		}
+#endif
 		free(pixeldata);
 		free(input_buf);
+		if (input_filename_add != input_filename) {
+			free(input_filename_add);
+		}
 		fclose(input_file);
 		fclose(output_file);
 		return ERROR_MALLOC;
+	}
+	if (input_filename_add != input_filename) {
+		free(input_filename_add);
 	}
 
 	impack_crc_init();
@@ -146,18 +231,38 @@ impack_error_t impack_encode(char *input_path, char *output_path) {
 	size_t bytes_read;
 	do {
 		bytes_read = fread(input_buf, 1, BUFSIZE, input_file);
-		// TODO: Compression + encryption
+		data_length += bytes_read;
+		impack_crc(&crc, input_buf, bytes_read);
+		// TODO: Compression
+#ifdef IMPACK_WITH_CRYPTO
+		if (encrypt) {
+			if (bytes_read % AES_BLOCK_SIZE != 0) {
+				uint32_t padding = AES_BLOCK_SIZE - (bytes_read % AES_BLOCK_SIZE);
+				memset(input_buf + bytes_read, 0, padding); // The buffer size is a multiple of the block size, there is always enough space for padding when it's needed
+				bytes_read += padding;
+			}
+			CBC_ENCRYPT(&encrypt_ctx, aes256_encrypt, bytes_read, input_buf, input_buf);
+		}
+#endif
 		if (!pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, input_buf, bytes_read)) {
+#ifdef IMPACK_WITH_CRYPTO
+			if (encrypt) {
+				impack_secure_erase((uint8_t*) &encrypt_ctx.ctx, sizeof(struct aes256_ctx));
+			}
+#endif
 			free(pixeldata);
 			free(input_buf);
 			fclose(input_file);
 			fclose(output_file);
 			return ERROR_MALLOC;
 		}
-		data_length += bytes_read;
-		impack_crc(&crc, input_buf, bytes_read);
 	} while (bytes_read == BUFSIZE);
 	free(input_buf);
+#ifdef IMPACK_WITH_CRYPTO
+	if (encrypt) {
+		impack_secure_erase((uint8_t*) &encrypt_ctx.ctx, sizeof(struct aes256_ctx));
+	}
+#endif
 	if (!feof(input_file)) {
 		free(pixeldata);
 		fclose(input_file);

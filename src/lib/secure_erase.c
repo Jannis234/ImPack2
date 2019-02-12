@@ -13,25 +13,18 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
+#include "config.h"
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
-char* impack_filename(char *path) {
+void impack_secure_erase(uint8_t *buf, size_t len) {
 	
-	size_t pathlen = strlen(path);
-	if (strlen(path) == 1 && path[0] == '-') {
-		return "stdin";
+	volatile uint8_t *pointer = (volatile uint8_t*) buf;
+	while (len > 0) {
+		*pointer = 0;
+		pointer++;
+		len--;
 	}
-	char *res = path + pathlen - 1;
-	while (res != path) {
-		if (*res == '/' || *res == '\\') {
-			res++;
-			break;
-		}
-		res--;
-	}
-	return res;
 	
 }
 

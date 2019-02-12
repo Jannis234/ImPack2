@@ -13,25 +13,26 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
+#include "config.h"
+
+#ifdef IMPACK_WITH_CRYPTO
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <nettle/aes.h>
+#include <nettle/hmac.h>
+#include <nettle/pbkdf2.h>
 
-char* impack_filename(char *path) {
-	
-	size_t pathlen = strlen(path);
-	if (strlen(path) == 1 && path[0] == '-') {
-		return "stdin";
-	}
-	char *res = path + pathlen - 1;
-	while (res != path) {
-		if (*res == '/' || *res == '\\') {
-			res++;
-			break;
-		}
-		res--;
-	}
-	return res;
-	
+#define PBKDF2_ITERATIONS 100000
+
+void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize) {
+
+	struct hmac_sha512_ctx ctx;
+	hmac_sha512_set_key(&ctx, strlen(passphrase), (uint8_t*) passphrase);
+	PBKDF2(&ctx, hmac_sha512_update, hmac_sha512_digest, SHA512_DIGEST_SIZE, PBKDF2_ITERATIONS, saltsize, salt, keysize, keyout);
+
 }
+
+#endif
 

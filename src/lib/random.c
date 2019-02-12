@@ -13,25 +13,30 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
+#include "config.h"
+
+#ifdef IMPACK_WITH_CRYPTO
+
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
+#include <stdio.h>
 
-char* impack_filename(char *path) {
+bool impack_random(uint8_t *dst, size_t count) {
 	
-	size_t pathlen = strlen(path);
-	if (strlen(path) == 1 && path[0] == '-') {
-		return "stdin";
+	// TODO: Windows support
+	
+	FILE *devurandom = fopen("/dev/urandom", "rb");
+	if (devurandom == NULL) {
+		return false;
 	}
-	char *res = path + pathlen - 1;
-	while (res != path) {
-		if (*res == '/' || *res == '\\') {
-			res++;
-			break;
-		}
-		res--;
+	if (fread(dst, 1, count, devurandom) != count) {
+		return false;
 	}
-	return res;
+	fclose(devurandom);
+	return true;
 	
 }
+
+#endif
 

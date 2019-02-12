@@ -159,7 +159,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 
 	// Quick sanity check to avoid allocating giant buffers
 	uint64_t bytes_remaining = state->pixeldata_size - state->pixeldata_pos;
-	if (state->filename_length > bytes_remaining) {
+	if (state->filename_length > bytes_remaining || state->filename_length == 0) {
 #ifdef IMPACK_WITH_CRYPTO
 		if (state->encryption != 0) {
 			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));

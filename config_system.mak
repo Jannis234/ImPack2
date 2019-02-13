@@ -37,3 +37,7 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags libpng)
 LIBS += $(shell $(PKG_CONFIG) --libs libpng)
 endif
 
+ifeq ($(WITH_ZLIB), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags zlib)
+LIBS += $(shell $(PKG_CONFIG) --libs zlib)
+endif

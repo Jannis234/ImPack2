@@ -375,4 +375,3 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 	return ERROR_OK;
 
 }
-

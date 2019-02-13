@@ -28,6 +28,22 @@
 #define IMPACK_MAGIC_NUMBER { 73, 109, 80, 50 } // ASCII string "ImP2"
 #define IMPACK_MAGIC_NUMBER_LEN 4
 
+typedef enum {
+	COMPRESSION_OK, // Success, data written to buffer
+	COMPRESSION_AGAIN, // Buffer not full, need to refill input
+	COMPRESSION_FINAL, // Compressed data ended
+	COMPRESSION_ERROR
+} impack_compression_result_t;
+
+typedef struct {
+	void *lib_object;
+	impack_compression_type_t type;
+	bool is_compress;
+	uint8_t *input_buf;
+	uint8_t *output_buf;
+	uint64_t bufsize;
+} impack_compress_state_t;
+
 // Get the filename from a path (similar to basename())
 char* impack_filename(char *path);
 // Convert numbers to network byte order, if needed (like htonl()/ntohl())
@@ -47,6 +63,10 @@ bool impack_random(uint8_t *dst, size_t count);
 void impack_secure_erase(uint8_t *buf, size_t len);
 // Derive a key from a passphrase using PBKDF2
 void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
+bool impack_compress_init(impack_compress_state_t *state);
+void impack_compress_free(impack_compress_state_t *state);
+impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf);
+void impack_compress_write(impack_compress_state_t *state, uint8_t *buf, uint64_t len);
+impack_compression_result_t impack_compress_flush(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 
 #endif
-

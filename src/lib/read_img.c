@@ -47,4 +47,3 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 	return ERROR_IMG_FORMAT_UNKNOWN;
 	
 }
-

@@ -21,6 +21,6 @@ echo
 echo "#define IMPACK_VERSION $1"
 echo "#define IMPACK_CONFIG_NETTLE $2"
 echo "#define IMPACK_CONFIG_PNG $3"
+echo "#define IMPACK_CONFIG_ZLIB $4"
 echo
 echo "#endif"
-

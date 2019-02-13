@@ -13,36 +13,17 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
-#include <stddef.h>
+#ifndef __IMPACK_COMPRESSION_H__
+#define __IMPACK_COMPRESSION_H__
+
+#include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
+#include "impack_internal.h"
 
-#define CRC_POLY 0xC96C5795D7870F42ULL
+bool impack_compress_init_zlib(impack_compress_state_t *state);
+void impack_compress_free_zlib(impack_compress_state_t *state);
+impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *state, uint8_t *buf);
+void impack_compress_write_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t len);
+impack_compression_result_t impack_compress_flush_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 
-uint64_t crc_table[256];
-
-void impack_crc_init() {
-
-	for (int i = 0; i < 256; i++) {
-		uint64_t crc = i;
-		for (int j = 0; j < 8; j++) {
-			if (crc & 1) {
-				crc = (crc >> 1) ^ CRC_POLY;
-			} else {
-				crc >>= 1;
-			}
-		}
-		crc_table[i] = crc;
-	}
-
-}
-
-void impack_crc(uint64_t *crc, uint8_t *buf, size_t buflen) {
-	
-	*crc = ~(*crc);
-	for (size_t i = 0; i < buflen; i++) {
-		*crc = crc_table[buf[i] ^ (*crc & 255)] ^ (*crc >> 8);
-	}
-	*crc = ~(*crc);
-	
-}
+#endif

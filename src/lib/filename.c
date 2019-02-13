@@ -34,4 +34,3 @@ char* impack_filename(char *path) {
 	return res;
 	
 }
-

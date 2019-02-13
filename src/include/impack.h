@@ -45,6 +45,11 @@ typedef enum {
 	ERROR_ENCRYPTION_UNKNOWN // Unknown encryption algorithm
 } impack_error_t;
 
+typedef enum {
+	COMPRESSION_NONE = 0,
+	COMPRESSION_ZLIB = 1
+} impack_compression_type_t;
+
 #define IMPACK_CHANNEL_RED 1
 #define IMPACK_CHANNEL_GREEN 2
 #define IMPACK_CHANNEL_BLUE 4
@@ -66,7 +71,7 @@ typedef struct {
 	char *filename;
 } impack_decode_state_t;
 
-impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase);
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress);
 // Decode stage 1: Load the image and check if the content is encrypted (may ask for the passphrase after this)
 impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_path);
 // Decode stage 2: Extract the included filename (select final output path after this)
@@ -75,4 +80,3 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_path);
 
 #endif
-

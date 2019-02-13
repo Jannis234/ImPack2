@@ -68,4 +68,3 @@ impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint6
 }
 
 #endif
-

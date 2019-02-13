@@ -32,7 +32,9 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/read_img_png.c \
 	src/lib/secure_erase.c \
 	src/lib/random.c \
-	src/lib/crypt.c
+	src/lib/crypt.c \
+	src/lib/compress.c \
+	src/lib/compress_zlib.c
 
 .PHONY: all depend clean cli
 
@@ -63,7 +65,7 @@ depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
 	cat $(LIB_SRC:.c=.d) >> depend.mak
 
 src/include/config_generated.h: config_build.mak src/gen_config.sh
-	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) > src/include/config_generated.h
+	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_ZLIB) > src/include/config_generated.h
 
 %.d: %.c config_build.mak config_system.mak src/include/config_generated.h
 	$(CC) $(CFLAGS) -M -MT $(<:.c=.o) -o $@ $<
@@ -72,4 +74,3 @@ src/include/config_generated.h: config_build.mak src/gen_config.sh
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 include depend.mak
-

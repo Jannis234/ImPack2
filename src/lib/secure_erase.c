@@ -27,4 +27,3 @@ void impack_secure_erase(uint8_t *buf, size_t len) {
 	}
 	
 }
-

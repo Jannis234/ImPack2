@@ -34,5 +34,12 @@
 #define IMPACK_WITH_PNG
 #endif
 
+#if (IMPACK_CONFIG_ZLIB == 1)
+#define IMPACK_WITH_COMPRESSION
 #endif
 
+#if (IMPACK_CONFIG_ZLIB == 1)
+#define IMPACK_WITH_ZLIB
+#endif
+
+#endif

@@ -19,19 +19,16 @@
 int main(int argc, char **argv) {
 
 	// TODO: Dummy code for testing
-	char passphrase[] = "123456";
-	impack_error_t res = impack_encode(argv[1], argv[2], true, passphrase);
+	impack_error_t res = impack_encode(argv[1], argv[2], false, NULL, COMPRESSION_ZLIB);
 	fprintf(stderr, "%d\n", res);
-	char passphrase2[] = "123456";
 	impack_decode_state_t state;
 	res = impack_decode_stage1(&state, argv[2]);
 	fprintf(stderr, "%d\n", res);
-	res = impack_decode_stage2(&state, passphrase2);
+	res = impack_decode_stage2(&state, NULL);
 	fprintf(stderr, "%d\n", res);
-	res = impack_decode_stage3(&state, argv[2]);
+	res = impack_decode_stage3(&state, argv[3]);
 	fprintf(stderr, "%d\n", res);
 
 	return 0;
 	
 }
-

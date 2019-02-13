@@ -55,7 +55,7 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 	
 }
 
-impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase) {
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress) {
 	
 	FILE *input_file, *output_file;
 	if (strlen(input_path) == 1 && input_path[0] == '-') {
@@ -224,16 +224,67 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 	if (input_filename_add != input_filename) {
 		free(input_filename_add);
 	}
-
+	
+#ifdef IMPACK_WITH_COMPRESSION
+	impack_compress_state_t compress_state;
+	compress_state.type = compress;
+	compress_state.is_compress = true;
+	compress_state.bufsize = BUFSIZE;
+	if (!impack_compress_init(&compress_state)) {
+#ifdef IMPACK_WITH_CRYPTO
+		if (encrypt) {
+			impack_secure_erase((uint8_t*) &encrypt_ctx.ctx, sizeof(struct aes256_ctx));
+		}
+#endif
+		free(pixeldata);
+		free(input_buf);
+		fclose(input_file);
+		fclose(output_file);
+		return ERROR_MALLOC;
+	}
+	bool file_read_done = false;
+#endif
+	
 	impack_crc_init();
 	uint64_t crc = 0;
 	uint64_t data_length = 0;
 	size_t bytes_read;
+	bool loop_running = true;
 	do {
-		bytes_read = fread(input_buf, 1, BUFSIZE, input_file);
+#ifdef IMPACK_WITH_COMPRESSION
+		if (compress != COMPRESSION_NONE) {
+			while (true) {
+				if (file_read_done) {
+					uint64_t flushlen;
+					if (impack_compress_flush(&compress_state, input_buf, &flushlen) == COMPRESSION_FINAL) {
+						bytes_read = flushlen;
+						loop_running = false;
+						break;
+					} else {
+						bytes_read = BUFSIZE;
+						break;
+					}
+				} else {
+					if (impack_compress_read(&compress_state, input_buf) == COMPRESSION_AGAIN) {
+						bytes_read = fread(input_buf, 1, BUFSIZE, input_file);
+						impack_compress_write(&compress_state, input_buf, bytes_read);
+						if (bytes_read != BUFSIZE) {
+							file_read_done = true;
+						}
+					} else {
+						bytes_read = BUFSIZE;
+						break;
+					}
+				}
+			}
+		} else {
+#endif
+			bytes_read = fread(input_buf, 1, BUFSIZE, input_file);
+#ifdef IMPACK_WITH_COMPRESSION
+		}
+#endif
 		data_length += bytes_read;
 		impack_crc(&crc, input_buf, bytes_read);
-		// TODO: Compression
 #ifdef IMPACK_WITH_CRYPTO
 		if (encrypt) {
 			if (bytes_read % AES_BLOCK_SIZE != 0) {
@@ -256,7 +307,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 			fclose(output_file);
 			return ERROR_MALLOC;
 		}
-	} while (bytes_read == BUFSIZE);
+	} while (bytes_read == BUFSIZE && loop_running);
 	free(input_buf);
 #ifdef IMPACK_WITH_CRYPTO
 	if (encrypt) {
@@ -282,4 +333,3 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 	return res;
 	
 }
-

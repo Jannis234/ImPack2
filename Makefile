@@ -14,7 +14,7 @@
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
 #IMPACK_VERSION = 1.0
-IMPACK_VERSION = git-$(shell git rev-parse HEAD)
+IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
 
 include config_system.mak
 

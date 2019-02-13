@@ -42,9 +42,9 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 			*pixeldata_size += PIXELBUF_STEP;
 		}
 
-		if (((*pixeldata_pos % 3 == 0) && (channels & IMPACK_CHANNEL_RED)) || \
-			((*pixeldata_pos % 3 == 1) && (channels & IMPACK_CHANNEL_GREEN)) || \
-			((*pixeldata_pos % 3 == 2) && (channels & IMPACK_CHANNEL_BLUE))) { // Current channel enabled
+		if (((*pixeldata_pos % 3 == 0) && (channels & CHANNEL_RED)) || \
+			((*pixeldata_pos % 3 == 1) && (channels & CHANNEL_GREEN)) || \
+			((*pixeldata_pos % 3 == 2) && (channels & CHANNEL_BLUE))) { // Current channel enabled
 			(*pixeldata)[*pixeldata_pos] = *data;
 			data++;
 			len--;
@@ -128,7 +128,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 	uint64_t pixeldata_size = PIXELBUF_STEP;
 	uint64_t pixeldata_pos = 3;
 
-	uint8_t channels = IMPACK_CHANNEL_RED | IMPACK_CHANNEL_GREEN | IMPACK_CHANNEL_BLUE; // TODO: Allow selecting channels
+	uint8_t channels = CHANNEL_RED | CHANNEL_GREEN | CHANNEL_BLUE; // TODO: Allow selecting channels
 	pixeldata[0] = 0xFF;
 	pixeldata[1] = 0xFF;
 	pixeldata[2] = 0xFF;
@@ -258,7 +258,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 			while (true) {
 				if (file_read_done) {
 					uint64_t flushlen;
-					if (impack_compress_flush(&compress_state, input_buf, &flushlen) == COMPRESSION_FINAL) {
+					if (impack_compress_flush(&compress_state, input_buf, &flushlen) == COMPRESSION_RES_FINAL) {
 						bytes_read = flushlen;
 						loop_running = false;
 						break;
@@ -268,7 +268,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 					}
 				} else {
 					uint64_t dummy;
-					if (impack_compress_read(&compress_state, input_buf, &dummy) == COMPRESSION_AGAIN) {
+					if (impack_compress_read(&compress_state, input_buf, &dummy) == COMPRESSION_RES_AGAIN) {
 						bytes_read = fread(input_buf, 1, BUFSIZE, input_file);
 						impack_compress_write(&compress_state, input_buf, bytes_read);
 						if (bytes_read != BUFSIZE) {

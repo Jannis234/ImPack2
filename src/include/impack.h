@@ -53,9 +53,11 @@ typedef enum {
 	COMPRESSION_ZLIB = 1
 } impack_compression_type_t;
 
-#define IMPACK_CHANNEL_RED 1
-#define IMPACK_CHANNEL_GREEN 2
-#define IMPACK_CHANNEL_BLUE 4
+typedef enum {
+	CHANNEL_RED = 1,
+	CHANNEL_GREEN = 2,
+	CHANNEL_BLUE = 4
+} impack_channel_t;
 
 typedef struct {
 	uint8_t *pixeldata;

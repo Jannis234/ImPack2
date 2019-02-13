@@ -29,10 +29,10 @@
 #define IMPACK_MAGIC_NUMBER_LEN 4
 
 typedef enum {
-	COMPRESSION_OK, // Success, data written to buffer
-	COMPRESSION_AGAIN, // Buffer not full, need to refill input
-	COMPRESSION_FINAL, // Compressed data ended
-	COMPRESSION_ERROR
+	COMPRESSION_RES_OK, // Success, data written to buffer
+	COMPRESSION_RES_AGAIN, // Buffer not full, need to refill input
+	COMPRESSION_RES_FINAL, // Compressed data ended
+	COMPRESSION_RES_ERROR
 } impack_compression_result_t;
 
 typedef struct {

@@ -35,9 +35,9 @@ bool pixelbuf_read(impack_decode_state_t *state, uint8_t *buf, uint64_t len) {
 		if (state->pixeldata_pos == state->pixeldata_size) {
 			return false;
 		}
-		if (((state->pixeldata_pos % 3) == 0 && (state->channels & IMPACK_CHANNEL_RED)) || \
-			(((state->pixeldata_pos % 3) == 1) && (state->channels & IMPACK_CHANNEL_GREEN)) || \
-			(((state->pixeldata_pos % 3) == 2) && (state->channels & IMPACK_CHANNEL_BLUE))) {
+		if (((state->pixeldata_pos % 3) == 0 && (state->channels & CHANNEL_RED)) || \
+			(((state->pixeldata_pos % 3) == 1) && (state->channels & CHANNEL_GREEN)) || \
+			(((state->pixeldata_pos % 3) == 2) && (state->channels & CHANNEL_BLUE))) {
 			*buf = (state->pixeldata)[state->pixeldata_pos];
 			buf++;
 			len--;
@@ -81,16 +81,16 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 	}
 	state->channels = 0;
 	if (state->pixeldata[0] == 255) {
-		state->channels |= IMPACK_CHANNEL_RED;
+		state->channels |= CHANNEL_RED;
 	}
 	if (state->pixeldata[1] == 255) {
-		state->channels |= IMPACK_CHANNEL_GREEN;
+		state->channels |= CHANNEL_GREEN;
 	}
 	if (state->pixeldata[2] == 255) {
-		state->channels |= IMPACK_CHANNEL_BLUE;
+		state->channels |= CHANNEL_BLUE;
 	}
 	if (state->pixeldata[0] == 0 && state->pixeldata[1] == 0 && state->pixeldata[2] == 0) {
-		state->channels = IMPACK_CHANNEL_RED; // Can use any channel on a grayscale image
+		state->channels = CHANNEL_RED; // Can use any channel on a grayscale image
 	}
 	if (state->channels == 0) {
 		free(state->pixeldata);
@@ -280,7 +280,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					return ERROR_MALLOC;
 				}
 				strcpy(newname, output_path);
-				newname[output_path_length] = '/';
+				newname[output_path_length] = '/'; // This should also work on windows
 				strncpy(newname + output_path_length + 1, state->filename, state->filename_length);
 				newname[output_path_length + state->filename_length + 1] = 0;
 				output_file = fopen(newname, "wb");
@@ -371,7 +371,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 			while (true) {
 				uint64_t lenout;
 				impack_compression_result_t res = impack_compress_read(&decompress_state, buf, &lenout);
-				if (res == COMPRESSION_ERROR) {
+				if (res == COMPRESSION_RES_ERROR) {
 #ifdef IMPACK_WITH_CRYPTO
 					if (state->encryption != 0) {
 						impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
@@ -382,7 +382,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					free(buf);
 					fclose(output_file);
 					return ERROR_INPUT_IMG_INVALID;
-				} else if (res == COMPRESSION_AGAIN) {
+				} else if (res == COMPRESSION_RES_AGAIN) {
 					if (!pixelbuf_read(state, buf, remaining)) {
 #ifdef IMPACK_WITH_CRYPTO
 						if (state->encryption != 0) {
@@ -399,7 +399,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					impack_crc(&crc, buf, remaining);
 					state->data_length -= remaining;
 				} else {
-					if (res == COMPRESSION_FINAL) {
+					if (res == COMPRESSION_RES_FINAL) {
 						loop_running = false;
 						if (state->data_length != 0) {
 #ifdef IMPACK_WITH_CRYPTO

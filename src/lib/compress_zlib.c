@@ -92,7 +92,7 @@ impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *s
 	}
 	
 	if (res != Z_OK && res != Z_STREAM_END && res != Z_BUF_ERROR) {
-		return COMPRESSION_ERROR;
+		return COMPRESSION_RES_ERROR;
 	}
 	if (strm->avail_out == 0 || res == Z_STREAM_END) {
 		memcpy(buf, state->output_buf, state->bufsize - strm->avail_out);
@@ -100,12 +100,12 @@ impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *s
 		strm->next_out = state->output_buf;
 		strm->avail_out = state->bufsize;
 		if (res == Z_STREAM_END) {
-			return COMPRESSION_FINAL;
+			return COMPRESSION_RES_FINAL;
 		} else {
-			return COMPRESSION_OK;
+			return COMPRESSION_RES_OK;
 		}
 	} else {
-		return COMPRESSION_AGAIN;
+		return COMPRESSION_RES_AGAIN;
 	}
 	
 }
@@ -126,12 +126,12 @@ impack_compression_result_t impack_compress_flush_zlib(impack_compress_state_t *
 	if (res == Z_STREAM_END) {
 		memcpy(buf, state->output_buf, state->bufsize - strm->avail_out);
 		*lenout = state->bufsize - strm->avail_out;
-		return COMPRESSION_FINAL;
+		return COMPRESSION_RES_FINAL;
 	} else {
 		memcpy(buf, state->output_buf, state->bufsize);
 		strm->next_out = state->output_buf;
 		strm->avail_out = state->bufsize;
-		return COMPRESSION_AGAIN;
+		return COMPRESSION_RES_AGAIN;
 	}
 	
 }

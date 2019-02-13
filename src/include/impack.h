@@ -42,7 +42,10 @@ typedef enum {
 	ERROR_CRC, // CRC mismatch after decoding
 	ERROR_RANDOM, // Can't get random data for encryption
 	ERROR_ENCRYPTION_UNAVAILABLE, // Image encrypted, but encryption not compiled in
-	ERROR_ENCRYPTION_UNKNOWN // Unknown encryption algorithm
+	ERROR_ENCRYPTION_UNKNOWN, // Unknown encryption algorithm
+	ERROR_COMPRESSION_UNAVAILABLE, // Compression not compiled in at all
+	ERROR_COMPRESSION_UNSUPPORTED, // Required compression algorithm not compiled in
+	ERROR_COMPRESSION_UNKNOWN // Unknown compression algorithm
 } impack_error_t;
 
 typedef enum {

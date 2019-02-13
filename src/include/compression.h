@@ -22,7 +22,7 @@
 
 bool impack_compress_init_zlib(impack_compress_state_t *state);
 void impack_compress_free_zlib(impack_compress_state_t *state);
-impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *state, uint8_t *buf);
+impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 void impack_compress_write_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t len);
 impack_compression_result_t impack_compress_flush_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 

@@ -119,6 +119,7 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 	}
 	state->encryption = flags[1];
 	state->compression = flags[2];
+	
 #ifdef IMPACK_WITH_CRYPTO
 	if (flags[1] > 1) {
 		return ERROR_ENCRYPTION_UNKNOWN;
@@ -128,8 +129,24 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 		return ERROR_ENCRYPTION_UNAVAILABLE;
 	}
 #endif
-	// TODO: Check compression flag
-
+	
+	if (flags[2] > COMPRESSION_NONE) {
+#ifdef IMPACK_WITH_COMPRESSION
+		switch (flags[2]) {
+			case COMPRESSION_ZLIB:
+#ifdef IMPACK_WITH_ZLIB
+				break;
+#else
+				return ERROR_COMPRESSION_UNSUPPORTED;
+#endif
+			default:
+				return ERROR_COMPRESSION_UNKNOWN;
+		}
+#else
+		return ERROR_COMPRESSION_UNAVAILABLE;
+#endif
+	}
+	
 	return ERROR_OK;
 	
 }
@@ -311,10 +328,30 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 		impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
 	}
 #endif
-
+	
+#ifdef IMPACK_WITH_COMPRESSION
+	impack_compress_state_t decompress_state;
+	if (state->compression != COMPRESSION_NONE) {
+		decompress_state.type = state->compression;
+		decompress_state.is_compress = false;
+		decompress_state.bufsize = BUFSIZE;
+		if (!impack_compress_init(&decompress_state)) {
+#ifdef IMPACK_WITH_CRYPTO
+			if (state->encryption != 0) {
+				impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+			}
+#endif
+			free(state->pixeldata);
+			fclose(output_file);
+			return ERROR_MALLOC;
+		}
+	}
+#endif
+	
 	impack_crc_init();
 	uint64_t crc = 0;
-	while (state->data_length > 0) {
+	bool loop_running = true;
+	while (state->data_length > 0 || loop_running) {
 		uint64_t remaining = BUFSIZE;
 		if (state->data_length < remaining) {
 			remaining = state->data_length;
@@ -328,28 +365,93 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 			}
 		}
 #endif
-		if (!pixelbuf_read(state, buf, remaining)) {
+		
+#ifdef IMPACK_WITH_COMPRESSION
+		if (state->compression != COMPRESSION_NONE) {
+			while (true) {
+				uint64_t lenout;
+				impack_compression_result_t res = impack_compress_read(&decompress_state, buf, &lenout);
+				if (res == COMPRESSION_ERROR) {
+#ifdef IMPACK_WITH_CRYPTO
+					if (state->encryption != 0) {
+						impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+					}
+#endif
+					impack_compress_free(&decompress_state);
+					free(state->pixeldata);
+					free(buf);
+					fclose(output_file);
+					return ERROR_INPUT_IMG_INVALID;
+				} else if (res == COMPRESSION_AGAIN) {
+					if (!pixelbuf_read(state, buf, remaining)) {
+#ifdef IMPACK_WITH_CRYPTO
+						if (state->encryption != 0) {
+							impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+						}
+#endif
+						impack_compress_free(&decompress_state);
+						free(state->pixeldata);
+						free(buf);
+						fclose(output_file);
+						return ERROR_INPUT_IMG_INVALID;
+					}
+					impack_compress_write(&decompress_state, buf, remaining);
+					impack_crc(&crc, buf, remaining);
+					state->data_length -= remaining;
+				} else {
+					if (res == COMPRESSION_FINAL) {
+						loop_running = false;
+						if (state->data_length != 0) {
+#ifdef IMPACK_WITH_CRYPTO
+							if (state->encryption != 0) {
+								impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+							}
+#endif
+							impack_compress_free(&decompress_state);
+							free(state->pixeldata);
+							free(buf);
+							fclose(output_file);
+							return ERROR_INPUT_IMG_INVALID;
+						}
+					}
+					remaining = lenout;
+					break;
+				}
+			}
+		} else {
+#endif
+			if (!pixelbuf_read(state, buf, remaining)) {
+#ifdef IMPACK_WITH_CRYPTO
+				if (state->encryption != 0) {
+					impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+				}
+#endif
+				free(state->pixeldata);
+				free(buf);
+				fclose(output_file);
+				return ERROR_INPUT_IMG_INVALID;
+			}
+#ifdef IMPACK_WITH_CRYPTO
+			if (state->encryption != 0) {
+				CBC_DECRYPT(&decrypt_ctx, aes256_decrypt, remaining, buf, buf);
+				remaining -= padding; // Don't write padding into the output file
+			}
+#endif
+			impack_crc(&crc, buf, remaining);
+			state->data_length -= remaining;
+#ifdef IMPACK_WITH_COMPRESSION
+		}
+#endif
+		
+		if (fwrite(buf, 1, remaining, output_file) != remaining) {
 #ifdef IMPACK_WITH_CRYPTO
 			if (state->encryption != 0) {
 				impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
 			}
 #endif
-			free(state->pixeldata);
-			free(buf);
-			fclose(output_file);
-			return ERROR_INPUT_IMG_INVALID;
-		}
-#ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != 0) {
-			CBC_DECRYPT(&decrypt_ctx, aes256_decrypt, remaining, buf, buf);
-			remaining -= padding; // Don't write padding into the output file
-		}
-#endif
-		// TODO: Decompress
-		if (fwrite(buf, 1, remaining, output_file) != remaining) {
-#ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
-				impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+#ifdef IMPACK_WITH_COMPRESSION
+			if (state->compression != COMPRESSION_NONE) {
+				impack_compress_free(&decompress_state);
 			}
 #endif
 			free(state->pixeldata);
@@ -357,13 +459,16 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 			fclose(output_file);
 			return ERROR_OUTPUT_IO;
 		}
-		impack_crc(&crc, buf, remaining);
-		state->data_length -= remaining;
 	}
 
 #ifdef IMPACK_WITH_CRYPTO
 	if (state->encryption != 0) {
 		impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+	}
+#endif
+#ifdef IMPACK_WITH_COMPRESSION
+	if (state->compression != COMPRESSION_NONE) {
+		impack_compress_free(&decompress_state);
 	}
 #endif
 	fclose(output_file);

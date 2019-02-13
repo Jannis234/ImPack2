@@ -139,7 +139,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &format_version, 1);
 	uint8_t encryption_flag = (encrypt ? 1 : 0);
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &encryption_flag, 1);
-	uint8_t compression_flag = 0; // TODO: Compression
+	uint8_t compression_flag = compress;
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &compression_flag, 1);
 	uint64_t length_offset = pixeldata_pos;
 	for (int i = 0; i < 8; i++) { // Add a dummy value that will be replaced when the length is known
@@ -227,20 +227,22 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 	
 #ifdef IMPACK_WITH_COMPRESSION
 	impack_compress_state_t compress_state;
-	compress_state.type = compress;
-	compress_state.is_compress = true;
-	compress_state.bufsize = BUFSIZE;
-	if (!impack_compress_init(&compress_state)) {
+	if (compress != COMPRESSION_NONE) {
+		compress_state.type = compress;
+		compress_state.is_compress = true;
+		compress_state.bufsize = BUFSIZE;
+		if (!impack_compress_init(&compress_state)) {
 #ifdef IMPACK_WITH_CRYPTO
-		if (encrypt) {
-			impack_secure_erase((uint8_t*) &encrypt_ctx.ctx, sizeof(struct aes256_ctx));
-		}
+			if (encrypt) {
+				impack_secure_erase((uint8_t*) &encrypt_ctx.ctx, sizeof(struct aes256_ctx));
+			}
 #endif
-		free(pixeldata);
-		free(input_buf);
-		fclose(input_file);
-		fclose(output_file);
-		return ERROR_MALLOC;
+			free(pixeldata);
+			free(input_buf);
+			fclose(input_file);
+			fclose(output_file);
+			return ERROR_MALLOC;
+		}
 	}
 	bool file_read_done = false;
 #endif
@@ -265,7 +267,8 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 						break;
 					}
 				} else {
-					if (impack_compress_read(&compress_state, input_buf) == COMPRESSION_AGAIN) {
+					uint64_t dummy;
+					if (impack_compress_read(&compress_state, input_buf, &dummy) == COMPRESSION_AGAIN) {
 						bytes_read = fread(input_buf, 1, BUFSIZE, input_file);
 						impack_compress_write(&compress_state, input_buf, bytes_read);
 						if (bytes_read != BUFSIZE) {

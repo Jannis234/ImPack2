@@ -65,7 +65,7 @@ void impack_secure_erase(uint8_t *buf, size_t len);
 void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
 bool impack_compress_init(impack_compress_state_t *state);
 void impack_compress_free(impack_compress_state_t *state);
-impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf);
+impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 void impack_compress_write(impack_compress_state_t *state, uint8_t *buf, uint64_t len);
 impack_compression_result_t impack_compress_flush(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 

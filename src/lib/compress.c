@@ -50,12 +50,12 @@ void impack_compress_free(impack_compress_state_t *state) {
 	
 }
 
-impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf) {
+impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout) {
 	
 	switch (state->type) {
 #ifdef IMPACK_WITH_ZLIB
 		case COMPRESSION_ZLIB:
-			return impack_compress_read_zlib(state, buf);
+			return impack_compress_read_zlib(state, buf, lenout);
 #endif
 		default:
 			abort();

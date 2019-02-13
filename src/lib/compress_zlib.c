@@ -81,7 +81,7 @@ void impack_compress_free_zlib(impack_compress_state_t *state) {
 	
 }
 
-impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *state, uint8_t *buf) {
+impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout) {
 	
 	z_stream *strm = (z_stream*) state->lib_object;
 	int res;
@@ -94,8 +94,9 @@ impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *s
 	if (res != Z_OK && res != Z_STREAM_END && res != Z_BUF_ERROR) {
 		return COMPRESSION_ERROR;
 	}
-	if (strm->avail_out == 0) {
-		memcpy(buf, state->output_buf, state->bufsize);
+	if (strm->avail_out == 0 || res == Z_STREAM_END) {
+		memcpy(buf, state->output_buf, state->bufsize - strm->avail_out);
+		*lenout = state->bufsize - strm->avail_out;
 		strm->next_out = state->output_buf;
 		strm->avail_out = state->bufsize;
 		if (res == Z_STREAM_END) {

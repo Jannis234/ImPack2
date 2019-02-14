@@ -20,7 +20,9 @@ include config_system.mak
 
 CFLAGS += -Wall -std=c99 -Isrc/include
 
-CLI_SRC = src/cli/main.c
+CLI_SRC = src/cli/main.c \
+	src/cli/argparse.c \
+	src/cli/help.c
 LIB_SRC = src/lib/encode.c \
 	src/lib/decode.c \
 	src/lib/filename.c \

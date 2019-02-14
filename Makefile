@@ -22,7 +22,8 @@ CFLAGS += -Wall -std=c99 -Isrc/include
 
 CLI_SRC = src/cli/main.c \
 	src/cli/argparse.c \
-	src/cli/help.c
+	src/cli/help.c \
+	src/cli/error.c
 LIB_SRC = src/lib/encode.c \
 	src/lib/decode.c \
 	src/lib/filename.c \

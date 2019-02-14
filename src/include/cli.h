@@ -16,6 +16,8 @@
 #ifndef __IMPACK_CLI_H__
 #define __IMPACK_CLI_H__
 
+#include "impack.h"
+
 typedef enum {
 	RETURN_OK = 0,
 	RETURN_USER_ERROR = 1, // User's fault (invalid CLI options, file not found, etc.)
@@ -35,5 +37,6 @@ typedef struct {
 bool impack_argparse(impack_argparse_t *options, int options_count, char **argv, int argc);
 void impack_print_help();
 void impack_print_version();
+int impack_print_error(impack_error_t error);
 
 #endif

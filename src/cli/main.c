@@ -15,7 +15,6 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "impack.h"
 #include "cli.h"
 #include "config.h"
@@ -61,54 +60,26 @@ int main(int argc, char **argv) {
 	
 	if (options[2].found) {
 		impack_error_t res = impack_encode(options[4].arg_out, options[5].arg_out, false, NULL, COMPRESSION_NONE);
-		switch (res) {
-			case ERROR_OK:
-				return RETURN_OK;
-			case ERROR_INPUT_NOT_FOUND:
-				fprintf(stderr, "Can not read input file: No such file or directory\n");
-				return RETURN_USER_ERROR;
-			case ERROR_INPUT_PERMISSION:
-				fprintf(stderr, "Can not read input file: Permission denied\n");
-				return RETURN_SYSTEM_ERROR;
-			case ERROR_INPUT_DIRECTORY:
-				fprintf(stderr, "Can not read input file: Path is a directory\n");
-				return RETURN_USER_ERROR;
-			case ERROR_INPUT_IO:
-				fprintf(stderr, "Can not read input file: I/O error\n");
-				return RETURN_SYSTEM_ERROR;
-			case ERROR_OUTPUT_NOT_FOUND:
-				fprintf(stderr, "Can not write output file: No such directory\n");
-				return RETURN_USER_ERROR;
-			case ERROR_OUTPUT_PERMISSION:
-				fprintf(stderr, "Can not write output file: Permission denied\n");
-				return RETURN_SYSTEM_ERROR;
-			case ERROR_OUTPUT_DIRECTORY:
-				fprintf(stderr, "Can not write output file: Path is a directory\n");
-				return RETURN_USER_ERROR;
-			case ERROR_OUTPUT_IO:
-				fprintf(stderr, "Can not write output file: I/O error\n");
-				return RETURN_SYSTEM_ERROR;
-			case ERROR_MALLOC:
-				fprintf(stderr, "Out of memory\n");
-				return RETURN_SYSTEM_ERROR;
-			case ERROR_RANDOM:
-				fprintf(stderr, "Can not gather random data for encryption\n");
-				return RETURN_SYSTEM_ERROR;
-			case ERROR_IMG_SIZE:
-			case ERROR_IMG_FORMAT_UNSUPPORTED:
-			case ERROR_IMG_FORMAT_UNKNOWN:
-			case ERROR_INPUT_IMG_INVALID:
-			case ERROR_INPUT_IMG_VERSION:
-			case ERROR_CRC:
-			case ERROR_ENCRYPTION_UNAVAILABLE:
-			case ERROR_ENCRYPTION_UNKNOWN:
-			case ERROR_COMPRESSION_UNAVAILABLE:
-			case ERROR_COMPRESSION_UNSUPPORTED:
-			case ERROR_COMPRESSION_UNKNOWN:
-				abort(); // These should never be returned by impack_encode()
-		}
+		return impack_print_error(res);
 	} else {
-		return 0; // TODO
+		impack_decode_state_t state;
+		impack_error_t res = impack_decode_stage1(&state, options[4].arg_out);
+		if (res != ERROR_OK) {
+			return impack_print_error(res);
+		}
+		if (state.encryption != 0) {
+			return -1; // TODO
+		}
+		res = impack_decode_stage2(&state, NULL);
+		if (res != ERROR_OK) {
+			return impack_print_error(res);
+		}
+		char *out_path = ".";
+		if (options[5].arg_out != NULL) {
+			out_path = options[5].arg_out;
+		}
+		res = impack_decode_stage3(&state, out_path);
+		return impack_print_error(res);
 	}
 	
 }

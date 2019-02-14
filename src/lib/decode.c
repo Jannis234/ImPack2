@@ -350,8 +350,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 	
 	impack_crc_init();
 	uint64_t crc = 0;
-	bool loop_running = true;
-	while (state->data_length > 0 || loop_running) {
+	while (state->data_length > 0) {
 		uint64_t remaining = BUFSIZE;
 		if (state->data_length < remaining) {
 			remaining = state->data_length;
@@ -400,7 +399,6 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					state->data_length -= remaining;
 				} else {
 					if (res == COMPRESSION_RES_FINAL) {
-						loop_running = false;
 						if (state->data_length != 0) {
 #ifdef IMPACK_WITH_CRYPTO
 							if (state->encryption != 0) {

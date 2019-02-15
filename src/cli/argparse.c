@@ -14,12 +14,14 @@
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "cli.h"
 
-bool impack_argparse(impack_argparse_t *options, int options_count, char **argv, int argc) {
+bool impack_argparse(impack_argparse_t *options, size_t options_count, char **argv, int argc) {
 	
 	for (int i = 1; i < argc; i++) {
 		if (strlen(argv[i]) > 2 && argv[i][0] == '-' && argv[i][1] == '-') {
@@ -76,5 +78,24 @@ bool impack_argparse(impack_argparse_t *options, int options_count, char **argv,
 		}
 	}
 	return true;
+	
+}
+
+int impack_find_option(impack_argparse_t *options, size_t options_count, bool name_long, char *name) {
+	
+	for (int i = 0; i < options_count; i++) {
+		if (name_long) {
+			if (options[i].name_long != NULL) {
+				if (strcmp(options[i].name_long, name) == 0) {
+					return i;
+				}
+			}
+		} else {
+			if (options[i].name_short == name[0]) {
+				return i;
+			}
+		}
+	}
+	abort(); // Searching for a non-existing option
 	
 }

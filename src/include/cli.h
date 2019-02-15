@@ -16,6 +16,7 @@
 #ifndef __IMPACK_CLI_H__
 #define __IMPACK_CLI_H__
 
+#include <stddef.h>
 #include "impack.h"
 
 typedef enum {
@@ -34,9 +35,13 @@ typedef struct {
 } impack_argparse_t;
 
 // Somewhat similar to getopt_long
-bool impack_argparse(impack_argparse_t *options, int options_count, char **argv, int argc);
+bool impack_argparse(impack_argparse_t *options, size_t options_count, char **argv, int argc);
+// Find an option by name and return its index
+int impack_find_option(impack_argparse_t options[], size_t options_count, bool name_long, char *name);
 void impack_print_help();
 void impack_print_version();
 int impack_print_error(impack_error_t error);
+// Read a passphrase from the terminal (or stdin, if ncurses is disabled)
+char* impack_readpass();
 
 #endif

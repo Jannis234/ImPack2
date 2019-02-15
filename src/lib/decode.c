@@ -14,6 +14,7 @@
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
 #include "config.h"
+#include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -215,7 +216,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 			free(state->pixeldata);
 			return ERROR_INPUT_IMG_INVALID;
 		}
-
+		
 		impack_derive_key(passphrase, state->aes_key, AES256_KEY_SIZE, decrypt_ctx.iv, AES_BLOCK_SIZE);
 		impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 		aes256_set_decrypt_key(&decrypt_ctx.ctx, state->aes_key);
@@ -253,7 +254,21 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 		impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
 	}
 #endif
-
+	
+	for (uint32_t i = 0; i < state->filename_length; i++) {
+		if (!isprint(state->filename[i])) { // Search for non-printable characters in the filename
+#ifdef IMPACK_WITH_CRYPTO
+			if (state->encryption != 0) {
+				impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
+				impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+			}
+#endif
+			free(state->pixeldata);
+			free(state->filename);
+			return ERROR_INPUT_IMG_INVALID;
+		}
+	}
+	
 	return ERROR_OK;
 
 }

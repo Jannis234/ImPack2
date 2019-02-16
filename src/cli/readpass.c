@@ -49,18 +49,20 @@ char* impack_readpass() {
 		if (fread(&c, 1, 1, stdin) != 1) {
 			return NULL;
 		}
-		res[res_pos] = c;
-		res_pos++;
-		if (res_pos == res_size) {
-			char *res_new = realloc(res, res_size + BUFSTEP);
-			if (res_new == NULL) {
-				free(res);
-				return NULL;
+		if (c != '\r') { // For windows-style \r\n linebreaks
+			res[res_pos] = c;
+			res_pos++;
+			if (res_pos == res_size) {
+				char *res_new = realloc(res, res_size + BUFSTEP);
+				if (res_new == NULL) {
+					free(res);
+					return NULL;
+				}
+				res = res_new;
+				res_size += BUFSTEP;
 			}
-			res = res_new;
-			res_size += BUFSTEP;
 		}
-	} while (c != '\n' && c != '\r');
+	} while (c != '\n');
 	res[res_pos - 1] = 0; // Replaces the newline
 #ifndef IMPACK_WINDOWS
 	if (silence_success) {

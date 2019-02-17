@@ -144,6 +144,10 @@ int main(int argc, char **argv) {
 		{ "passphrase", 'p', true, false, NULL },
 		{ "passphrase-file", 0, true, false, NULL },
 #endif
+#ifdef IMPACK_WITH_COMPRESSION
+		{ "compress", 'z', false, false, NULL },
+		{ "compression-type", 0, true, false, NULL },
+#endif
 	};
 	size_t options_count = sizeof(options) / sizeof(impack_argparse_t);
 	if (!impack_argparse(options, options_count, argv, argc)) {
@@ -172,6 +176,10 @@ int main(int argc, char **argv) {
 #ifdef IMPACK_WITH_CRYPTO
 	int option_encrypt = impack_find_option(options, options_count, false, "c");
 #endif
+#ifdef IMPACK_WITH_COMPRESSION
+	int option_compress = impack_find_option(options, options_count, false, "z");
+	int option_compression_type = impack_find_option(options, options_count, true, "compression-type");
+#endif
 	
 	if (options[option_encode].found && options[option_decode].found) {
 		fprintf(stderr, "You can only select one of encode or decode at the same time\n");
@@ -196,6 +204,12 @@ int main(int argc, char **argv) {
 			return RETURN_USER_ERROR;
 		}
 #endif
+#ifdef IMPACK_WITH_COMPRESSION
+		if (options[option_compress].found || options[option_compression_type].found) {
+			fprintf(stderr, "Can not request compression when decoding\n");
+			return RETURN_USER_ERROR;
+		}
+#endif
 		if (options[option_channel_red].found || options[option_channel_green].found || options[option_channel_blue].found || options[option_grayscale].found) {
 			fprintf(stderr, "Can not select color channels when decoding\n");
 			return RETURN_USER_ERROR;
@@ -209,6 +223,12 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Can not select color channels in grayscale mode\n");
 		return RETURN_USER_ERROR;
 	}
+#ifdef IMPACK_WITH_COMPRESSION
+	if (!options[option_compress].found && options[option_compression_type].found) {
+		fprintf(stderr, "Can not select the compression type when compression is disabled\n");
+		return RETURN_USER_ERROR;
+	}
+#endif
 	
 #ifdef IMPACK_WITH_CRYPTO
 	int option_passphrase = impack_find_option(options, options_count, false, "p");
@@ -233,6 +253,33 @@ int main(int argc, char **argv) {
 				return RETURN_USER_ERROR;
 			}
 		}
+		
+		uint8_t compression = COMPRESSION_NONE;
+		if (options[option_compress].found) {
+			if (options[option_compression_type].found) {
+				char *type = options[option_compression_type].arg_out;
+#ifdef IMPACK_WITH_ZLIB
+				if (strlen(type) == 7) {
+					if ((type[0] == 'D' || type[0] == 'd') && \
+						(type[1] == 'E' || type[1] == 'e') && \
+						(type[2] == 'F' || type[2] == 'f') && \
+						(type[3] == 'L' || type[3] == 'l') && \
+						(type[4] == 'A' || type[4] == 'a') && \
+						(type[5] == 'T' || type[5] == 't') && \
+						(type[6] == 'E' || type[6] == 'e')) {
+						compression = COMPRESSION_ZLIB;
+					}
+				}
+#endif
+				if (compression == COMPRESSION_NONE) { 
+					fprintf(stderr, "Unknown compression type\n");
+					return RETURN_USER_ERROR;
+				}
+			} else {
+				compression = COMPRESSION_ZLIB;
+			}
+		}
+		
 		bool encrypt = false;
 		char *passphrase = NULL;
 #ifdef IMPACK_WITH_CRYPTO
@@ -266,7 +313,7 @@ int main(int argc, char **argv) {
 		if (channels == 0 && !options[option_grayscale].found) {
 			channels = CHANNEL_RED | CHANNEL_GREEN | CHANNEL_BLUE;
 		}
-		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, COMPRESSION_NONE, channels, width, height);
+		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, compression, channels, width, height);
 #ifdef IMPACK_WITH_CRYPTO
 		free(passphrase);
 #endif

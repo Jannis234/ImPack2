@@ -27,6 +27,8 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 	uint64_t width = img_width;
 	uint64_t height = img_height;
 	if (width == 0 && height == 0) { // Auto-select image size, should result in a nearly-square image
+		width = 1;
+		height = 1;
 		while ((width * height * 3) < pixeldata_pos) {
 			width *= 2;
 			height *= 2;

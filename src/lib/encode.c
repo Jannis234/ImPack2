@@ -31,9 +31,9 @@
 #define PIXELBUF_STEP 1048576 // 1 MiB
 
 bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixeldata_pos, uint8_t channels, uint8_t *data, uint64_t len) {
-
+	
 	while (len > 0) {
-		if (*pixeldata_pos == *pixeldata_size) {
+		if (*pixeldata_pos >= *pixeldata_size - 3) { // Keep space for one full pixel
 			uint8_t *newbuf = realloc(*pixeldata, *pixeldata_size + PIXELBUF_STEP);
 			if (newbuf == NULL) {
 				return false;
@@ -41,21 +41,30 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 			*pixeldata = newbuf;
 			*pixeldata_size += PIXELBUF_STEP;
 		}
-
-		if (((*pixeldata_pos % 3 == 0) && (channels & CHANNEL_RED)) || \
-			((*pixeldata_pos % 3 == 1) && (channels & CHANNEL_GREEN)) || \
-			((*pixeldata_pos % 3 == 2) && (channels & CHANNEL_BLUE))) { // Current channel enabled
+		
+		if (channels != 0) {
+			if (((*pixeldata_pos % 3 == 0) && (channels & CHANNEL_RED)) || \
+				((*pixeldata_pos % 3 == 1) && (channels & CHANNEL_GREEN)) || \
+				((*pixeldata_pos % 3 == 2) && (channels & CHANNEL_BLUE))) { // Current channel enabled
+				(*pixeldata)[*pixeldata_pos] = *data;
+				data++;
+				len--;
+			}
+			(*pixeldata_pos)++;
+		} else { // Grayscale mode
 			(*pixeldata)[*pixeldata_pos] = *data;
+			(*pixeldata)[*pixeldata_pos + 1] = *data;
+			(*pixeldata)[*pixeldata_pos + 2] = *data;
 			data++;
 			len--;
+			(*pixeldata_pos) += 3;
 		}
-		(*pixeldata_pos)++;
 	}
 	return true;
 	
 }
 
-impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress) {
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, uint8_t channels) {
 	
 	FILE *input_file, *output_file;
 	if (strlen(input_path) == 1 && input_path[0] == '-') {
@@ -127,12 +136,11 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 	}
 	uint64_t pixeldata_size = PIXELBUF_STEP;
 	uint64_t pixeldata_pos = 3;
-
-	uint8_t channels = CHANNEL_RED | CHANNEL_GREEN | CHANNEL_BLUE; // TODO: Allow selecting channels
-	pixeldata[0] = 0xFF;
-	pixeldata[1] = 0xFF;
-	pixeldata[2] = 0xFF;
-
+	
+	pixeldata[0] = ((channels & CHANNEL_RED) != 0) ? 255 : 0;
+	pixeldata[1] = ((channels & CHANNEL_GREEN) != 0) ? 255 : 0;
+	pixeldata[2] = ((channels & CHANNEL_BLUE) != 0) ? 255 : 0;
+	
 	uint8_t magic[] = IMPACK_MAGIC_NUMBER;
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, magic, IMPACK_MAGIC_NUMBER_LEN); // These will not fail, the buffer is large enough
 	uint8_t format_version = IMPACK_FORMAT_VERSION;
@@ -155,7 +163,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 		uint8_t dummy = 0;
 		pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &dummy, 1);
 	}
-
+	
 #ifdef IMPACK_WITH_CRYPTO
 	struct CBC_CTX(struct aes256_ctx, AES_BLOCK_SIZE) encrypt_ctx;
 	if (encrypt) {

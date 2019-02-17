@@ -76,7 +76,7 @@ typedef struct {
 	char *filename;
 } impack_decode_state_t;
 
-impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress);
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, uint8_t channels);
 // Decode stage 1: Load the image and check if the content is encrypted (may ask for the passphrase after this)
 impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_path);
 // Decode stage 2: Extract the included filename (select final output path after this)

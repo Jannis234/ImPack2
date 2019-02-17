@@ -133,6 +133,10 @@ int main(int argc, char **argv) {
 		{ "decode", 'd', false, false, NULL },
 		{ "input", 'i', true, false, NULL },
 		{ "output", 'o', true, false, NULL },
+		{ "channel-red", 0, false, false, NULL },
+		{ "channel-green", 0, false, false, NULL },
+		{ "channel-blue", 0, false, false, NULL },
+		{ "grayscale", 0, false, false, NULL },
 #ifdef IMPACK_WITH_CRYPTO
 		{ "encrypt", 'c', false, false, NULL },
 		{ "passphrase", 'p', true, false, NULL },
@@ -156,6 +160,13 @@ int main(int argc, char **argv) {
 	int option_decode = impack_find_option(options, options_count, false, "d");
 	int option_input = impack_find_option(options, options_count, false, "i");
 	int option_output = impack_find_option(options, options_count, false, "o");
+	int option_channel_red = impack_find_option(options, options_count, true, "channel-red");
+	int option_channel_green = impack_find_option(options, options_count, true, "channel-green");
+	int option_channel_blue = impack_find_option(options, options_count, true, "channel-blue");
+	int option_grayscale = impack_find_option(options, options_count, true, "grayscale");
+#ifdef IMPACK_WITH_CRYPTO
+	int option_encrypt = impack_find_option(options, options_count, false, "c");
+#endif
 	if (options[option_encode].found && options[option_decode].found) {
 		fprintf(stderr, "You can only select one of encode or decode at the same time\n");
 		return RETURN_USER_ERROR;
@@ -172,6 +183,22 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "No output file specified\n");
 		return RETURN_USER_ERROR;
 	}
+	if (options[option_decode].found) {
+#ifdef IMPACK_WITH_CRYPTO
+		if (options[option_encrypt].found) {
+			fprintf(stderr, "Can not request encryption when decoding\n");
+			return RETURN_USER_ERROR;
+		}
+#endif
+		if (options[option_channel_red].found || options[option_channel_green].found || options[option_channel_blue].found || options[option_grayscale].found) {
+			fprintf(stderr, "Can not select color channels when decoding\n");
+			return RETURN_USER_ERROR;
+		}
+	}
+	if (options[option_grayscale].found && (options[option_channel_red].found || options[option_channel_green].found || options[option_channel_blue].found)) {
+		fprintf(stderr, "Can not select color channels in grayscale mode\n");
+		return RETURN_USER_ERROR;
+	}
 	
 #ifdef IMPACK_WITH_CRYPTO
 	int option_passphrase = impack_find_option(options, options_count, false, "p");
@@ -181,7 +208,7 @@ int main(int argc, char **argv) {
 		bool encrypt = false;
 		char *passphrase = NULL;
 #ifdef IMPACK_WITH_CRYPTO
-		if (options[impack_find_option(options, options_count, false, "c")].found) {
+		if (options[option_encrypt].found) {
 			encrypt = true;
 			if (options[option_passphrase].found && options[option_passphrase_file].found) {
 				fprintf(stderr, "Multiple sources for a passphrase specified\n");
@@ -198,7 +225,20 @@ int main(int argc, char **argv) {
 			}
 		}
 #endif
-		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, COMPRESSION_NONE);
+		uint8_t channels = 0;
+		if (options[option_channel_red].found) {
+			channels |= CHANNEL_RED;
+		}
+		if (options[option_channel_green].found) {
+			channels |= CHANNEL_GREEN;
+		}
+		if (options[option_channel_blue].found) {
+			channels |= CHANNEL_BLUE;
+		}
+		if (channels == 0 && !options[option_grayscale].found) {
+			channels = CHANNEL_RED | CHANNEL_GREEN | CHANNEL_BLUE;
+		}
+		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, COMPRESSION_NONE, channels);
 #ifdef IMPACK_WITH_CRYPTO
 		free(passphrase);
 #endif

@@ -347,6 +347,11 @@ int main(int argc, char **argv) {
 			out_path = options[option_output].arg_out;
 		}
 		res = impack_decode_stage3(&state, out_path);
+#ifndef IMPACK_WITH_CRYPTO
+		if (res == ERROR_OK && state.legacy) {
+			fprintf(stderr, "Warning: This build of ImPack2 can not check if the data in legacy images is corrupted\n");
+		}
+#endif
 		return impack_print_error(res);
 	}
 	

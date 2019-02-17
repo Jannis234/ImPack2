@@ -24,6 +24,7 @@
 #ifdef IMPACK_WITH_CRYPTO
 #include <nettle/aes.h>
 #include <nettle/cbc.h>
+#include <nettle/sha2.h>
 #endif
 #include "impack.h"
 #include "impack_internal.h"
@@ -444,8 +445,16 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 	}
 #endif
 	
-	impack_crc_init();
+	if (!state->legacy) {
+		impack_crc_init();
+	}
 	uint64_t crc = 0;
+#ifdef IMPACK_WITH_CRYPTO
+	struct sha512_ctx legacy_checksum;
+	if (state->legacy) {
+		sha512_init(&legacy_checksum);
+	}
+#endif
 	bool loop_running = true;
 	while (loop_running) {
 		uint64_t remaining;
@@ -494,12 +503,20 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 #ifdef IMPACK_WITH_CRYPTO
 					if (state->encryption != 0) {
 						CBC_DECRYPT(&decrypt_ctx, aes256_decrypt, remaining, buf, buf);
+						if (state->legacy && remaining == state->data_length) {
+							padding = buf[remaining - 1];
+						}
 						remaining -= padding;
 					}
 #endif
 					impack_compress_write(&decompress_state, buf, remaining);
-					impack_crc(&crc, buf, remaining);
+					if (!state->legacy) {
+						impack_crc(&crc, buf, remaining);
+					}
 					state->data_length -= remaining;
+					if (state->legacy) {
+						state->data_length -= padding;
+					}
 				} else {
 					if (res == COMPRESSION_RES_FINAL) {
 						if (state->data_length != 0) {
@@ -533,10 +550,6 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					padding = AES_BLOCK_SIZE - (remaining % AES_BLOCK_SIZE);
 					remaining += padding;
 				}
-				if (state->legacy && state->data_length == remaining && padding == 0) { // Legacy files may include an extra block of padding
-					state->data_length -= AES_BLOCK_SIZE;
-					remaining -= AES_BLOCK_SIZE;
-				}
 			}
 #endif
 			if (!pixelbuf_read(state, buf, remaining)) {
@@ -553,11 +566,19 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 #ifdef IMPACK_WITH_CRYPTO
 			if (state->encryption != 0) {
 				CBC_DECRYPT(&decrypt_ctx, aes256_decrypt, remaining, buf, buf);
+				if (state->legacy && remaining == state->data_length) {
+					padding = buf[remaining - 1];
+				}
 				remaining -= padding; // Don't write padding into the output file
 			}
 #endif
-			impack_crc(&crc, buf, remaining);
+			if (!state->legacy) {
+				impack_crc(&crc, buf, remaining);
+			}
 			state->data_length -= remaining;
+			if (state->legacy) {
+				state->data_length -= padding;
+			}
 			if (state->data_length == 0) {
 				loop_running = false;
 			}
@@ -565,6 +586,11 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 		}
 #endif
 		
+#ifdef IMPACK_WITH_COMPRESSION
+		if (state->legacy) {
+			sha512_update(&legacy_checksum, remaining, buf);
+		}
+#endif
 		if (fwrite(buf, 1, remaining, output_file) != remaining) {
 #ifdef IMPACK_WITH_CRYPTO
 			if (state->encryption != 0) {
@@ -596,8 +622,18 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 	fclose(output_file);
 	free(buf);
 	free(state->pixeldata);
-	if (crc != state->crc) {
-		return ERROR_CRC;
+	if (!state->legacy) {
+		if (crc != state->crc) {
+			return ERROR_CRC;
+		}
+	} else {
+#ifdef IMPACK_WITH_CRYPTO
+		uint8_t legacy_checksum_res[SHA512_DIGEST_SIZE];
+		sha512_digest(&legacy_checksum, SHA512_DIGEST_SIZE, legacy_checksum_res);
+		if (memcmp(legacy_checksum_res, state->checksum_legacy, SHA512_DIGEST_SIZE) != 0) {
+			return ERROR_CRC;
+		}
+#endif
 	}
 	return ERROR_OK;
 	

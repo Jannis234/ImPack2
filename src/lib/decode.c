@@ -446,25 +446,9 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 	
 	impack_crc_init();
 	uint64_t crc = 0;
-	while (state->data_length > 0) {
-		uint64_t remaining = BUFSIZE;
-		if (state->data_length < remaining) {
-			remaining = state->data_length;
-		}
-#ifdef IMPACK_WITH_CRYPTO
-		uint32_t padding = 0;
-		if (state->encryption != 0) {
-			if (remaining % AES_BLOCK_SIZE != 0) {
-				padding = AES_BLOCK_SIZE - (remaining % AES_BLOCK_SIZE);
-				remaining += padding;
-			}
-			if (state->legacy && state->data_length == remaining && padding == 0) { // Legacy files may include an extra block of padding
-				state->data_length -= AES_BLOCK_SIZE;
-				remaining -= AES_BLOCK_SIZE;
-			}
-		}
-#endif
-		
+	bool loop_running = true;
+	while (loop_running) {
+		uint64_t remaining;
 #ifdef IMPACK_WITH_COMPRESSION
 		if (state->compression != COMPRESSION_NONE) {
 			while (true) {
@@ -482,6 +466,19 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					fclose(output_file);
 					return ERROR_INPUT_IMG_INVALID;
 				} else if (res == COMPRESSION_RES_AGAIN) {
+					remaining = BUFSIZE;
+					if (state->data_length < remaining) {
+						remaining = state->data_length;
+					}
+#ifdef IMPACK_WITH_CRYPTO
+					uint32_t padding = 0;
+					if (state->encryption != 0) {
+						if (remaining % AES_BLOCK_SIZE != 0) {
+							padding = AES_BLOCK_SIZE - (remaining % AES_BLOCK_SIZE);
+							remaining += padding;
+						}
+					}
+#endif
 					if (!pixelbuf_read(state, buf, remaining)) {
 #ifdef IMPACK_WITH_CRYPTO
 						if (state->encryption != 0) {
@@ -494,6 +491,12 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 						fclose(output_file);
 						return ERROR_INPUT_IMG_INVALID;
 					}
+#ifdef IMPACK_WITH_CRYPTO
+					if (state->encryption != 0) {
+						CBC_DECRYPT(&decrypt_ctx, aes256_decrypt, remaining, buf, buf);
+						remaining -= padding;
+					}
+#endif
 					impack_compress_write(&decompress_state, buf, remaining);
 					impack_crc(&crc, buf, remaining);
 					state->data_length -= remaining;
@@ -511,12 +514,30 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 							fclose(output_file);
 							return ERROR_INPUT_IMG_INVALID;
 						}
+						loop_running = false;
 					}
 					remaining = lenout;
 					break;
 				}
 			}
 		} else {
+#endif
+			remaining = BUFSIZE;
+			if (state->data_length < remaining) {
+				remaining = state->data_length;
+			}
+#ifdef IMPACK_WITH_CRYPTO
+			uint32_t padding = 0;
+			if (state->encryption != 0) {
+				if (remaining % AES_BLOCK_SIZE != 0) {
+					padding = AES_BLOCK_SIZE - (remaining % AES_BLOCK_SIZE);
+					remaining += padding;
+				}
+				if (state->legacy && state->data_length == remaining && padding == 0) { // Legacy files may include an extra block of padding
+					state->data_length -= AES_BLOCK_SIZE;
+					remaining -= AES_BLOCK_SIZE;
+				}
+			}
 #endif
 			if (!pixelbuf_read(state, buf, remaining)) {
 #ifdef IMPACK_WITH_CRYPTO
@@ -537,6 +558,9 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 #endif
 			impack_crc(&crc, buf, remaining);
 			state->data_length -= remaining;
+			if (state->data_length == 0) {
+				loop_running = false;
+			}
 #ifdef IMPACK_WITH_COMPRESSION
 		}
 #endif

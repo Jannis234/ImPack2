@@ -53,7 +53,7 @@ bool impack_compress_init_zlib(impack_compress_state_t *state) {
 	if (state->is_compress) {
 		res = deflateInit(strm, Z_DEFAULT_COMPRESSION);
 	} else {
-		res = inflateInit(strm);
+		res = inflateInit2(strm, 47); // 15 + 32 enabled header auto-detection
 	}
 	state->lib_object = strm;
 	if (res == Z_OK) {

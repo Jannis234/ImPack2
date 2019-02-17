@@ -68,6 +68,8 @@ typedef struct {
 	uint8_t encryption;
 	uint8_t compression;
 	uint64_t crc;
+	uint8_t checksum_legacy[64];
+	bool legacy;
 #ifdef IMPACK_WITH_CRYPTO
 	uint8_t aes_key[AES256_KEY_SIZE];
 	uint8_t aes_iv[AES_BLOCK_SIZE];

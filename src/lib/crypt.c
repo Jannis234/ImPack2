@@ -34,5 +34,13 @@ void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_
 
 }
 
+void impack_derive_key_legacy(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize) {
+
+	struct hmac_sha1_ctx ctx;
+	hmac_sha1_set_key(&ctx, strlen(passphrase), (uint8_t*) passphrase);
+	PBKDF2(&ctx, hmac_sha1_update, hmac_sha1_digest, SHA1_DIGEST_SIZE, 1000, saltsize, salt, keysize, keyout);
+
+}
+
 #endif
 

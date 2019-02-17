@@ -55,3 +55,15 @@ uint32_t impack_endian32(uint32_t val) {
 	}
 	
 }
+
+uint32_t impack_endian32_le(uint32_t val) {
+	
+	if (!host_big_endian()) {
+		return val;
+	} else {
+		uint32_t res = 0;
+		swap((uint8_t*) &val, (uint8_t*) &res, 4);
+		return res;
+	}
+	
+}

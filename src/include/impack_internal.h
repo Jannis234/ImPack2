@@ -26,7 +26,6 @@
 #define IMPACK_FORMAT_VERSION 0
 
 #define IMPACK_MAGIC_NUMBER { 73, 109, 80, 50 } // ASCII string "ImP2"
-#define IMPACK_MAGIC_NUMBER_LEN 4
 
 typedef enum {
 	COMPRESSION_RES_OK, // Success, data written to buffer
@@ -49,6 +48,7 @@ char* impack_filename(char *path);
 // Convert numbers to network byte order, if needed (like htonl()/ntohl())
 uint64_t impack_endian64(uint64_t val);
 uint32_t impack_endian32(uint32_t val);
+uint32_t impack_endian32_le(uint32_t val);
 // CRC-64 calculation
 void impack_crc_init();
 void impack_crc(uint64_t *crc, uint8_t *buf, size_t buflen);
@@ -63,6 +63,7 @@ bool impack_random(uint8_t *dst, size_t count);
 void impack_secure_erase(uint8_t *buf, size_t len);
 // Derive a key from a passphrase using PBKDF2
 void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
+void impack_derive_key_legacy(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
 bool impack_compress_init(impack_compress_state_t *state);
 void impack_compress_free(impack_compress_state_t *state);
 impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);

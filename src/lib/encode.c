@@ -142,7 +142,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 	pixeldata[2] = ((channels & CHANNEL_BLUE) != 0) ? 255 : 0;
 	
 	uint8_t magic[] = IMPACK_MAGIC_NUMBER;
-	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, magic, IMPACK_MAGIC_NUMBER_LEN); // These will not fail, the buffer is large enough
+	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, magic, 4); // These will not fail, the buffer is large enough
 	uint8_t format_version = IMPACK_FORMAT_VERSION;
 	pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, &format_version, 1);
 	uint8_t encryption_flag = (encrypt ? 1 : 0);

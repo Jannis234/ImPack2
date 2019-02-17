@@ -64,7 +64,7 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 	
 }
 
-impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, uint8_t channels) {
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, uint8_t channels, uint64_t img_width, uint64_t img_height) {
 	
 	FILE *input_file, *output_file;
 	if (strlen(input_path) == 1 && input_path[0] == '-') {
@@ -338,7 +338,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 	crc = impack_endian64(crc);
 	pixelbuf_add(&pixeldata, &pixeldata_size, &crc_offset, channels, (uint8_t*) &crc, 8);
 
-	impack_error_t res = impack_write_img(output_path, output_file, &pixeldata, pixeldata_size, pixeldata_pos);
+	impack_error_t res = impack_write_img(output_path, output_file, &pixeldata, pixeldata_size, pixeldata_pos, img_width, img_height);
 	free(pixeldata);
 	fclose(output_file);
 	return res;

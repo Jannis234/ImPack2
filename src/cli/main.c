@@ -137,6 +137,8 @@ int main(int argc, char **argv) {
 		{ "channel-green", 0, false, false, NULL },
 		{ "channel-blue", 0, false, false, NULL },
 		{ "grayscale", 0, false, false, NULL },
+		{ "width", 0, true, false, NULL },
+		{ "height", 0, true, false, NULL },
 #ifdef IMPACK_WITH_CRYPTO
 		{ "encrypt", 'c', false, false, NULL },
 		{ "passphrase", 'p', true, false, NULL },
@@ -156,6 +158,7 @@ int main(int argc, char **argv) {
 		return RETURN_OK;
 	}
 	
+	// The size of the options array changes depending on what's compiled in, so it's easier to search them at runtime
 	int option_encode = impack_find_option(options, options_count, false, "e");
 	int option_decode = impack_find_option(options, options_count, false, "d");
 	int option_input = impack_find_option(options, options_count, false, "i");
@@ -164,9 +167,12 @@ int main(int argc, char **argv) {
 	int option_channel_green = impack_find_option(options, options_count, true, "channel-green");
 	int option_channel_blue = impack_find_option(options, options_count, true, "channel-blue");
 	int option_grayscale = impack_find_option(options, options_count, true, "grayscale");
+	int option_width = impack_find_option(options, options_count, true, "width");
+	int option_height = impack_find_option(options, options_count, true, "height");
 #ifdef IMPACK_WITH_CRYPTO
 	int option_encrypt = impack_find_option(options, options_count, false, "c");
 #endif
+	
 	if (options[option_encode].found && options[option_decode].found) {
 		fprintf(stderr, "You can only select one of encode or decode at the same time\n");
 		return RETURN_USER_ERROR;
@@ -194,6 +200,10 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Can not select color channels when decoding\n");
 			return RETURN_USER_ERROR;
 		}
+		if (options[option_width].found || options[option_height].found) {
+			fprintf(stderr, "Can not select the image size when decoding\n");
+			return RETURN_USER_ERROR;
+		}
 	}
 	if (options[option_grayscale].found && (options[option_channel_red].found || options[option_channel_green].found || options[option_channel_blue].found)) {
 		fprintf(stderr, "Can not select color channels in grayscale mode\n");
@@ -205,6 +215,24 @@ int main(int argc, char **argv) {
 	int option_passphrase_file = impack_find_option(options, options_count, true, "passphrase-file");
 #endif
 	if (options[option_encode].found) {
+		uint64_t width = 0;
+		uint64_t height = 0;
+		if (options[option_width].found) {
+			char *endptr;
+			width = strtol(options[option_width].arg_out, &endptr, 10);
+			if (*endptr != 0) {
+				fprintf(stderr, "Invalid argument for image width\n");
+				return RETURN_USER_ERROR;
+			}
+		}
+		if (options[option_height].found) {
+			char *endptr;
+			height = strtol(options[option_height].arg_out, &endptr, 10);
+			if (*endptr != 0) {
+				fprintf(stderr, "Invalid argument for image height\n");
+				return RETURN_USER_ERROR;
+			}
+		}
 		bool encrypt = false;
 		char *passphrase = NULL;
 #ifdef IMPACK_WITH_CRYPTO
@@ -238,7 +266,7 @@ int main(int argc, char **argv) {
 		if (channels == 0 && !options[option_grayscale].found) {
 			channels = CHANNEL_RED | CHANNEL_GREEN | CHANNEL_BLUE;
 		}
-		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, COMPRESSION_NONE, channels);
+		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, COMPRESSION_NONE, channels, width, height);
 #ifdef IMPACK_WITH_CRYPTO
 		free(passphrase);
 #endif

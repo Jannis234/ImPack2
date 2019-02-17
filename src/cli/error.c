@@ -56,6 +56,9 @@ int impack_print_error(impack_error_t error) {
 		case ERROR_IMG_SIZE:
 			fprintf(stderr, "Invalid image size for the selected output format\n");
 			return RETURN_USER_ERROR;
+		case ERROR_IMG_TOO_SMALL:
+			fprintf(stderr, "Selected image size is too small\n");
+			return RETURN_USER_ERROR;
 		case ERROR_IMG_FORMAT_UNSUPPORTED:
 			fprintf(stderr, "The image file format is unsupported by this build of ImPack2\n");
 			return RETURN_DATA_ERROR;

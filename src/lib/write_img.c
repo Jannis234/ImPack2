@@ -22,24 +22,38 @@
 #include "impack.h"
 #include "impack_internal.h"
 
-impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos) {
+impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos, uint64_t img_width, uint64_t img_height) {
 
-	// TODO: Allow selecting custom image size
-	uint64_t width = 1;
-	uint64_t height = 1;
-	// Auto-select image size, should result in a nearly-square image
-	while ((width * height * 3) < pixeldata_pos) {
-		width *= 2;
-		height *= 2;
+	uint64_t width = img_width;
+	uint64_t height = img_height;
+	if (width == 0 && height == 0) { // Auto-select image size, should result in a nearly-square image
+		while ((width * height * 3) < pixeldata_pos) {
+			width *= 2;
+			height *= 2;
+		}
+		while ((width * height * 3) > pixeldata_pos) {
+			width--;
+			height--;
+		}
+		while ((width * height * 3) < pixeldata_pos) {
+			width++;
+		}
+	} else if (width == 0) { // One dimension selected by user, auto-select the other one
+		width = (pixeldata_pos / 3) / height;
+		while (width * height * 3 < pixeldata_pos) {
+			width++;
+		}
+	} else if (height == 0) {
+		height = (pixeldata_pos / 3) / width;
+		while (width * height * 3 < pixeldata_pos) {
+			height++;
+		}
+	} else { // User selected both dimension, check if the data fits
+		if (width * height * 3 < pixeldata_pos) {
+			return ERROR_IMG_TOO_SMALL;
+		}
 	}
-	while ((width * height * 3) > pixeldata_pos) {
-		width--;
-		height--;
-	}
-	while ((width * height * 3) < pixeldata_pos) {
-		width++;
-	}
-
+	
 	if (pixeldata_size < (width * height * 3)) { // Need more pixels to fill in unused space
 		uint8_t *newbuf = realloc(*pixeldata, width * height * 3);
 		if (newbuf == NULL) {
@@ -48,7 +62,7 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 		*pixeldata = newbuf;
 	}
 	memset((*pixeldata) + pixeldata_pos, 0, pixeldata_size - pixeldata_pos);
-
+	
 	// TODO: Allow user to select the output format
 	size_t pathlen = strlen(output_path);
 	// Try to select format based on file extension
@@ -62,7 +76,7 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 		}
 	}
 #endif
-
+	
 	// Unknown extension -> Try to find a default based on what's compiled in
 #ifdef IMPACK_WITH_PNG
 	return impack_write_img_png(output_file, *pixeldata, pixeldata_size, width, height);

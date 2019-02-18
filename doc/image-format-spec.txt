@@ -8,6 +8,7 @@ channel) in the following order: red, green, blue.
 
 First pixel
 -----------
+
 The first pixel (top left corner) defines what color channels are enabled. If
 a channel is used to hold data, that channel's value is set to 255. If all 3
 channels are set to 0, the image is grayscale and all 3 channels hold the same
@@ -51,5 +52,27 @@ various metadata:
      The actual file. Can be compressed and encrypted. (If encrypted, padding
      is added to fill up the last block.)
 
-TODO: Document encryption and compression
+CRC
+---
 
+To check for data corruption, a CRC-64 checksum is used. This algorithm is the
+same that is used in the XZ container format.
+See https://tukaani.org/xz/xz-file-format.txt for more information.
+
+Encryption
+----------
+
+Data and filename can be encrypted using AES-256 in CBC mode. The AES key is
+derived from the user's passphrase using PBKDF2 with HMAC-SHA512 and 100000
+iterations. The AES IV is also used as the salt for PBKDF2.
+If the last AES block is only filled partially, padding will be added. It is
+discarded after decryption. Padding is added to the filename and the data
+separately.
+
+Compression
+-----------
+
+Data can be compressed (before encryption, if that is also enabled).
+The following compression methods are currently recognized:
+
+ID=1: Deflate (zlib stream format)

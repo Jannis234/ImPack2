@@ -4,4 +4,5 @@
 depend.mak
 src/include/config_generated.h
 impack
+impack.1
 

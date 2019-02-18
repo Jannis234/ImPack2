@@ -43,11 +43,31 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/compress_zlib.c \
 	src/lib/select.c
 
-.PHONY: all depend clean cli
+.PHONY: all depend clean cli man man-cli install install-cli install-man install-man-cli uninstall
 
-all: cli
+all: cli man
 
 depend: depend.mak
+
+cli: impack$(EXEEXT)
+
+man: man-cli
+
+man-cli: impack.1
+
+install: install-cli install-man
+
+install-man: install-man-cli
+
+install-cli: cli
+	$(INSTALL) impack$(EXEEXT) $(BINDIR)
+
+install-man-cli: man-cli
+	$(INSTALL) impack.1 $(MANDIR)/man1
+
+uninstall:
+	rm -f $(BINDIR)/impack$(EXEEXT)
+	rm -f $(MANDIR)/man1/impack.1
 
 clean:
 	rm -f $(CLI_SRC:.c=.o)
@@ -55,13 +75,15 @@ clean:
 	rm -f $(LIB_SRC:.c=.o)
 	rm -f $(LIB_SRC:.c=.d)
 	rm -f impack$(EXEEXT) libimpack.a
+	rm -f impack.1
 	rm -f depend.mak
 	rm -f src/include/config_generated.h
 
-cli: impack$(EXEEXT)
-
 impack$(EXEEXT): libimpack.a $(CLI_SRC:.c=.o)
 	$(CCLD) -o impack$(EXEEXT) $(CLI_SRC:.c=.o) libimpack.a $(LIBS)
+
+impack.1: impack$(EXEEXT)
+	help2man ./impack$(EXEEXT) > impack.1
 
 libimpack.a: $(LIB_SRC:.c=.o)
 	$(AR) cr libimpack.a $(LIB_SRC:.c=.o)

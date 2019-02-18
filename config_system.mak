@@ -17,11 +17,17 @@ include config_build.mak
 
 # Host-specific options (programs, paths, etc.)
 
+PREFIX = /usr/local
+BINDIR = $(PREFIX)/bin
+MANDIR = $(PREFIX)/share/man
+
 CC = gcc
 CCLD = $(CC)
 AR = ar
 RANLIB = ranlib
 PKG_CONFIG = pkg-config
+HELP2MAN = help2man
+INSTALL = install
 
 CFLAGS = -O2 -pipe -ggdb
 LIBS =

@@ -13,8 +13,41 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include "config.h"
+#include "impack.h"
+
+void print_format(char *name, int *linelen, bool *is_first, bool is_default) {
+	
+	size_t space_needed = strlen(name);
+	if (!(*is_first)) {
+		space_needed += 2;
+	}
+	if (is_default) {
+		space_needed += 10;
+	}
+	if (!(*is_first)) {
+		printf(",");
+	}
+	if (79 - *linelen >= space_needed) {
+		if (!(*is_first)) {
+			printf(" ");
+		}
+	} else {
+		printf("\n  ");
+		*linelen = 2;
+	}
+	printf("%s", name);
+	if (is_default) {
+		printf(" (default)");
+	}
+	*is_first = false;
+	*linelen += space_needed;
+	
+}
 
 void impack_print_help() {
 	
@@ -63,6 +96,30 @@ void impack_print_help() {
 	printf("  --channel-blue,\n");
 	printf("  --grayscale:        Select color channels that should be used to store data\n");
 	printf("                      By default, all channels are used\n");
+	printf("\n");
+	
+	printf("Supported image formats:\n");
+	int linelen = 2;
+	bool is_first = true;
+	impack_img_format_t default_format = impack_default_img_format();
+	printf("  ");
+#ifdef IMPACK_WITH_PNG
+	print_format("PNG", &linelen, &is_first, default_format == FORMAT_PNG);
+#endif
+	printf("\n");
+	
+#ifdef IMPACK_WITH_COMPRESSION
+	printf("\n");
+	printf("Supported compression types:\n");
+	linelen = 2;
+	is_first = true;
+	impack_compression_type_t default_compression = impack_default_compression();
+	printf("  ");
+#ifdef IMPACK_WITH_ZLIB
+	print_format("Deflate", &linelen, &is_first, default_compression == COMPRESSION_ZLIB);
+#endif
+	printf("\n");
+#endif
 	
 }
 

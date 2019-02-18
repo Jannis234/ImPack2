@@ -23,7 +23,7 @@
 #include "impack_internal.h"
 
 impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos, uint64_t img_width, uint64_t img_height, impack_img_format_t format) {
-
+	
 	uint64_t width = img_width;
 	uint64_t height = img_height;
 	if (width == 0 && height == 0) { // Auto-select image size, should result in a nearly-square image

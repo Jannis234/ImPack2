@@ -38,7 +38,8 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/random.c \
 	src/lib/crypt.c \
 	src/lib/compress.c \
-	src/lib/compress_zlib.c
+	src/lib/compress_zlib.c \
+	src/lib/select.c
 
 .PHONY: all depend clean cli
 

@@ -263,41 +263,19 @@ int main(int argc, char **argv) {
 		uint8_t compression = COMPRESSION_NONE;
 		if (options[option_compress].found) {
 			if (options[option_compression_type].found) {
-				char *type = options[option_compression_type].arg_out;
-#ifdef IMPACK_WITH_ZLIB
-				if (strlen(type) == 7) {
-					if ((type[0] == 'D' || type[0] == 'd') && \
-						(type[1] == 'E' || type[1] == 'e') && \
-						(type[2] == 'F' || type[2] == 'f') && \
-						(type[3] == 'L' || type[3] == 'l') && \
-						(type[4] == 'A' || type[4] == 'a') && \
-						(type[5] == 'T' || type[5] == 't') && \
-						(type[6] == 'E' || type[6] == 'e')) {
-						compression = COMPRESSION_ZLIB;
-					}
-				}
-#endif
+				compression = impack_select_compression(options[option_compression_type].arg_out);
 				if (compression == COMPRESSION_NONE) { 
 					fprintf(stderr, "Unknown compression type\n");
 					return RETURN_USER_ERROR;
 				}
 			} else {
-				compression = COMPRESSION_ZLIB;
+				compression = impack_default_compression();
 			}
 		}
 		
 		impack_img_format_t format = FORMAT_AUTO;
 		if (options[option_format].found) {
-			char *f = options[option_format].arg_out;
-#ifdef IMPACK_WITH_PNG
-			if (strlen(f) == 3) {
-				if ((f[0] == 'P' || f[0] == 'p') && \
-					(f[1] == 'N' || f[1] == 'n') && \
-					(f[2] == 'G' || f[2] == 'g')) {
-					format = FORMAT_PNG;
-				}
-			}
-#endif
+			format = impack_select_img_format(options[option_format].arg_out);
 			if (format == FORMAT_AUTO) {
 				fprintf(stderr, "Unknown image format\n");
 				return RETURN_USER_ERROR;

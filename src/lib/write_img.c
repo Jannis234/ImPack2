@@ -67,24 +67,18 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 	
 	if (format == FORMAT_AUTO) {
 		size_t pathlen = strlen(output_path);
-		// Try to select format based on file extension
-#ifdef IMPACK_WITH_PNG
-		if (pathlen >= 4) {
-			if (output_path[pathlen - 4] == '.' && \
-				(output_path[pathlen - 3] == 'p' || output_path[pathlen - 3] == 'P') && \
-				(output_path[pathlen - 2] == 'n' || output_path[pathlen - 2] == 'N') && \
-				(output_path[pathlen - 1] == 'g' || output_path[pathlen - 1] == 'G')) {
-				format = FORMAT_PNG;
+		char *extstart = NULL;
+		for (int i = pathlen - 1; i >= 0; i--) {
+			if (output_path[i] == '.') {
+				extstart = output_path + i + 1;
+				break;
 			}
 		}
-#endif
-		
-		if (format == FORMAT_AUTO) { // Unknown extension -> Try to find a default based on what's compiled in
-#ifdef IMPACK_WITH_PNG
-			format = FORMAT_PNG;
-#else
-#error "No image formats selected in config_build.mak"
-#endif
+		if (extstart != NULL) {
+			format = impack_select_img_format(extstart);
+		}
+		if (extstart == NULL || format == FORMAT_AUTO) {
+			format = impack_default_img_format();
 		}
 	}
 	

@@ -31,6 +31,7 @@ void impack_print_help() {
 	printf("  -o, --output:       Path for the created image / extracted file\n");
 	printf("                      When decoding, the filename stored inside the image is\n");
 	printf("                      used if this option is omitted\n");
+	printf("  If any filename is set to \"-\", stdin / stdout are used\n");
 	printf("\n");
 #ifdef IMPACK_WITH_CRYPTO
 	printf("Encryption:\n");

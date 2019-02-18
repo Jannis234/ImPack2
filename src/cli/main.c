@@ -90,7 +90,7 @@ int get_passphrase(char **passphrase_out, impack_argparse_t *options, int option
 		*(*passphrase_out + passphrase_pos - 1) = 0; // Replaces any possible newline character
 		fclose(passfile);
 	} else {
-		if (strlen(options[option_input].arg_out) == 1) { // TODO: Skip this is ncurses is used
+		if (strlen(options[option_input].arg_out) == 1) {
 			if (options[option_input].arg_out[0] == '-') {
 				fprintf(stderr, "Can not read a passphrase and the input from stdin at the same time\n");
 				return RETURN_USER_ERROR;
@@ -340,19 +340,31 @@ int main(int argc, char **argv) {
 		}
 		res = impack_decode_stage2(&state, passphrase);
 		if (res != ERROR_OK) {
-			return impack_print_error(res);
+			int return_val = impack_print_error(res);
+#ifdef IMPACK_WITH_CRYPTO
+			if (res == ERROR_INPUT_IMG_INVALID && state.encryption != 0) {
+				fprintf(stderr, "Note: This may be caused by an incorrect passphrase\n");
+			}
+#endif
+			return return_val;
 		}
 		char *out_path = ".";
 		if (options[option_output].arg_out != NULL) {
 			out_path = options[option_output].arg_out;
 		}
 		res = impack_decode_stage3(&state, out_path);
+		int return_val = impack_print_error(res);
+#ifdef IMPACK_WITH_CRYPTO
+		if ((res == ERROR_INPUT_IMG_INVALID || res == ERROR_CRC) && state.encryption != 0) {
+			fprintf(stderr, "Note: This may be caused by an incorrect passphrase\n");
+		}
+#endif
 #ifndef IMPACK_WITH_CRYPTO
 		if (res == ERROR_OK && state.legacy) {
 			fprintf(stderr, "Warning: This build of ImPack2 can not check if the data in legacy images is corrupted\n");
 		}
 #endif
-		return impack_print_error(res);
+		return return_val;
 	}
 	
 }

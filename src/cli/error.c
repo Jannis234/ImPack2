@@ -66,7 +66,7 @@ int impack_print_error(impack_error_t error) {
 			fprintf(stderr, "Unknown image file format\n");
 			return RETURN_DATA_ERROR;
 		case ERROR_INPUT_IMG_INVALID:
-			fprintf(stderr, "The image contains invalid data\n"); // TODO: Print a message when this could be caused by an incorrect passphrase
+			fprintf(stderr, "The image contains invalid data\n");
 			return RETURN_DATA_ERROR;
 		case ERROR_INPUT_IMG_VERSION:
 			fprintf(stderr, "The image was created by an incompatible newer version of ImPack2\n");

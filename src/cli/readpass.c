@@ -27,7 +27,6 @@
 
 char* impack_readpass() {
 	
-	// TODO: ncurses
 #ifndef IMPACK_WINDOWS
 	struct termios term_old, term_new;
 	bool silence_success = false;

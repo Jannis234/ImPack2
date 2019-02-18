@@ -50,6 +50,7 @@ void impack_print_help() {
 	printf("\n");
 #endif
 	printf("Image customization (when encoding):\n");
+	printf("  -f, --format:       Select the image format\n");
 	printf("  -w, --width,\n");
 	printf("  -h, --height:       Select a custom image size\n");
 	printf("                      By default, a square image is created.\n");

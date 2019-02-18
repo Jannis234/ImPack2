@@ -53,7 +53,7 @@ uint32_t impack_endian32_le(uint32_t val);
 void impack_crc_init();
 void impack_crc(uint64_t *crc, uint8_t *buf, size_t buflen);
 // Image read/write helpers (with library/format-specific code)
-impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos, uint64_t img_width, uint64_t img_height);
+impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos, uint64_t img_width, uint64_t img_height, impack_img_format_t format);
 impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);

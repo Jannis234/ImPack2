@@ -22,7 +22,7 @@
 #include "impack.h"
 #include "impack_internal.h"
 
-impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos, uint64_t img_width, uint64_t img_height) {
+impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos, uint64_t img_width, uint64_t img_height, impack_img_format_t format) {
 
 	uint64_t width = img_width;
 	uint64_t height = img_height;
@@ -65,25 +65,34 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 	}
 	memset((*pixeldata) + pixeldata_pos, 0, pixeldata_size - pixeldata_pos);
 	
-	// TODO: Allow user to select the output format
-	size_t pathlen = strlen(output_path);
-	// Try to select format based on file extension
+	if (format == FORMAT_AUTO) {
+		size_t pathlen = strlen(output_path);
+		// Try to select format based on file extension
 #ifdef IMPACK_WITH_PNG
-	if (pathlen >= 4) {
-		if (output_path[pathlen - 4] == '.' && \
-			(output_path[pathlen - 3] == 'p' || output_path[pathlen - 3] == 'P') && \
-			(output_path[pathlen - 2] == 'n' || output_path[pathlen - 2] == 'N') && \
-			(output_path[pathlen - 1] == 'g' || output_path[pathlen - 1] == 'G')) {
-			return impack_write_img_png(output_file, *pixeldata, pixeldata_size, width, height);
+		if (pathlen >= 4) {
+			if (output_path[pathlen - 4] == '.' && \
+				(output_path[pathlen - 3] == 'p' || output_path[pathlen - 3] == 'P') && \
+				(output_path[pathlen - 2] == 'n' || output_path[pathlen - 2] == 'N') && \
+				(output_path[pathlen - 1] == 'g' || output_path[pathlen - 1] == 'G')) {
+				format = FORMAT_PNG;
+			}
 		}
-	}
 #endif
-	
-	// Unknown extension -> Try to find a default based on what's compiled in
+		
+		if (format == FORMAT_AUTO) { // Unknown extension -> Try to find a default based on what's compiled in
 #ifdef IMPACK_WITH_PNG
-	return impack_write_img_png(output_file, *pixeldata, pixeldata_size, width, height);
+			format = FORMAT_PNG;
 #else
 #error "No image formats selected in config_build.mak"
 #endif
+		}
+	}
+	
+	switch (format) {
+		case FORMAT_PNG:
+			return impack_write_img_png(output_file, *pixeldata, pixeldata_size, width, height);
+		default:
+			abort(); // Requested a format that isn't compiled in
+	}
 	
 }

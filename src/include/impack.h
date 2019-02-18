@@ -55,6 +55,11 @@ typedef enum {
 } impack_compression_type_t;
 
 typedef enum {
+	FORMAT_AUTO,
+	FORMAT_PNG
+} impack_img_format_t;
+
+typedef enum {
 	CHANNEL_RED = 1,
 	CHANNEL_GREEN = 2,
 	CHANNEL_BLUE = 4
@@ -79,7 +84,7 @@ typedef struct {
 	char *filename;
 } impack_decode_state_t;
 
-impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, uint8_t channels, uint64_t img_width, uint64_t img_height);
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, uint8_t channels, uint64_t img_width, uint64_t img_height, impack_img_format_t format);
 // Decode stage 1: Load the image and check if the content is encrypted (may ask for the passphrase after this)
 impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_path);
 // Decode stage 2: Extract the included filename (select final output path after this)

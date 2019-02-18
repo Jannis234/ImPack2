@@ -139,6 +139,7 @@ int main(int argc, char **argv) {
 		{ "grayscale", 0, false, false, NULL },
 		{ "width", 0, true, false, NULL },
 		{ "height", 0, true, false, NULL },
+		{ "format", 'f', true, false, NULL },
 #ifdef IMPACK_WITH_CRYPTO
 		{ "encrypt", 'c', false, false, NULL },
 		{ "passphrase", 'p', true, false, NULL },
@@ -173,6 +174,7 @@ int main(int argc, char **argv) {
 	int option_grayscale = impack_find_option(options, options_count, true, "grayscale");
 	int option_width = impack_find_option(options, options_count, true, "width");
 	int option_height = impack_find_option(options, options_count, true, "height");
+	int option_format = impack_find_option(options, options_count, false, "f");
 #ifdef IMPACK_WITH_CRYPTO
 	int option_encrypt = impack_find_option(options, options_count, false, "c");
 #endif
@@ -216,6 +218,10 @@ int main(int argc, char **argv) {
 		}
 		if (options[option_width].found || options[option_height].found) {
 			fprintf(stderr, "Can not select the image size when decoding\n");
+			return RETURN_USER_ERROR;
+		}
+		if (options[option_format].found) {
+			fprintf(stderr, "Can not select the image format when decoding\n");
 			return RETURN_USER_ERROR;
 		}
 	}
@@ -280,6 +286,24 @@ int main(int argc, char **argv) {
 			}
 		}
 		
+		impack_img_format_t format = FORMAT_AUTO;
+		if (options[option_format].found) {
+			char *f = options[option_format].arg_out;
+#ifdef IMPACK_WITH_PNG
+			if (strlen(f) == 3) {
+				if ((f[0] == 'P' || f[0] == 'p') && \
+					(f[1] == 'N' || f[1] == 'n') && \
+					(f[2] == 'G' || f[2] == 'g')) {
+					format = FORMAT_PNG;
+				}
+			}
+#endif
+			if (format == FORMAT_AUTO) {
+				fprintf(stderr, "Unknown image format\n");
+				return RETURN_USER_ERROR;
+			}
+		}
+		
 		bool encrypt = false;
 		char *passphrase = NULL;
 #ifdef IMPACK_WITH_CRYPTO
@@ -313,7 +337,7 @@ int main(int argc, char **argv) {
 		if (channels == 0 && !options[option_grayscale].found) {
 			channels = CHANNEL_RED | CHANNEL_GREEN | CHANNEL_BLUE;
 		}
-		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, compression, channels, width, height);
+		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, compression, channels, width, height, format);
 #ifdef IMPACK_WITH_CRYPTO
 		free(passphrase);
 #endif

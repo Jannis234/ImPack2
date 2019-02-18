@@ -13,37 +13,34 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef __IMPACK_CONFIG_H__
-#define __IMPACK_CONFIG_H__
+#include "config.h"
 
-#include "config_generated.h"
+#ifdef IMPACK_WITH_WEBP
 
-#if defined(WIN32) || defined(_WIN32)
-#define IMPACK_WINDOWS
-#endif
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <webp/encode.h>
+#include "impack.h"
 
-#if (IMPACK_CONFIG_NETTLE == 1)
-#define IMPACK_WITH_CRYPTO
-#endif
-
-#if (IMPACK_CONFIG_PNG != 1) && (IMPACK_CONFIG_WEBP != 1)
-#error "No image formats selected in config_build.mak"
-#endif
-
-#if (IMPACK_CONFIG_PNG == 1)
-#define IMPACK_WITH_PNG
-#endif
-
-#if (IMPACK_CONFIG_WEBP == 1)
-#define IMPACK_WITH_WEBP
-#endif
-
-#if (IMPACK_CONFIG_ZLIB == 1)
-#define IMPACK_WITH_COMPRESSION
-#endif
-
-#if (IMPACK_CONFIG_ZLIB == 1)
-#define IMPACK_WITH_ZLIB
-#endif
+impack_error_t impack_write_img_webp(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height) {
+	
+	if (img_width > 16383 || img_height > 16383) {
+		return ERROR_IMG_SIZE;
+	}
+	
+	uint8_t *img;
+	size_t img_size = WebPEncodeLosslessRGB(pixeldata, img_width, img_height, img_width * 3, &img);
+	if (img_size == 0) {
+		return ERROR_MALLOC;
+	}
+	if (fwrite(img, 1, img_size, output_file) != img_size) {
+		WebPFree(img);
+		return ERROR_OUTPUT_IO;
+	}
+	WebPFree(img);
+	return ERROR_OK;
+	
+}
 
 #endif

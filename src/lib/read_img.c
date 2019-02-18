@@ -18,24 +18,40 @@
 #include <stdio.h>
 #include "config.h"
 #include "impack.h"
-#include "impack_internal.h"
+#include "img.h"
 
 #define MAGIC_PNG { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }
+#define MAGIC_WEBP { 82, 73, 70, 70 }
 
 impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
 	uint8_t magic_png[] = MAGIC_PNG;
+	uint8_t magic_webp[] = MAGIC_WEBP;
 	
-	uint8_t buf[8];
-	if (fread(buf, 1, 8, input_file) != 8) {
+	uint8_t buf[4];
+	if (fread(buf, 1, 4, input_file) != 4) {
 		return ERROR_INPUT_IO;
 	}
-
 	bool ispng = true;
-	for (int i = 0; i < 8; i++) {
+	bool iswebp = true;
+	for (int i = 0; i < 4; i++) {
 		ispng &= (buf[i] == magic_png[i]);
+		iswebp &= (buf[i] == magic_webp[i]);
 	}
-
+	if (iswebp) {
+#ifdef IMPACK_WITH_WEBP
+		return impack_read_img_webp(input_file, pixeldata, pixeldata_size);
+#else
+		return ERROR_IMG_FORMAT_UNSUPPORTED;
+#endif
+	}
+	
+	if (fread(buf, 1, 4, input_file) != 4) {
+		return ERROR_INPUT_IO;
+	}
+	for (int i = 0; i < 4; i++) {
+		ispng &= (buf[i] == magic_png[i + 4]);
+	}
 	if (ispng) {
 #ifdef IMPACK_WITH_PNG
 		return impack_read_img_png(input_file, pixeldata, pixeldata_size);

@@ -30,14 +30,25 @@ impack_img_format_t impack_select_img_format(char *name) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_WEBP
+	if (namelen == 4) {
+		if ((name[0] == 'W' || name[0] == 'w') && \
+			(name[1] == 'E' || name[1] == 'e') && \
+			(name[2] == 'B' || name[2] == 'b') && \
+			(name[3] == 'P' || name[3] == 'p')) {
+			return FORMAT_WEBP;
+		}
+	}
+#endif
 	return FORMAT_AUTO;
 	
 }
 
 impack_img_format_t impack_default_img_format() {
 	
-#ifdef IMPACK_WITH_PNG
+#if defined(IMPACK_WITH_PNG)
 	return FORMAT_PNG;
+#elif defined(IMPACK_WITH_WEBP)
 #else
 #error "No image formats selected in config_build.mak"
 #endif

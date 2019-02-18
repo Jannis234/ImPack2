@@ -83,7 +83,7 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	row_pointers = malloc(sizeof(uint8_t*) * height);
 	if (row_pointers == NULL) {
 		png_destroy_read_struct(&read_struct, &info_struct, NULL);
-		free(pixeldata);
+		free(*pixeldata);
 		return ERROR_MALLOC;
 	}
 	for (uint64_t i = 0; i < height; i++) {

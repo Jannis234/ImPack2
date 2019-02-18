@@ -21,6 +21,7 @@ WITH_NETTLE = 1
 
 # Image formats, at least one must be enabled
 WITH_LIBPNG = 1
+WITH_LIBWEBP = 1
 
 # Compression algorithms
 WITH_ZLIB = 1

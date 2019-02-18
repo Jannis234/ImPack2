@@ -13,37 +13,16 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
-#ifndef __IMPACK_CONFIG_H__
-#define __IMPACK_CONFIG_H__
+#ifndef __IMPACK_IMG_H__
+#define __IMPACK_IMG_H__
 
-#include "config_generated.h"
+#include <stdint.h>
+#include <stdio.h>
+#include "impack.h"
 
-#if defined(WIN32) || defined(_WIN32)
-#define IMPACK_WINDOWS
-#endif
-
-#if (IMPACK_CONFIG_NETTLE == 1)
-#define IMPACK_WITH_CRYPTO
-#endif
-
-#if (IMPACK_CONFIG_PNG != 1) && (IMPACK_CONFIG_WEBP != 1)
-#error "No image formats selected in config_build.mak"
-#endif
-
-#if (IMPACK_CONFIG_PNG == 1)
-#define IMPACK_WITH_PNG
-#endif
-
-#if (IMPACK_CONFIG_WEBP == 1)
-#define IMPACK_WITH_WEBP
-#endif
-
-#if (IMPACK_CONFIG_ZLIB == 1)
-#define IMPACK_WITH_COMPRESSION
-#endif
-
-#if (IMPACK_CONFIG_ZLIB == 1)
-#define IMPACK_WITH_ZLIB
-#endif
+impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
+impack_error_t impack_write_img_webp(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 
 #endif

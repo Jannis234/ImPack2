@@ -20,7 +20,7 @@
 #include <string.h>
 #include "config.h"
 #include "impack.h"
-#include "impack_internal.h"
+#include "img.h"
 
 impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **pixeldata, uint64_t pixeldata_size, uint64_t pixeldata_pos, uint64_t img_width, uint64_t img_height, impack_img_format_t format) {
 	
@@ -85,6 +85,8 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 	switch (format) {
 		case FORMAT_PNG:
 			return impack_write_img_png(output_file, *pixeldata, pixeldata_size, width, height);
+		case FORMAT_WEBP:
+			return impack_write_img_webp(output_file, *pixeldata, pixeldata_size, width, height);
 		default:
 			abort(); // Requested a format that isn't compiled in
 	}

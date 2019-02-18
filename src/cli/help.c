@@ -106,6 +106,9 @@ void impack_print_help() {
 #ifdef IMPACK_WITH_PNG
 	print_format("PNG", &linelen, &is_first, default_format == FORMAT_PNG);
 #endif
+#ifdef IMPACK_WITH_WEBP
+	print_format("WebP", &linelen, &is_first, default_format == FORMAT_WEBP);
+#endif
 	printf("\n");
 	
 #ifdef IMPACK_WITH_COMPRESSION

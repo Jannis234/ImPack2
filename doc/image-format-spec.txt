@@ -76,3 +76,4 @@ Data can be compressed (before encryption, if that is also enabled).
 The following compression methods are currently recognized:
 
 ID=1: Deflate (zlib stream format)
+ID=2: Zstd

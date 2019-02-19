@@ -194,6 +194,13 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 				free(state->pixeldata);
 				return ERROR_COMPRESSION_UNSUPPORTED;
 #endif
+			case COMPRESSION_ZSTD:
+#ifdef IMPACK_WITH_ZSTD
+				break;
+#else
+				free(state->pixeldata);
+				return ERROR_COMPRESSION_UNSUPPORTED;
+#endif
 			default:
 				free(state->pixeldata);
 				return ERROR_COMPRESSION_UNKNOWN;
@@ -352,7 +359,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	}
 	
 	return ERROR_OK;
-
+	
 }
 
 impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_path) {

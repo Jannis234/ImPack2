@@ -38,12 +38,16 @@
 #define IMPACK_WITH_WEBP
 #endif
 
-#if (IMPACK_CONFIG_ZLIB == 1)
+#if (IMPACK_CONFIG_ZLIB == 1) || (IMPACK_CONFIG_ZSTD == 1)
 #define IMPACK_WITH_COMPRESSION
 #endif
 
 #if (IMPACK_CONFIG_ZLIB == 1)
 #define IMPACK_WITH_ZLIB
+#endif
+
+#if (IMPACK_CONFIG_ZSTD == 1)
+#define IMPACK_WITH_ZSTD
 #endif
 
 #endif

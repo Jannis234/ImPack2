@@ -325,6 +325,11 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 		impack_secure_erase((uint8_t*) &encrypt_ctx.ctx, sizeof(struct aes256_ctx));
 	}
 #endif
+#ifdef IMPACK_WITH_COMPRESSION
+	if (compress != COMPRESSION_NONE) {
+		impack_compress_free(&compress_state);
+	}
+#endif
 	if (!feof(input_file)) {
 		free(pixeldata);
 		fclose(input_file);
@@ -332,12 +337,12 @@ impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, 
 		return ERROR_INPUT_IO;
 	}
 	fclose(input_file);
-
+	
 	data_length = impack_endian64(data_length);
 	pixelbuf_add(&pixeldata, &pixeldata_size, &length_offset, channels, (uint8_t*) &data_length, 8);
 	crc = impack_endian64(crc);
 	pixelbuf_add(&pixeldata, &pixeldata_size, &crc_offset, channels, (uint8_t*) &crc, 8);
-
+	
 	impack_error_t res = impack_write_img(output_path, output_file, &pixeldata, pixeldata_size, pixeldata_pos, img_width, img_height, format);
 	free(pixeldata);
 	fclose(output_file);

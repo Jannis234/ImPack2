@@ -25,3 +25,4 @@ WITH_LIBWEBP = 1
 
 # Compression algorithms
 WITH_ZLIB = 1
+WITH_ZSTD = 1

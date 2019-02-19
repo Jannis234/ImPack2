@@ -121,6 +121,9 @@ void impack_print_help() {
 #ifdef IMPACK_WITH_ZLIB
 	print_format("Deflate", &linelen, &is_first, default_compression == COMPRESSION_ZLIB);
 #endif
+#ifdef IMPACK_WITH_ZSTD
+	print_format("Zstd", &linelen, &is_first, default_compression == COMPRESSION_ZSTD);
+#endif
 	printf("\n");
 #endif
 	

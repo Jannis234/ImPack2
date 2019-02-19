@@ -23,5 +23,6 @@ echo "#define IMPACK_CONFIG_NETTLE $2"
 echo "#define IMPACK_CONFIG_PNG $3"
 echo "#define IMPACK_CONFIG_WEBP $4"
 echo "#define IMPACK_CONFIG_ZLIB $5"
+echo "#define IMPACK_CONFIG_ZSTD $6"
 echo
 echo "#endif"

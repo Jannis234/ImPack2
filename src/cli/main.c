@@ -326,7 +326,7 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Multiple sources for a passphrase specified\n");
 			return RETURN_USER_ERROR;
 		}
-		char *passphrase;
+		char *passphrase = NULL;
 #endif
 		impack_decode_state_t state;
 		impack_error_t res = impack_decode_stage1(&state, options[option_input].arg_out);

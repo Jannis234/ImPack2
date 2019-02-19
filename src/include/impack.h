@@ -51,7 +51,8 @@ typedef enum {
 
 typedef enum {
 	COMPRESSION_NONE = 0,
-	COMPRESSION_ZLIB = 1
+	COMPRESSION_ZLIB = 1,
+	COMPRESSION_ZSTD = 2
 } impack_compression_type_t;
 
 typedef enum {

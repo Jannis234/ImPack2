@@ -57,3 +57,8 @@ ifeq ($(WITH_ZSTD), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags libzstd)
 LIBS += $(shell $(PKG_CONFIG) --libs libzstd)
 endif
+
+ifeq ($(WITH_LZMA), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags liblzma)
+LIBS += $(shell $(PKG_CONFIG) --libs liblzma)
+endif

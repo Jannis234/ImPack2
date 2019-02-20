@@ -82,6 +82,17 @@ impack_compression_type_t impack_select_compression(char *name) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_LZMA
+	if (namelen == 5) {
+		if ((name[0] == 'L' || name[0] == 'l') && \
+			(name[1] == 'Z' || name[1] == 'z') && \
+			(name[2] == 'M' || name[2] == 'm') && \
+			(name[3] == 'A' || name[3] == 'a') && \
+			(name[4] == '2')) {
+			return COMPRESSION_LZMA;
+		}
+	}
+#endif
 	return COMPRESSION_NONE;
 	
 }
@@ -92,6 +103,8 @@ impack_compression_type_t impack_default_compression() {
 	return COMPRESSION_ZSTD;
 #elif defined(IMPACK_WITH_ZLIB)
 	return COMPRESSION_ZLIB;
+#elif defined(IMPACK_WITH_LZMA)
+	return COMPRESSION_LZMA;
 #else
 #error "Error in config.h"
 #endif

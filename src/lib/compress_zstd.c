@@ -39,14 +39,16 @@ bool impack_compress_init_zstd(impack_compress_state_t *state) {
 		return false;
 	}
 	state->lib_object = zstate;
-	zstate->inbuf.src = malloc(state->bufsize);
+	state->input_buf = malloc(state->bufsize);
+	zstate->inbuf.src = state->input_buf;
 	if (zstate->inbuf.src == NULL) {
 		free(zstate);
 		return false;
 	}
 	zstate->inbuf.size = state->bufsize;
 	zstate->inbuf.pos = state->bufsize;
-	zstate->outbuf.dst = malloc(state->bufsize);
+	state->output_buf = malloc(state->bufsize);
+	zstate->outbuf.dst = state->output_buf;
 	if (zstate->outbuf.dst == NULL) {
 		free((void*) zstate->inbuf.src);
 		free(zstate);

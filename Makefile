@@ -42,6 +42,7 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/compress.c \
 	src/lib/compress_zlib.c \
 	src/lib/compress_zstd.c \
+	src/lib/compress_lzma.c \
 	src/lib/select.c
 
 .PHONY: all depend clean cli man man-cli install install-cli install-man install-man-cli uninstall
@@ -95,7 +96,7 @@ depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
 	cat $(LIB_SRC:.c=.d) >> depend.mak
 
 src/include/config_generated.h: config_build.mak src/gen_config.sh
-	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_ZLIB) $(WITH_ZSTD) > src/include/config_generated.h
+	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_ZLIB) $(WITH_ZSTD) $(WITH_LZMA) > src/include/config_generated.h
 
 %.d: %.c config_build.mak config_system.mak src/include/config_generated.h
 	$(CC) $(CFLAGS) -M -MT $(<:.c=.o) -o $@ $<

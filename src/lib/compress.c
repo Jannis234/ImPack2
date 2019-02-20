@@ -34,6 +34,10 @@ bool impack_compress_init(impack_compress_state_t *state) {
 		case COMPRESSION_ZSTD:
 			return impack_compress_init_zstd(state);
 #endif
+#ifdef IMPACK_WITH_LZMA
+		case COMPRESSION_LZMA:
+			return impack_compress_init_lzma(state);
+#endif
 		default:
 			abort();
 	}
@@ -53,6 +57,11 @@ void impack_compress_free(impack_compress_state_t *state) {
 			impack_compress_free_zstd(state);
 			return;
 #endif
+#ifdef IMPACK_WITH_LZMA
+		case COMPRESSION_LZMA:
+			impack_compress_free_lzma(state);
+			return;
+#endif
 		default:
 			abort();
 	}
@@ -69,6 +78,10 @@ impack_compression_result_t impack_compress_read(impack_compress_state_t *state,
 #ifdef IMPACK_WITH_ZSTD
 		case COMPRESSION_ZSTD:
 			return impack_compress_read_zstd(state, buf, lenout);
+#endif
+#ifdef IMPACK_WITH_LZMA
+		case COMPRESSION_LZMA:
+			return impack_compress_read_lzma(state, buf, lenout);
 #endif
 		default:
 			abort();
@@ -89,6 +102,11 @@ void impack_compress_write(impack_compress_state_t *state, uint8_t *buf, uint64_
 			impack_compress_write_zstd(state, buf, len);
 			return;
 #endif
+#ifdef IMPACK_WITH_LZMA
+		case COMPRESSION_LZMA:
+			impack_compress_write_lzma(state, buf, len);
+			return;
+#endif
 		default:
 			abort();
 	}
@@ -105,6 +123,10 @@ impack_compression_result_t impack_compress_flush(impack_compress_state_t *state
 #ifdef IMPACK_WITH_ZSTD
 		case COMPRESSION_ZSTD:
 			return impack_compress_flush_zstd(state, buf, lenout);
+#endif
+#ifdef IMPACK_WITH_LZMA
+		case COMPRESSION_LZMA:
+			return impack_compress_flush_lzma(state, buf, lenout);
 #endif
 		default:
 			abort();

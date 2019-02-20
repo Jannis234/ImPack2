@@ -22,8 +22,9 @@ ImPack2 can make use of the following dependencies (can be toggled on or off in 
 * [libpng](http://www.libpng.org/) - To read/write PNG images
 * [libwebp](https://chromium.googlesource.com/webm/libwebp/) - To read/write WebP images
 * [nettle](http://www.lysator.liu.se/~nisse/nettle/) - For encryption
-* [zstd](https://facebook.github.io/zstd/) - For Zstandard compression
+* [liblzma](https://tukaani.org/xz/) - For LZMA2 compression
 * [zlib](https://zlib.net/) - For deflate compression
+* [zstd](https://facebook.github.io/zstd/) - For Zstandard compression
 
 ## Usage examples
 

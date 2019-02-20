@@ -22,13 +22,18 @@
 
 bool impack_compress_init_zlib(impack_compress_state_t *state);
 bool impack_compress_init_zstd(impack_compress_state_t *state);
+bool impack_compress_init_lzma(impack_compress_state_t *state);
 void impack_compress_free_zlib(impack_compress_state_t *state);
 void impack_compress_free_zstd(impack_compress_state_t *state);
+void impack_compress_free_lzma(impack_compress_state_t *state);
 impack_compression_result_t impack_compress_read_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 impack_compression_result_t impack_compress_read_zstd(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
+impack_compression_result_t impack_compress_read_lzma(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 void impack_compress_write_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t len);
 void impack_compress_write_zstd(impack_compress_state_t *state, uint8_t *buf, uint64_t len);
+void impack_compress_write_lzma(impack_compress_state_t *state, uint8_t *buf, uint64_t len);
 impack_compression_result_t impack_compress_flush_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 impack_compression_result_t impack_compress_flush_zstd(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
+impack_compression_result_t impack_compress_flush_lzma(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 
 #endif

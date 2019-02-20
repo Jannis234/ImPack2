@@ -87,7 +87,7 @@ typedef struct {
 	char *filename;
 } impack_decode_state_t;
 
-impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, uint8_t channels, uint64_t img_width, uint64_t img_height, impack_img_format_t format, char *filename_include);
+impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, int32_t compress_level, uint8_t channels, uint64_t img_width, uint64_t img_height, impack_img_format_t format, char *filename_include);
 // Decode stage 1: Load the image and check if the content is encrypted (may ask for the passphrase after this)
 impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_path);
 // Decode stage 2: Extract the included filename (select final output path after this)
@@ -100,5 +100,7 @@ impack_img_format_t impack_select_img_format(char *name);
 impack_img_format_t impack_default_img_format();
 impack_compression_type_t impack_select_compression(char *name);
 impack_compression_type_t impack_default_compression();
+
+bool impack_compress_level_valid(impack_compression_type_t type, int32_t level);
 
 #endif

@@ -150,6 +150,7 @@ int main(int argc, char **argv) {
 #ifdef IMPACK_WITH_COMPRESSION
 		{ "compress", 'z', false, false, NULL },
 		{ "compression-type", 0, true, false, NULL },
+		{ "compression-level", 0, true, false, NULL },
 #endif
 	};
 	size_t options_count = sizeof(options) / sizeof(impack_argparse_t);
@@ -185,6 +186,7 @@ int main(int argc, char **argv) {
 #ifdef IMPACK_WITH_COMPRESSION
 	int option_compress = impack_find_option(options, options_count, false, "z");
 	int option_compression_type = impack_find_option(options, options_count, true, "compression-type");
+	int option_compression_level = impack_find_option(options, options_count, true, "compression-level");
 #endif
 	
 	if (options[option_encode].found && options[option_decode].found) {
@@ -211,7 +213,7 @@ int main(int argc, char **argv) {
 		}
 #endif
 #ifdef IMPACK_WITH_COMPRESSION
-		if (options[option_compress].found || options[option_compression_type].found) {
+		if (options[option_compress].found || options[option_compression_type].found || options[option_compression_level].found) {
 			fprintf(stderr, "Can not request compression when decoding\n");
 			return RETURN_USER_ERROR;
 		}
@@ -248,9 +250,15 @@ int main(int argc, char **argv) {
 		}
 	}
 #ifdef IMPACK_WITH_COMPRESSION
-	if (!options[option_compress].found && options[option_compression_type].found) {
-		fprintf(stderr, "Can not select the compression type when compression is disabled\n");
-		return RETURN_USER_ERROR;
+	if (!options[option_compress].found) {
+		if (options[option_compression_type].found) {
+			fprintf(stderr, "Can not select the compression type when compression is disabled\n");
+			return RETURN_USER_ERROR;
+		}
+		if (options[option_compression_level].found) {
+			fprintf(stderr, "Can not select the compression level when compression is disabled\n");
+			return RETURN_USER_ERROR;
+		}
 	}
 #endif
 	
@@ -287,6 +295,8 @@ int main(int argc, char **argv) {
 		}
 		
 		uint8_t compression = COMPRESSION_NONE;
+		int32_t compression_level = 0;
+#ifdef IMPACK_WITH_COMPRESSION
 		if (options[option_compress].found) {
 			if (options[option_compression_type].found) {
 				compression = impack_select_compression(options[option_compression_type].arg_out);
@@ -297,7 +307,21 @@ int main(int argc, char **argv) {
 			} else {
 				compression = impack_default_compression();
 			}
+			
+			if (options[option_compression_level].found) {
+				char *endptr;
+				compression_level = strtol(options[option_compression_level].arg_out, &endptr, 10);
+				if (*endptr != 0 || strlen(options[option_compression_level].arg_out) == 0) {
+					fprintf(stderr, "Invalid compression level\n");
+					return RETURN_USER_ERROR;
+				}
+				if (!impack_compress_level_valid(compression, compression_level) || compression_level <= 0) {
+					fprintf(stderr, "Invalid compression level\n");
+					return RETURN_USER_ERROR;
+				}
+			}
 		}
+#endif
 		
 		impack_img_format_t format = FORMAT_AUTO;
 		if (options[option_format].found) {
@@ -351,7 +375,7 @@ int main(int argc, char **argv) {
 		} else if (options[option_custom_filename].found) {
 			filename_include = options[option_custom_filename].arg_out;
 		}
-		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, compression, channels, width, height, format, filename_include);
+		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, compression, compression_level, channels, width, height, format, filename_include);
 #ifdef IMPACK_WITH_CRYPTO
 		free(passphrase);
 #endif

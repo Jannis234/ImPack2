@@ -37,6 +37,7 @@ typedef enum {
 typedef struct {
 	void *lib_object;
 	impack_compression_type_t type;
+	int32_t level;
 	bool is_compress;
 	uint8_t *input_buf;
 	uint8_t *output_buf;

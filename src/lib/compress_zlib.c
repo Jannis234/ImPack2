@@ -51,7 +51,10 @@ bool impack_compress_init_zlib(impack_compress_state_t *state) {
 	
 	int res;
 	if (state->is_compress) {
-		res = deflateInit(strm, Z_DEFAULT_COMPRESSION);
+		if (state->level == 0) {
+			state->level = Z_DEFAULT_COMPRESSION;
+		}
+		res = deflateInit(strm, state->level);
 	} else {
 		res = inflateInit2(strm, 47); // 15 + 32 enables header auto-detection
 	}
@@ -133,6 +136,12 @@ impack_compression_result_t impack_compress_flush_zlib(impack_compress_state_t *
 		strm->avail_out = state->bufsize;
 		return COMPRESSION_RES_AGAIN;
 	}
+	
+}
+
+bool impack_compress_level_valid_zlib(int32_t level) {
+	
+	return (level <= Z_BEST_COMPRESSION);
 	
 }
 

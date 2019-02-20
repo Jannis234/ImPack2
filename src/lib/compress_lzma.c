@@ -33,7 +33,10 @@ bool impack_compress_init_lzma(impack_compress_state_t *state) {
 	memset(strm, 0, sizeof(lzma_stream));
 	lzma_ret res;
 	if (state->is_compress) {
-		res = lzma_easy_encoder(strm, 6, LZMA_CHECK_NONE);
+		if (state->level == 0) {
+			state->level = LZMA_PRESET_DEFAULT;
+		}
+		res = lzma_easy_encoder(strm, state->level, LZMA_CHECK_NONE);
 	} else {
 		res = lzma_stream_decoder(strm, UINT64_MAX, LZMA_IGNORE_CHECK);
 	}
@@ -118,6 +121,12 @@ impack_compression_result_t impack_compress_flush_lzma(impack_compress_state_t *
 		strm->avail_out = state->bufsize;
 		return COMPRESSION_RES_AGAIN;
 	}
+	
+}
+
+bool impack_compress_level_valid_lzma(int32_t level) {
+	
+	return (level <= 9);
 	
 }
 

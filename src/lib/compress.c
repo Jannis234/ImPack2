@@ -134,4 +134,25 @@ impack_compression_result_t impack_compress_flush(impack_compress_state_t *state
 	
 }
 
+bool impack_compress_level_valid(impack_compression_type_t type, int32_t level) {
+	
+	switch (type) {
+#ifdef IMPACK_WITH_ZLIB
+		case COMPRESSION_ZLIB:
+			return impack_compress_level_valid_zlib(level);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+		case COMPRESSION_ZSTD:
+			return impack_compress_level_valid_zstd(level);
+#endif
+#ifdef IMPACK_WITH_LZMA
+		case COMPRESSION_LZMA:
+			return impack_compress_level_valid_lzma(level);
+#endif
+		default:
+			abort();
+	}
+	
+}
+
 #endif

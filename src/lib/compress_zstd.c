@@ -66,7 +66,10 @@ bool impack_compress_init_zstd(impack_compress_state_t *state) {
 			free(zstate);
 			return false;
 		}
-		if (ZSTD_isError(ZSTD_initCStream(zstate->cstrm, 3))) { // Default compression level 3, from zstd source code
+		if (state->level == 0) {
+			state->level = 3; // Default from zstd code
+		}
+		if (ZSTD_isError(ZSTD_initCStream(zstate->cstrm, state->level))) { // Default compression level 3, from zstd source code
 			free((void*) zstate->inbuf.src);
 			free(zstate->outbuf.dst);
 			ZSTD_freeCStream(zstate->cstrm);
@@ -179,6 +182,12 @@ impack_compression_result_t impack_compress_flush_zstd(impack_compress_state_t *
 		zstate->outbuf.pos = 0;
 		return COMPRESSION_RES_AGAIN;
 	}
+	
+}
+
+bool impack_compress_level_valid_zstd(int32_t level) {
+	
+	return (level <= ZSTD_maxCLevel());
 	
 }
 

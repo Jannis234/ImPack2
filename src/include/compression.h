@@ -35,5 +35,8 @@ void impack_compress_write_lzma(impack_compress_state_t *state, uint8_t *buf, ui
 impack_compression_result_t impack_compress_flush_zlib(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 impack_compression_result_t impack_compress_flush_zstd(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 impack_compression_result_t impack_compress_flush_lzma(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
+bool impack_compress_level_valid_zlib(int32_t level);
+bool impack_compress_level_valid_zstd(int32_t level);
+bool impack_compress_level_valid_lzma(int32_t level);
 
 #endif

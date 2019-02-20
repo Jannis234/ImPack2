@@ -140,6 +140,8 @@ int main(int argc, char **argv) {
 		{ "width", 0, true, false, NULL },
 		{ "height", 0, true, false, NULL },
 		{ "format", 'f', true, false, NULL },
+		{ "no-filename", 'n', false, false, NULL },
+		{ "custom-filename", 0, true, false, NULL },
 #ifdef IMPACK_WITH_CRYPTO
 		{ "encrypt", 'c', false, false, NULL },
 		{ "passphrase", 'p', true, false, NULL },
@@ -175,6 +177,8 @@ int main(int argc, char **argv) {
 	int option_width = impack_find_option(options, options_count, true, "width");
 	int option_height = impack_find_option(options, options_count, true, "height");
 	int option_format = impack_find_option(options, options_count, false, "f");
+	int option_no_filename = impack_find_option(options, options_count, false, "n");
+	int option_custom_filename = impack_find_option(options, options_count, true, "custom-filename");
 #ifdef IMPACK_WITH_CRYPTO
 	int option_encrypt = impack_find_option(options, options_count, false, "c");
 #endif
@@ -224,10 +228,24 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Can not select the image format when decoding\n");
 			return RETURN_USER_ERROR;
 		}
+		if (options[option_no_filename].found || options[option_custom_filename].found) {
+			fprintf(stderr, "Can not select the included filename when decoding\n");
+			return RETURN_USER_ERROR;
+		}
 	}
 	if (options[option_grayscale].found && (options[option_channel_red].found || options[option_channel_green].found || options[option_channel_blue].found)) {
 		fprintf(stderr, "Can not select color channels in grayscale mode\n");
 		return RETURN_USER_ERROR;
+	}
+	if (options[option_custom_filename].found) {
+		if (options[option_no_filename].found) {
+			fprintf(stderr, "Can not select a custom filename when no filename should be included\n");
+			return RETURN_USER_ERROR;
+		}
+		if (strlen(options[option_custom_filename].arg_out) == 0) {
+			fprintf(stderr, "Custom filename can not be empty\n");
+			return RETURN_USER_ERROR;
+		}
 	}
 #ifdef IMPACK_WITH_COMPRESSION
 	if (!options[option_compress].found && options[option_compression_type].found) {
@@ -246,7 +264,7 @@ int main(int argc, char **argv) {
 		if (options[option_width].found) {
 			char *endptr;
 			width = strtol(options[option_width].arg_out, &endptr, 10);
-			if (*endptr != 0) {
+			if (*endptr != 0 || strlen(options[option_width].arg_out) == 0) {
 				fprintf(stderr, "Invalid argument for image width\n");
 				return RETURN_USER_ERROR;
 			}
@@ -254,7 +272,7 @@ int main(int argc, char **argv) {
 		if (options[option_height].found) {
 			char *endptr;
 			height = strtol(options[option_height].arg_out, &endptr, 10);
-			if (*endptr != 0) {
+			if (*endptr != 0 || strlen(options[option_height].arg_out) == 0) {
 				fprintf(stderr, "Invalid argument for image height\n");
 				return RETURN_USER_ERROR;
 			}
@@ -315,7 +333,17 @@ int main(int argc, char **argv) {
 		if (channels == 0 && !options[option_grayscale].found) {
 			channels = CHANNEL_RED | CHANNEL_GREEN | CHANNEL_BLUE;
 		}
-		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, compression, channels, width, height, format);
+		
+		char *filename_include = options[option_input].arg_out;
+		if (strlen(filename_include) == 1 && filename_include[0] == '-') {
+			filename_include = "stdin";
+		}
+		if (options[option_no_filename].found) {
+			filename_include = "out"; // Include a placeholder instead
+		} else if (options[option_custom_filename].found) {
+			filename_include = options[option_custom_filename].arg_out;
+		}
+		impack_error_t res = impack_encode(options[option_input].arg_out, options[option_output].arg_out, encrypt, passphrase, compression, channels, width, height, format, filename_include);
 #ifdef IMPACK_WITH_CRYPTO
 		free(passphrase);
 #endif

@@ -66,6 +66,9 @@ void impack_print_help() {
 	printf("                      used if this option is omitted\n");
 	printf("  If any filename is set to \"-\", stdin / stdout are used\n");
 	printf("\n");
+	printf("  -n, --no-filename:  Do not include the original filename in the image\n");
+	printf("  --custom-filename:  Include a custom filename instead of the original one\n");
+	printf("\n");
 #ifdef IMPACK_WITH_CRYPTO
 	printf("Encryption:\n");
 	printf("  -c, --encrypt:      Encrypt the file before encoding\n");

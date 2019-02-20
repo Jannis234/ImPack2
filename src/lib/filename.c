@@ -20,9 +20,6 @@
 char* impack_filename(char *path) {
 	
 	size_t pathlen = strlen(path);
-	if (strlen(path) == 1 && path[0] == '-') {
-		return "stdin";
-	}
 	char *res = path + pathlen - 1;
 	while (res != path) {
 		if (*res == '/' || *res == '\\') {

@@ -259,12 +259,16 @@ int main(int argc, char **argv) {
 	int option_passphrase_file = impack_find_option(options, options_count, true, "passphrase-file");
 #endif
 	if (options[option_encode].found) {
-		uint64_t width = 0;
-		uint64_t height = 0;
+		int64_t width = 0;
+		int64_t height = 0;
 		if (options[option_width].found) {
 			char *endptr;
 			width = strtol(options[option_width].arg_out, &endptr, 10);
 			if (*endptr != 0 || strlen(options[option_width].arg_out) == 0) {
+				fprintf(stderr, "Invalid argument for image width\n");
+				return RETURN_USER_ERROR;
+			}
+			if (width <= 0) {
 				fprintf(stderr, "Invalid argument for image width\n");
 				return RETURN_USER_ERROR;
 			}
@@ -273,6 +277,10 @@ int main(int argc, char **argv) {
 			char *endptr;
 			height = strtol(options[option_height].arg_out, &endptr, 10);
 			if (*endptr != 0 || strlen(options[option_height].arg_out) == 0) {
+				fprintf(stderr, "Invalid argument for image height\n");
+				return RETURN_USER_ERROR;
+			}
+			if (height <= 0) {
 				fprintf(stderr, "Invalid argument for image height\n");
 				return RETURN_USER_ERROR;
 			}

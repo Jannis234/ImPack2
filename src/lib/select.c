@@ -18,7 +18,7 @@
 #include "config.h"
 #include "impack.h"
 
-impack_img_format_t impack_select_img_format(char *name) {
+impack_img_format_t impack_select_img_format(char *name, bool fileextension) {
 	
 	size_t namelen = strlen(name);
 #ifdef IMPACK_WITH_PNG
@@ -46,6 +46,13 @@ impack_img_format_t impack_select_img_format(char *name) {
 			(name[1] == 'I' || name[1] == 'i') && \
 			(name[2] == 'F' || name[2] == 'f') && \
 			(name[3] == 'F' || name[3] == 'f')) {
+			return FORMAT_TIFF;
+		}
+	}
+	if (namelen == 3 && fileextension) {
+		if ((name[0] == 'T' || name[0] == 't') && \
+			(name[1] == 'I' || name[1] == 'i') && \
+			(name[2] == 'F' || name[2] == 'f')) {
 			return FORMAT_TIFF;
 		}
 	}

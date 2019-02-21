@@ -75,7 +75,7 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 			}
 		}
 		if (extstart != NULL) {
-			format = impack_select_img_format(extstart);
+			format = impack_select_img_format(extstart, true);
 		}
 		if (extstart == NULL || format == FORMAT_AUTO) {
 			format = impack_default_img_format();

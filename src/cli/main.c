@@ -325,7 +325,7 @@ int main(int argc, char **argv) {
 		
 		impack_img_format_t format = FORMAT_AUTO;
 		if (options[option_format].found) {
-			format = impack_select_img_format(options[option_format].arg_out);
+			format = impack_select_img_format(options[option_format].arg_out, false);
 			if (format == FORMAT_AUTO) {
 				fprintf(stderr, "Unknown image format\n");
 				return RETURN_USER_ERROR;

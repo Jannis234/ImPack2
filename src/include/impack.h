@@ -97,7 +97,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_path);
 
 // Helpers to select things depending on what's compiled in
-impack_img_format_t impack_select_img_format(char *name);
+impack_img_format_t impack_select_img_format(char *name, bool fileextension);
 impack_img_format_t impack_default_img_format();
 impack_compression_type_t impack_select_compression(char *name);
 impack_compression_type_t impack_default_compression();

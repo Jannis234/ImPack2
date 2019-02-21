@@ -24,8 +24,7 @@
 #include <webp/decode.h>
 #include "impack.h"
 #include "impack_internal.h"
-
-#define MAGIC_WEBP { 82, 73, 70, 70 }
+#include "img.h"
 
 impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
@@ -33,7 +32,7 @@ impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint6
 	if (buf == NULL) {
 		return ERROR_MALLOC;
 	}
-	uint8_t magic_buf[] = MAGIC_WEBP;
+	uint8_t magic_buf[] = IMPACK_MAGIC_WEBP;
 	memcpy(buf, magic_buf, 4);
 	if (fread(buf + 4, 1, 8, input_file) != 8) {
 		free(buf);

@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "impack.h"
+#include "img.h"
 #include <tiffio.h>
 
 #define BUFSTEP 1048576 // 1 MiB
@@ -34,14 +35,24 @@ uint64_t impack_tiff_filesize;
 uint64_t impack_tiff_fileoff;
 bool impack_tiff_writing;
 
-bool impack_tiff_init_read(FILE *input_file) {
+bool impack_tiff_init_read(FILE *input_file, bool le) {
+	
+	TIFFSetErrorHandler(NULL);
 	
 	impack_tiff_bufsize = BUFSTEP;
 	impack_tiff_filebuf = malloc(impack_tiff_bufsize);
 	if (impack_tiff_filebuf == NULL) {
 		return false;
 	}
-	impack_tiff_filesize = 0;
+	impack_tiff_filesize = 4;
+	if (le) {
+		uint8_t magic[] = IMPACK_MAGIC_TIFF_LE;
+		memcpy(impack_tiff_filebuf, magic, 4);
+	} else {
+		uint8_t magic[] = IMPACK_MAGIC_TIFF_BE;
+		memcpy(impack_tiff_filebuf, magic, 4);
+	}
+	
 	size_t bytes_read;
 	do {
 		if (impack_tiff_filesize == impack_tiff_bufsize) {
@@ -63,6 +74,8 @@ bool impack_tiff_init_read(FILE *input_file) {
 }
 
 bool impack_tiff_init_write() {
+	
+	TIFFSetErrorHandler(NULL);
 	
 	impack_tiff_filebuf = malloc(BUFSTEP);
 	if (impack_tiff_filebuf == NULL) {

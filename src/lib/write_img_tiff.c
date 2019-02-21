@@ -26,6 +26,10 @@
 
 impack_error_t impack_write_img_tiff(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height) {
 	
+	if (img_width >= UINT32_MAX || img_height >= UINT32_MAX || pixeldata_size >= UINT32_MAX) {
+		return ERROR_IMG_SIZE;
+	}
+	
 	if (!impack_tiff_init_write()) {
 		return ERROR_MALLOC;
 	}

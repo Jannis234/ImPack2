@@ -37,6 +37,7 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/read_img.c \
 	src/lib/read_img_png.c \
 	src/lib/read_img_webp.c \
+	src/lib/read_img_tiff.c \
 	src/lib/libtiff_io.c \
 	src/lib/secure_erase.c \
 	src/lib/random.c \

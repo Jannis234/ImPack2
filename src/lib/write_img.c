@@ -83,12 +83,18 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 	}
 	
 	switch (format) {
+#ifdef IMPACK_WITH_PNG
 		case FORMAT_PNG:
 			return impack_write_img_png(output_file, *pixeldata, pixeldata_size, width, height);
+#endif
+#ifdef IMPACK_WITH_WEBP
 		case FORMAT_WEBP:
 			return impack_write_img_webp(output_file, *pixeldata, pixeldata_size, width, height);
+#endif
+#ifdef IMPACK_WITH_TIFF
 		case FORMAT_TIFF:
 			return impack_write_img_tiff(output_file, *pixeldata, pixeldata_size, width, height);
+#endif
 		default:
 			abort(); // Requested a format that isn't compiled in
 	}

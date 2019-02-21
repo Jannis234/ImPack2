@@ -48,6 +48,11 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags libwebp)
 LIBS += $(shell $(PKG_CONFIG) --libs libwebp)
 endif
 
+ifeq ($(WITH_LIBTIFF), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libtiff-4)
+LIBS += $(shell $(PKG_CONFIG) --libs libtiff-4)
+endif
+
 ifeq ($(WITH_ZLIB), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags zlib)
 LIBS += $(shell $(PKG_CONFIG) --libs zlib)

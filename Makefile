@@ -33,9 +33,11 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/write_img.c \
 	src/lib/write_img_png.c \
 	src/lib/write_img_webp.c \
+	src/lib/write_img_tiff.c \
 	src/lib/read_img.c \
 	src/lib/read_img_png.c \
 	src/lib/read_img_webp.c \
+	src/lib/libtiff_io.c \
 	src/lib/secure_erase.c \
 	src/lib/random.c \
 	src/lib/crypt.c \
@@ -96,7 +98,7 @@ depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
 	cat $(LIB_SRC:.c=.d) >> depend.mak
 
 src/include/config_generated.h: config_build.mak src/gen_config.sh
-	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_ZLIB) $(WITH_ZSTD) $(WITH_LZMA) > src/include/config_generated.h
+	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_LIBTIFF) $(WITH_ZLIB) $(WITH_ZSTD) $(WITH_LZMA) > src/include/config_generated.h
 
 %.d: %.c config_build.mak config_system.mak src/include/config_generated.h
 	$(CC) $(CFLAGS) -M -MT $(<:.c=.o) -o $@ $<

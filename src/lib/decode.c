@@ -493,8 +493,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					if (state->data_length < remaining) {
 						remaining = state->data_length;
 					}
-#ifdef IMPACK_WITH_CRYPTO
 					uint32_t padding = 0;
+#ifdef IMPACK_WITH_CRYPTO
 					if (state->encryption != 0) {
 						if (remaining % AES_BLOCK_SIZE != 0) {
 							padding = AES_BLOCK_SIZE - (remaining % AES_BLOCK_SIZE);
@@ -557,8 +557,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 			if (state->data_length < remaining) {
 				remaining = state->data_length;
 			}
-#ifdef IMPACK_WITH_CRYPTO
 			uint32_t padding = 0;
+#ifdef IMPACK_WITH_CRYPTO
 			if (state->encryption != 0) {
 				if (remaining % AES_BLOCK_SIZE != 0) {
 					padding = AES_BLOCK_SIZE - (remaining % AES_BLOCK_SIZE);
@@ -600,7 +600,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 		}
 #endif
 		
-#ifdef IMPACK_WITH_COMPRESSION
+#ifdef IMPACK_WITH_CRYPTO
 		if (state->legacy) {
 			sha512_update(&legacy_checksum, remaining, buf);
 		}

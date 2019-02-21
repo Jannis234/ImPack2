@@ -386,13 +386,14 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Multiple sources for a passphrase specified\n");
 			return RETURN_USER_ERROR;
 		}
-		char *passphrase = NULL;
 #endif
+		char *passphrase = NULL;
 		impack_decode_state_t state;
 		impack_error_t res = impack_decode_stage1(&state, options[option_input].arg_out);
 		if (res != ERROR_OK) {
 			return impack_print_error(res);
 		}
+#ifdef IMPACK_WITH_CRYPTO
 		if (state.encryption != 0) {
 			int res = get_passphrase(&passphrase, options, options_count, false);
 			if (res != ERROR_OK) {
@@ -400,6 +401,7 @@ int main(int argc, char **argv) {
 				return res;
 			}
 		}
+#endif
 		res = impack_decode_stage2(&state, passphrase);
 		if (res != ERROR_OK) {
 			int return_val = impack_print_error(res);

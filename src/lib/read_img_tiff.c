@@ -26,8 +26,9 @@
 
 impack_error_t impack_read_img_tiff(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size, bool le) {
 	
-	if (!impack_tiff_init_read(input_file, le)) {
-		return ERROR_MALLOC;
+	impack_error_t res = impack_tiff_init_read(input_file, le);
+	if (res != ERROR_OK) {
+		return res;
 	}
 	TIFF *img = TIFFClientOpen("", "rm", NULL, impack_tiff_read, impack_tiff_write, impack_tiff_seek, impack_tiff_close, impack_tiff_size, impack_tiff_map, impack_tiff_unmap);
 	if (img == NULL) {

@@ -27,7 +27,7 @@
 #include "img.h"
 #include <tiffio.h>
 
-#define BUFSTEP 1048576 // 1 MiB
+#define BUFSTEP 16384 // 16 KiB
 
 uint8_t *impack_tiff_filebuf;
 uint64_t impack_tiff_bufsize;
@@ -35,14 +35,14 @@ uint64_t impack_tiff_filesize;
 uint64_t impack_tiff_fileoff;
 bool impack_tiff_writing;
 
-bool impack_tiff_init_read(FILE *input_file, bool le) {
+impack_error_t impack_tiff_init_read(FILE *input_file, bool le) {
 	
 	TIFFSetErrorHandler(NULL);
 	
-	impack_tiff_bufsize = BUFSTEP;
+	impack_tiff_bufsize = BUFSTEP + 4;
 	impack_tiff_filebuf = malloc(impack_tiff_bufsize);
 	if (impack_tiff_filebuf == NULL) {
-		return false;
+		return ERROR_MALLOC;
 	}
 	impack_tiff_filesize = 4;
 	if (le) {
@@ -55,21 +55,24 @@ bool impack_tiff_init_read(FILE *input_file, bool le) {
 	
 	size_t bytes_read;
 	do {
-		if (impack_tiff_filesize == impack_tiff_bufsize) {
+		bytes_read = fread(impack_tiff_filebuf + impack_tiff_filesize, 1, BUFSTEP, input_file);
+		impack_tiff_filesize += bytes_read;
+		if (bytes_read == BUFSTEP) {
 			uint8_t *newbuf = realloc(impack_tiff_filebuf, impack_tiff_bufsize + BUFSTEP);
 			if (newbuf == NULL) {
 				free(impack_tiff_filebuf);
-				return false;
+				return ERROR_MALLOC;
 			}
 			impack_tiff_filebuf = newbuf;
 			impack_tiff_bufsize += BUFSTEP;
 		}
-		bytes_read = fread(impack_tiff_filebuf + impack_tiff_filesize, 1, BUFSTEP, input_file);
-		impack_tiff_filesize += bytes_read;
 	} while (bytes_read == BUFSTEP);
+	if (!feof(input_file)) {
+		return ERROR_INPUT_IO;
+	}
 	impack_tiff_fileoff = 0;
 	impack_tiff_writing = false;
-	return true;
+	return ERROR_OK;
 	
 }
 

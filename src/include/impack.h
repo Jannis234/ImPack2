@@ -60,7 +60,8 @@ typedef enum {
 	FORMAT_AUTO,
 	FORMAT_PNG,
 	FORMAT_WEBP,
-	FORMAT_TIFF
+	FORMAT_TIFF,
+	FORMAT_BMP
 } impack_img_format_t;
 
 typedef enum {

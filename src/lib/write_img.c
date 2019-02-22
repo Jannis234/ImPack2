@@ -95,6 +95,10 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 		case FORMAT_TIFF:
 			return impack_write_img_tiff(output_file, *pixeldata, pixeldata_size, width, height);
 #endif
+#ifdef IMPACK_WITH_BMP
+		case FORMAT_BMP:
+			return impack_write_img_bmp(output_file, *pixeldata, pixeldata_size, width, height);
+#endif
 		default:
 			abort(); // Requested a format that isn't compiled in
 	}

@@ -57,6 +57,15 @@ impack_img_format_t impack_select_img_format(char *name, bool fileextension) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_BMP
+	if (namelen == 3) {
+		if ((name[0] == 'B' || name[0] == 'b') && \
+			(name[1] == 'M' || name[1] == 'm') && \
+			(name[2] == 'P' || name[2] == 'p')) {
+			return FORMAT_BMP;
+		}
+	}
+#endif
 	return FORMAT_AUTO;
 	
 }
@@ -69,6 +78,8 @@ impack_img_format_t impack_default_img_format() {
 	return FORMAT_WEBP;
 #elif defined(IMPACK_WITH_TIFF)
 	return FORMAT_TIFF;
+#elif defined(IMPACK_WITH_BMP)
+	return FORMAT_BMP;
 #else
 #error "No image formats selected in config_build.mak"
 #endif

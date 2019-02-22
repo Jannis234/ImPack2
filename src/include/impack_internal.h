@@ -50,6 +50,7 @@ char* impack_filename(char *path);
 uint64_t impack_endian64(uint64_t val);
 uint32_t impack_endian32(uint32_t val);
 uint32_t impack_endian32_le(uint32_t val);
+uint32_t impack_endian16_le(uint32_t val);
 // CRC-64 calculation
 void impack_crc_init();
 void impack_crc(uint64_t *crc, uint8_t *buf, size_t buflen);

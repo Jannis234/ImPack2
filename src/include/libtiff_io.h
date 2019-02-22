@@ -22,13 +22,14 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include "impack.h"
 #include <tiffio.h>
 
 /* Libtiff requires seeking on it's input/output file
  * Since ImPack2 might be working with stdin/stdout, this code emulates
  * file I/O on a buffer in memory */
 
-bool impack_tiff_init_read(FILE *input_file, bool le);
+impack_error_t impack_tiff_init_read(FILE *input_file, bool le);
 bool impack_tiff_init_write();
 void impack_tiff_finish_read();
 bool impack_tiff_finish_write(FILE *output_file);

@@ -21,6 +21,8 @@ Check the files `config_build.mak` and `config_system.mak` for any customizable 
 ImPack2 can make use of the following dependencies (can be toggled on or off in `config_build.mak`)
 * [libpng](http://www.libpng.org/) - To read/write PNG images
 * [libwebp](https://chromium.googlesource.com/webm/libwebp/) - To read/write WebP images
+* [libtiff](http://libtiff.org/) - To read/write TIFF images
+* [libnsbmp](http://www.netsurf-browser.org/projects/libnsbmp/) - To read BMP images
 * [nettle](http://www.lysator.liu.se/~nisse/nettle/) - For encryption
 * [liblzma](https://tukaani.org/xz/) - For LZMA2 compression
 * [zlib](https://zlib.net/) - For deflate compression

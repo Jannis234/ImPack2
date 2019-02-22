@@ -110,6 +110,9 @@ void impack_print_help() {
 	bool is_first = true;
 	impack_img_format_t default_format = impack_default_img_format();
 	printf("  ");
+#ifdef IMPACK_WITH_BMP
+	print_format("BMP", &linelen, &is_first, default_format == FORMAT_BMP);
+#endif
 #ifdef IMPACK_WITH_PNG
 	print_format("PNG", &linelen, &is_first, default_format == FORMAT_PNG);
 #endif

@@ -29,7 +29,7 @@ PKG_CONFIG = pkg-config
 HELP2MAN = help2man
 INSTALL = install
 
-CFLAGS = -O2 -pipe -ggdb
+CCFLAGS = -O2 -pipe -ggdb
 LIBS =
 EXEEXT =
 
@@ -51,6 +51,11 @@ endif
 ifeq ($(WITH_LIBTIFF), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags libtiff-4)
 LIBS += $(shell $(PKG_CONFIG) --libs libtiff-4)
+endif
+
+ifeq ($(WITH_LIBNSBMP), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libnsbmp)
+LIBS += $(shell $(PKG_CONFIG) --libs libnsbmp)
 endif
 
 ifeq ($(WITH_ZLIB), 1)

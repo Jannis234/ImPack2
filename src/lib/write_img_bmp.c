@@ -32,6 +32,9 @@ impack_error_t impack_write_img_bmp(FILE *output_file, uint8_t *pixeldata, uint6
 		return ERROR_IMG_SIZE;
 	}
 	uint32_t row_padding = 4 - ((img_width * 3) % 4);
+	if (row_padding == 4) {
+		row_padding = 0;
+	}
 	uint64_t filesize = (img_width * img_height * 3) + (img_height * row_padding) + 54;
 	if (filesize > UINT32_MAX) {
 		return ERROR_IMG_SIZE;

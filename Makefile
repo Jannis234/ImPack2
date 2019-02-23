@@ -18,13 +18,14 @@ IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
 
 include config_system.mak
 
-CFLAGS = $(CCFLAGS) -Wall -std=c99 -Isrc/include
+CFLAGS += $(CCFLAGS) -Wall -std=c99 -Isrc/include
 
 CLI_SRC = src/cli/main.c \
 	src/cli/argparse.c \
 	src/cli/help.c \
 	src/cli/error.c \
 	src/cli/readpass.c
+TEST_SRC = src/test/main.c
 LIB_SRC = src/lib/encode.c \
 	src/lib/decode.c \
 	src/lib/filename.c \
@@ -50,7 +51,7 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/compress_lzma.c \
 	src/lib/select.c
 
-.PHONY: all depend clean cli man man-cli install install-cli install-man install-man-cli uninstall
+.PHONY: all depend clean check cli man man-cli install install-cli install-man install-man-cli uninstall
 
 all: cli man
 
@@ -76,18 +77,24 @@ uninstall:
 	rm -f $(BINDIR)/impack$(EXEEXT)
 	rm -f $(MANDIR)/man1/impack.1
 
+check: testsuite$(EXEEXT)
+	./testsuite$(EXEEXT)
+
 clean:
-	rm -f $(CLI_SRC:.c=.o)
-	rm -f $(CLI_SRC:.c=.d)
-	rm -f $(LIB_SRC:.c=.o)
-	rm -f $(LIB_SRC:.c=.d)
-	rm -f impack$(EXEEXT) libimpack.a
+	rm -f $(CLI_SRC:.c=.o) $(CLI_SRC:.c=.d)
+	rm -f $(TEST_SRC:.c=.o) $(TEST_SRC:.c=.d)
+	rm -f $(LIB_SRC:.c=.o) $(LIB_SRC:.c=.d)
+	rm -f impack$(EXEEXT) testsuite$(EXEEXT) libimpack.a
 	rm -f impack.1
 	rm -f depend.mak
 	rm -f src/include/config_generated.h
+	rm -f testout_encode.tmp testout_decode.tmp
 
 impack$(EXEEXT): libimpack.a $(CLI_SRC:.c=.o)
 	$(CCLD) -o impack$(EXEEXT) $(CLI_SRC:.c=.o) libimpack.a $(LIBS)
+
+testsuite$(EXEEXT): libimpack.a $(TEST_SRC:.c=.o)
+	$(CCLD) -o testsuite$(EXEEXT) $(TEST_SRC:.c=.o) libimpack.a $(LIBS)
 
 impack.1: impack$(EXEEXT)
 	help2man -N ./impack$(EXEEXT) -o impack.1

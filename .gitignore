@@ -1,8 +1,9 @@
 *.o
 *.d
 *.a
+*.tmp
 depend.mak
 src/include/config_generated.h
 impack
+testsuite
 impack.1
-

@@ -22,6 +22,8 @@
 #include "impack.h"
 #include "config.h"
 
+extern void impack_build_info();
+
 #define REF_LENGTH 256
 #define PASSPHRASE_CORRECT "123456"
 #define PASSPHRASE_INCORRECT "abcdef"
@@ -436,6 +438,7 @@ int main(int argc, char **argv) {
 	int res = 0;
 	printf("ImPack2 testsuite\n");
 	printf("=================\n");
+	impack_build_info();
 	printf("\n");
 	printf("Preparing... ");
 	FILE *f = fopen("testdata/input.bin", "rb");

@@ -25,7 +25,8 @@ CLI_SRC = src/cli/main.c \
 	src/cli/help.c \
 	src/cli/error.c \
 	src/cli/readpass.c
-TEST_SRC = src/test/main.c
+TEST_SRC = src/test/main.c \
+	src/test/build_info.c
 LIB_SRC = src/lib/encode.c \
 	src/lib/decode.c \
 	src/lib/filename.c \

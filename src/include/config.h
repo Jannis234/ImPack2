@@ -46,7 +46,7 @@
 #define IMPACK_WITH_BMP
 #endif
 
-#if (IMPACK_CONFIG_ZLIB == 1) || (IMPACK_CONFIG_ZSTD == 1) || (IMPACK_CONFIG_LZMA == 1)
+#if (IMPACK_CONFIG_ZLIB == 1) || (IMPACK_CONFIG_ZSTD == 1) || (IMPACK_CONFIG_LZMA == 1) || (IMPACK_CONFIG_BZIP2 == 1)
 #define IMPACK_WITH_COMPRESSION
 #endif
 
@@ -60,6 +60,10 @@
 
 #if (IMPACK_CONFIG_LZMA == 1)
 #define IMPACK_WITH_LZMA
+#endif
+
+#if (IMPACK_CONFIG_BZIP2 == 1)
+#define IMPACK_WITH_BZIP2
 #endif
 
 #endif

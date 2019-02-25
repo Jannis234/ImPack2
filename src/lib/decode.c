@@ -208,6 +208,13 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 				free(state->pixeldata);
 				return ERROR_COMPRESSION_UNSUPPORTED;
 #endif
+			case COMPRESSION_BZIP2:
+#ifdef IMPACK_WITH_BZIP2
+				break;
+#else
+				free(state->pixeldata);
+				return ERROR_COMPRESSION_UNSUPPORTED;
+#endif
 			default:
 				free(state->pixeldata);
 				return ERROR_COMPRESSION_UNKNOWN;

@@ -71,6 +71,9 @@ void impack_build_info() {
 #ifdef IMPACK_WITH_LZMA
 	printf(" LZMA2");
 #endif
+#ifdef IMPACK_WITH_BZIP2
+	printf(" Bzip2");
+#endif
 	printf("\n\n");
 	
 	printf("Third party libraries (build / runtime):\n");

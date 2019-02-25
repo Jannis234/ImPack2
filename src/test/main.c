@@ -362,6 +362,9 @@ bool test_cycle() {
 #ifdef IMPACK_WITH_LZMA
 	res &= test_cycle_format("Compressed data, LZMA2 compression", false, NULL, COMPRESSION_LZMA, 0, 0, allchannels);
 #endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_cycle_format("Compressed data, Bzip2 compression", false, NULL, COMPRESSION_BZIP2, 0, 0, allchannels);
+#endif
 #ifdef IMPACK_WITH_CRYPTO
 	res &= test_cycle_format("Encrypted data", true, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
 #ifdef IMPACK_WITH_ZLIB
@@ -372,6 +375,9 @@ bool test_cycle() {
 #endif
 #ifdef IMPACK_WITH_LZMA
 	res &= test_cycle_format("Encrypted and compressed data, LZMA2 compression", true, PASSPHRASE_CORRECT, COMPRESSION_LZMA, 0, 0, allchannels);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_cycle_format("Encrypted and compressed data, Bzip2 compression", true, PASSPHRASE_CORRECT, COMPRESSION_BZIP2, 0, 0, allchannels);
 #endif
 #endif
 	return res;
@@ -404,6 +410,10 @@ bool test_decode() {
 	res &= test_decode_format("Compressed data, LZMA2 compression", "testdata/valid_compressed_lzma2", NULL, false);
 	res &= test_decode_format("Corrupted compressed data, LZMA2 compression", "testdata/invalid_compressed_lzma2", NULL, true);
 #endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Compressed data, Bzip2 compression", "testdata/valid_compressed_bzip2", NULL, false);
+	res &= test_decode_format("Corrupted compressed data, Bzip2 compression", "testdata/invalid_compressed_bzip2", NULL, true);
+#endif
 #ifdef IMPACK_WITH_CRYPTO
 	res &= test_decode_format("Encrypted data", "testdata/valid_encrypted", PASSPHRASE_CORRECT, false);
 	res &= test_decode_format("Encrypted data, incorrect passphrase", "testdata/valid_encrypted", PASSPHRASE_INCORRECT, true);
@@ -422,6 +432,9 @@ bool test_decode() {
 #endif
 #ifdef IMPACK_WITH_LZMA
 	res &= test_decode_format("Encrypted and compressed data, LZMA2 compression", "testdata/valid_encrypted_compressed_lzma2", PASSPHRASE_CORRECT, false);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Encrypted and compressed data, Bzip2 compression", "testdata/valid_encrypted_compressed_bzip2", PASSPHRASE_CORRECT, false);
 #endif
 	res &= test_decode_format("Legacy image, corrupted data", "testdata/legacy_invalid", NULL, true); // Legacy images use SHA-512
 #endif

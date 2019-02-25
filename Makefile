@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-IMPACK_VERSION = 0.1
-#IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
+#IMPACK_VERSION = 0.1
+IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
 
 include config_system.mak
 
@@ -50,6 +50,7 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/compress_zlib.c \
 	src/lib/compress_zstd.c \
 	src/lib/compress_lzma.c \
+	src/lib/compress_bzip2.c \
 	src/lib/select.c
 
 .PHONY: all depend clean check cli man man-cli install install-cli install-man install-man-cli uninstall
@@ -109,7 +110,7 @@ depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
 	cat $(LIB_SRC:.c=.d) >> depend.mak
 
 src/include/config_generated.h: config_build.mak src/gen_config.sh
-	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_LIBTIFF) $(WITH_LIBNSBMP) $(WITH_ZLIB) $(WITH_ZSTD) $(WITH_LZMA) > src/include/config_generated.h
+	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_LIBTIFF) $(WITH_LIBNSBMP) $(WITH_ZLIB) $(WITH_ZSTD) $(WITH_LZMA) $(WITH_BZIP2) > src/include/config_generated.h
 
 %.d: %.c config_build.mak config_system.mak src/include/config_generated.h
 	$(CC) $(CFLAGS) -M -MT $(<:.c=.o) -o $@ $<

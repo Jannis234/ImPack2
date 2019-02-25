@@ -124,6 +124,17 @@ impack_compression_type_t impack_select_compression(char *name) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_BZIP2
+	if (namelen == 5) {
+		if ((name[0] == 'B' || name[0] == 'b') && \
+			(name[1] == 'Z' || name[1] == 'z') && \
+			(name[2] == 'I' || name[2] == 'i') && \
+			(name[3] == 'P' || name[3] == 'p') && \
+			(name[4] == '2')) {
+			return COMPRESSION_BZIP2;
+		}
+	}
+#endif
 	return COMPRESSION_NONE;
 	
 }
@@ -134,6 +145,8 @@ impack_compression_type_t impack_default_compression() {
 	return COMPRESSION_ZSTD;
 #elif defined(IMPACK_WITH_ZLIB)
 	return COMPRESSION_ZLIB;
+#elif defined(IMPACK_WITH_BZIP2)
+	return COMPRESSION_BZIP2;
 #elif defined(IMPACK_WITH_LZMA)
 	return COMPRESSION_LZMA;
 #else

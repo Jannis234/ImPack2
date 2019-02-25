@@ -24,6 +24,7 @@ ImPack2 can make use of the following dependencies (can be toggled on or off in 
 * [libtiff](http://libtiff.org/) - To read/write TIFF images
 * [libnsbmp](http://www.netsurf-browser.org/projects/libnsbmp/) - To read BMP images
 * [nettle](http://www.lysator.liu.se/~nisse/nettle/) - For encryption
+* [libbzip2](https://sourceware.org/bzip2/) - For Bzip2 compression
 * [liblzma](https://tukaani.org/xz/) - For LZMA2 compression
 * [zlib](https://zlib.net/) - For deflate compression
 * [zstd](https://facebook.github.io/zstd/) - For Zstandard compression

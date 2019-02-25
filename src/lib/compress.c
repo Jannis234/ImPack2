@@ -38,6 +38,10 @@ bool impack_compress_init(impack_compress_state_t *state) {
 		case COMPRESSION_LZMA:
 			return impack_compress_init_lzma(state);
 #endif
+#ifdef IMPACK_WITH_BZIP2
+		case COMPRESSION_BZIP2:
+			return impack_compress_init_bzip2(state);
+#endif
 		default:
 			abort();
 	}
@@ -62,6 +66,11 @@ void impack_compress_free(impack_compress_state_t *state) {
 			impack_compress_free_lzma(state);
 			return;
 #endif
+#ifdef IMPACK_WITH_BZIP2
+		case COMPRESSION_BZIP2:
+			impack_compress_free_bzip2(state);
+			return;
+#endif
 		default:
 			abort();
 	}
@@ -82,6 +91,10 @@ impack_compression_result_t impack_compress_read(impack_compress_state_t *state,
 #ifdef IMPACK_WITH_LZMA
 		case COMPRESSION_LZMA:
 			return impack_compress_read_lzma(state, buf, lenout);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+		case COMPRESSION_BZIP2:
+			return impack_compress_read_bzip2(state, buf, lenout);
 #endif
 		default:
 			abort();
@@ -107,6 +120,11 @@ void impack_compress_write(impack_compress_state_t *state, uint8_t *buf, uint64_
 			impack_compress_write_lzma(state, buf, len);
 			return;
 #endif
+#ifdef IMPACK_WITH_BZIP2
+		case COMPRESSION_BZIP2:
+			impack_compress_write_bzip2(state, buf, len);
+			return;
+#endif
 		default:
 			abort();
 	}
@@ -128,6 +146,10 @@ impack_compression_result_t impack_compress_flush(impack_compress_state_t *state
 		case COMPRESSION_LZMA:
 			return impack_compress_flush_lzma(state, buf, lenout);
 #endif
+#ifdef IMPACK_WITH_BZIP2
+		case COMPRESSION_BZIP2:
+			return impack_compress_flush_bzip2(state, buf, lenout);
+#endif
 		default:
 			abort();
 	}
@@ -148,6 +170,10 @@ bool impack_compress_level_valid(impack_compression_type_t type, int32_t level) 
 #ifdef IMPACK_WITH_LZMA
 		case COMPRESSION_LZMA:
 			return impack_compress_level_valid_lzma(level);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+		case COMPRESSION_BZIP2:
+			return impack_compress_level_valid_bzip2(level);
 #endif
 		default:
 			abort();

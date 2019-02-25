@@ -27,5 +27,6 @@ echo "#define IMPACK_CONFIG_BMP $6"
 echo "#define IMPACK_CONFIG_ZLIB $7"
 echo "#define IMPACK_CONFIG_ZSTD $8"
 echo "#define IMPACK_CONFIG_LZMA $9"
+echo "#define IMPACK_CONFIG_BZIP2 ${10}"
 echo
 echo "#endif"

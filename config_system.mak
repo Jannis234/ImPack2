@@ -72,3 +72,7 @@ ifeq ($(WITH_LZMA), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags liblzma)
 LIBS += $(shell $(PKG_CONFIG) --libs liblzma)
 endif
+
+ifeq ($(WITH_BZIP2), 1)
+LIBS += -lbz2
+endif

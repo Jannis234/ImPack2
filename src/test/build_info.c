@@ -38,6 +38,10 @@
 #ifdef IMPACK_WITH_LZMA
 #include <lzma.h>
 #endif
+#ifdef IMPACK_WITH_BROTLI
+#include <brotli/encode.h>
+#include <brotli/decode.h>
+#endif
 
 void impack_build_info() {
 	
@@ -73,6 +77,9 @@ void impack_build_info() {
 #endif
 #ifdef IMPACK_WITH_BZIP2
 	printf(" Bzip2");
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	printf(" Brotli");
 #endif
 	printf("\n\n");
 	
@@ -111,6 +118,10 @@ void impack_build_info() {
 #endif
 #ifdef IMPACK_WITH_LZMA
 	printf("  liblzma: %s / %s\n", LZMA_VERSION_STRING, lzma_version_string());
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	printf("  brotli encode: / %u\n", BrotliEncoderVersion());
+	printf("  brotli decode: / %u\n", BrotliDecoderVersion());
 #endif
 	
 }

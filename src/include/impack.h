@@ -54,7 +54,8 @@ typedef enum {
 	COMPRESSION_ZLIB = 1,
 	COMPRESSION_ZSTD = 2,
 	COMPRESSION_LZMA = 3,
-	COMPRESSION_BZIP2 = 4
+	COMPRESSION_BZIP2 = 4,
+	COMPRESSION_BROTLI = 5
 } impack_compression_type_t;
 
 typedef enum {

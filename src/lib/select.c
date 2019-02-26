@@ -135,6 +135,18 @@ impack_compression_type_t impack_select_compression(char *name) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_BROTLI
+	if (namelen == 6) {
+		if ((name[0] == 'B' || name[0] == 'b') && \
+			(name[1] == 'R' || name[1] == 'r') && \
+			(name[2] == 'O' || name[2] == 'o') && \
+			(name[3] == 'T' || name[3] == 't') && \
+			(name[4] == 'L' || name[4] == 'l') && \
+			(name[5] == 'I' || name[5] == 'i')) {
+			return COMPRESSION_BROTLI;
+		}
+	}
+#endif
 	return COMPRESSION_NONE;
 	
 }
@@ -145,6 +157,8 @@ impack_compression_type_t impack_default_compression() {
 	return COMPRESSION_ZSTD;
 #elif defined(IMPACK_WITH_ZLIB)
 	return COMPRESSION_ZLIB;
+#elif defined(IMPACK_WITH_BROTLI)
+	return COMPRESSION_BROTLI;
 #elif defined(IMPACK_WITH_BZIP2)
 	return COMPRESSION_BZIP2;
 #elif defined(IMPACK_WITH_LZMA)

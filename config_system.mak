@@ -76,3 +76,8 @@ endif
 ifeq ($(WITH_BZIP2), 1)
 LIBS += -lbz2
 endif
+
+ifeq ($(WITH_BROTLI), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libbrotlidec) $(shell $(PKG_CONFIG) --cflags libbrotlienc)
+LIBS += $(shell $(PKG_CONFIG) --libs libbrotlidec) $(shell $(PKG_CONFIG) --libs libbrotlienc)
+endif

@@ -131,6 +131,9 @@ void impack_print_help() {
 	is_first = true;
 	impack_compression_type_t default_compression = impack_default_compression();
 	printf("  ");
+#ifdef IMPACK_WITH_BROTLI
+	print_format("Brotli", &linelen, &is_first, default_compression == COMPRESSION_BROTLI);
+#endif
 #ifdef IMPACK_WITH_BZIP2
 	print_format("Bzip2", &linelen, &is_first, default_compression == COMPRESSION_BZIP2);
 #endif

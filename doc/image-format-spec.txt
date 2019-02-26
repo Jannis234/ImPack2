@@ -78,3 +78,5 @@ The following compression methods are currently recognized:
 ID=1: Deflate (zlib stream format)
 ID=2: Zstd
 ID=3: LZMA2 (XZ container)
+ID=4: Bzip2
+ID=5: Brotli

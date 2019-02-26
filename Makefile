@@ -70,9 +70,11 @@ install: install-cli install-man
 install-man: install-man-cli
 
 install-cli: cli
+	mkdir -p $(BINDIR)
 	$(INSTALL) impack$(EXEEXT) $(BINDIR)
 
 install-man-cli: man-cli
+	mkdir -p $(MANDIR)
 	$(INSTALL) impack.1 $(MANDIR)/man1
 
 uninstall:

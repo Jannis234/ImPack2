@@ -58,6 +58,11 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags libnsbmp)
 LIBS += $(shell $(PKG_CONFIG) --libs libnsbmp)
 endif
 
+ifeq ($(WITH_OPENJPEG2), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libopenjp2)
+LIBS += $(shell $(PKG_CONFIG) --libs libopenjp2)
+endif
+
 ifeq ($(WITH_ZLIB), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags zlib)
 LIBS += $(shell $(PKG_CONFIG) --libs zlib)

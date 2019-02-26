@@ -66,6 +66,30 @@ impack_img_format_t impack_select_img_format(char *name, bool fileextension) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_JP2K
+	if (fileextension && namelen == 3) {
+		if ((name[0] == 'J' || name[0] == 'j') && \
+			(name[1] == 'P' || name[1] == 'p') && \
+			(name[2] == '2')) {
+			return FORMAT_JP2K;
+		}
+		if ((name[0] == 'J' || name[0] == 'j') && \
+			(name[1] == '2') && \
+			(name[2] == 'K' || name[2] == 'k')) {
+			return FORMAT_JP2K;
+		}
+	}
+	if (!fileextension && namelen == 8) {
+		if ((name[0] == 'J' || name[0] == 'j') && \
+			(name[1] == 'P' || name[1] == 'p') && \
+			(name[2] == 'E' || name[2] == 'e') && \
+			(name[3] == 'G' || name[3] == 'g') && \
+			(name[4] == '2' && name[5] == '0') && \
+			(name[6] == '0' && name[7] == '0')) {
+			return FORMAT_JP2K;
+		}
+	}
+#endif
 	return FORMAT_AUTO;
 	
 }
@@ -80,6 +104,8 @@ impack_img_format_t impack_default_img_format() {
 	return FORMAT_TIFF;
 #elif defined(IMPACK_WITH_BMP)
 	return FORMAT_BMP;
+#elif defined(IMPACK_WITH_JP2K)
+	return FORMAT_JP2K;
 #else
 #error "No image formats selected in config_build.mak"
 #endif

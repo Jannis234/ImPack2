@@ -26,7 +26,7 @@
 #define IMPACK_WITH_CRYPTO
 #endif
 
-#if (IMPACK_CONFIG_PNG != 1) && (IMPACK_CONFIG_WEBP != 1) && (IMPACK_CONFIG_TIFF != 1) && (IMPACK_CONFIG_BMP != 1)
+#if (IMPACK_CONFIG_PNG != 1) && (IMPACK_CONFIG_WEBP != 1) && (IMPACK_CONFIG_TIFF != 1) && (IMPACK_CONFIG_BMP != 1) && (IMPACK_CONFIG_JP2K != 1)
 #error "No image formats selected in config_build.mak"
 #endif
 
@@ -44,6 +44,10 @@
 
 #if (IMPACK_CONFIG_BMP == 1)
 #define IMPACK_WITH_BMP
+#endif
+
+#if (IMPACK_CONFIG_JP2K == 1)
+#define IMPACK_WITH_JP2K
 #endif
 
 #if (IMPACK_CONFIG_ZLIB == 1) || (IMPACK_CONFIG_ZSTD == 1) || (IMPACK_CONFIG_LZMA == 1) || (IMPACK_CONFIG_BZIP2 == 1) || (IMPACK_CONFIG_BROTLI == 1)

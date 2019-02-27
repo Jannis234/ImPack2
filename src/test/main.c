@@ -201,52 +201,38 @@ bool decode_run(char *input_file, char *passphrase, bool shouldfail) {
 	
 }
 
+bool test_decode_format_run(char *msg, char *filename, char *passphrase, bool shouldfail, char *format_name, char *fileextension) {
+	
+	printf("%s, %s: ", msg, format_name);
+	strcpy(namebuf + strlen(filename), fileextension);
+	char *passarg = NULL;
+	char passbuf[PASSPHRASE_LEN + 1];
+	if (passphrase != NULL) {
+		strcpy(passbuf, passphrase);
+		passarg = passbuf;
+	}
+	return decode_run(namebuf, passarg, shouldfail);
+	
+}
+
 bool test_decode_format(char *msg, char *filename, char *passphrase, bool shouldfail) {
 	
 	bool res = true;
 	strcpy(namebuf, filename);
-	size_t namelen = strlen(filename);
-	char passbuf[PASSPHRASE_LEN + 1];
-	char *passarg = NULL;
 #ifdef IMPACK_WITH_PNG
-	printf("%s, PNG: ", msg);
-	strcpy(namebuf + namelen, ".png");
-	passarg = NULL;
-	if (passphrase != NULL) {
-		strcpy(passbuf, passphrase);
-		passarg = passbuf;
-	}
-	res &= decode_run(namebuf, passbuf, shouldfail);
+	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "PNG", ".png");
 #endif
 #ifdef IMPACK_WITH_WEBP
-	printf("%s, WebP: ", msg);
-	strcpy(namebuf + namelen, ".webp");
-	passarg = NULL;
-	if (passphrase != NULL) {
-		strcpy(passbuf, passphrase);
-		passarg = passbuf;
-	}
-	res &= decode_run(namebuf, passarg, shouldfail);
+	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "WebP", ".webp");
 #endif
 #ifdef IMPACK_WITH_TIFF
-	printf("%s, TIFF: ", msg);
-	strcpy(namebuf + namelen, ".tiff");
-	passarg = NULL;
-	if (passphrase != NULL) {
-		strcpy(passbuf, passphrase);
-		passarg = passbuf;
-	}
-	res &= decode_run(namebuf, passarg, shouldfail);
+	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "TIFF", ".tiff");
 #endif
 #ifdef IMPACK_WITH_BMP
-	printf("%s, BMP: ", msg);
-	strcpy(namebuf + namelen, ".bmp");
-	passarg = NULL;
-	if (passphrase != NULL) {
-		strcpy(passbuf, passphrase);
-		passarg = passbuf;
-	}
-	res &= decode_run(namebuf, passarg, shouldfail);
+	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "BMP", ".bmp");
+#endif
+#ifdef IMPACK_WITH_JP2K
+	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "JPEG2000", ".jp2");
 #endif
 	return res;
 	
@@ -265,74 +251,43 @@ bool encode_run(impack_img_format_t format, bool encrypt, char *passphrase, impa
 	
 }
 
+bool test_cycle_format_run(char *msg, bool encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels, impack_img_format_t format, char *format_name) {
+	
+	printf("%s, %s: ", msg, format_name);
+	char *passarg = NULL;
+	char passbuf[PASSPHRASE_LEN + 1];
+	if (passphrase != NULL) {
+		strcpy(passbuf, passphrase);
+		passarg = passbuf;
+	}
+	if (!encode_run(format, encrypt, passarg, compress, width, height, channels)) {
+		return false;
+	} else {
+		if (passphrase != NULL) {
+			strcpy(passbuf, passphrase);
+		}
+		return decode_run("testout_encode.tmp", passarg, false);
+	}
+	
+}
+
 bool test_cycle_format(char *msg, bool encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels) {
 	
 	bool res = true;
-	char passbuf[PASSPHRASE_LEN + 1];
-	char *passarg = NULL;
 #ifdef IMPACK_WITH_PNG
-	printf("%s, PNG: ", msg);
-	passarg = NULL;
-	if (passphrase != NULL) {
-		strcpy(passbuf, passphrase);
-		passarg = passbuf;
-	}
-	if (!encode_run(FORMAT_PNG, encrypt, passarg, compress, width, height, channels)) {
-		res = false;
-	} else {
-		if (passphrase != NULL) {
-			strcpy(passbuf, passphrase);
-		}
-		res &= decode_run("testout_encode.tmp", passarg, false);
-	}
+	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_PNG, "PNG");
 #endif
 #ifdef IMPACK_WITH_WEBP
-	printf("%s, WebP: ", msg);
-	passarg = NULL;
-	if (passphrase != NULL) {
-		strcpy(passbuf, passphrase);
-		passarg = passbuf;
-	}
-	if (!encode_run(FORMAT_WEBP, encrypt, passarg, compress, width, height, channels)) {
-		res = false;
-	} else {
-		if (passphrase != NULL) {
-			strcpy(passbuf, passphrase);
-		}
-		res &= decode_run("testout_encode.tmp", passarg, false);
-	}
+	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_WEBP, "WebP");
 #endif
 #ifdef IMPACK_WITH_TIFF
-	printf("%s, TIFF: ", msg);
-	passarg = NULL;
-	if (passphrase != NULL) {
-		strcpy(passbuf, passphrase);
-		passarg = passbuf;
-	}
-	if (!encode_run(FORMAT_TIFF, encrypt, passarg, compress, width, height, channels)) {
-		res = false;
-	} else {
-		if (passphrase != NULL) {
-			strcpy(passbuf, passphrase);
-		}
-		res &= decode_run("testout_encode.tmp", passarg, false);
-	}
+	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_TIFF, "TIFF");
 #endif
 #ifdef IMPACK_WITH_BMP
-	printf("%s, BMP: ", msg);
-	passarg = NULL;
-	if (passphrase != NULL) {
-		strcpy(passbuf, passphrase);
-		passarg = passbuf;
-	}
-	if (!encode_run(FORMAT_BMP, encrypt, passarg, compress, width, height, channels)) {
-		res = false;
-	} else {
-		if (passphrase != NULL) {
-			strcpy(passbuf, passphrase);
-		}
-		res &= decode_run("testout_encode.tmp", passarg, false);
-	}
+	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_BMP, "BMP");
+#endif
+#ifdef IMPACK_WITH_JP2K
+	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_JP2K, "JPEG2000");
 #endif
 	return res;
 	

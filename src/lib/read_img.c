@@ -27,6 +27,7 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 	uint8_t magic_tiff_le[] = IMPACK_MAGIC_TIFF_LE;
 	uint8_t magic_tiff_be[] = IMPACK_MAGIC_TIFF_BE;
 	uint8_t magic_bmp[] = IMPACK_MAGIC_BMP;
+	uint8_t magic_jp2k[] = IMPACK_MAGIC_JP2K;
 	
 	uint8_t buf[4];
 	if (fread(buf, 1, 2, input_file) != 2) {
@@ -37,12 +38,14 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 	bool istiff_le = true;
 	bool istiff_be = true;
 	bool isbmp = true;
+	bool isjp2k = true;
 	for (int i = 0; i < 2; i++) {
 		ispng &= (buf[i] == magic_png[i]);
 		iswebp &= (buf[i] == magic_webp[i]);
 		istiff_le &= (buf[i] == magic_tiff_le[i]);
 		istiff_be &= (buf[i] == magic_tiff_be[i]);
 		isbmp &= (buf[i] == magic_bmp[i]);
+		isjp2k = (buf[i] == magic_jp2k[i]);
 	}
 	if (isbmp) {
 #ifdef IMPACK_WITH_BMP
@@ -60,6 +63,7 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 		iswebp &= (buf[i] == magic_webp[i + 2]);
 		istiff_le &= (buf[i] == magic_tiff_le[i + 2]);
 		istiff_be &= (buf[i] == magic_tiff_be[i + 2]);
+		isjp2k &= (buf[i] == magic_jp2k[i + 2]);
 	}
 	if (iswebp) {
 #ifdef IMPACK_WITH_WEBP
@@ -81,6 +85,7 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 	}
 	for (int i = 0; i < 4; i++) {
 		ispng &= (buf[i] == magic_png[i + 4]);
+		isjp2k &= (buf[i] == magic_jp2k[i + 4]);
 	}
 	if (ispng) {
 #ifdef IMPACK_WITH_PNG
@@ -89,7 +94,21 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 		return ERROR_IMG_FORMAT_UNSUPPORTED;
 #endif
 	}
-
+	
+	if (fread(buf, 1, 4, input_file) != 4) {
+		return ERROR_INPUT_IO;
+	}
+	for (int i = 0; i < 4; i++) {
+		isjp2k &= (buf[i] == magic_jp2k[i + 8]);
+	}
+	if (isjp2k) {
+#ifdef IMPACK_WITH_JP2K
+		return impack_read_img_jp2k(input_file, pixeldata, pixeldata_size);
+#else
+		return ERROR_IMG_FORMAT_UNSUPPORTED;
+#endif
+	}
+	
 	return ERROR_IMG_FORMAT_UNKNOWN;
 	
 }

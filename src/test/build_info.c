@@ -29,6 +29,10 @@
 #ifdef IMPACK_WITH_TIFF
 #include <tiffio.h>
 #endif
+#ifdef IMPACK_WITH_JP2K
+#include <openjpeg.h>
+#include <opj_config.h>
+#endif
 #ifdef IMPACK_WITH_ZLIB
 #include <zlib.h>
 #endif
@@ -64,6 +68,9 @@ void impack_build_info() {
 #endif
 #ifdef IMPACK_WITH_BMP
 	printf(" BMP");
+#endif
+#ifdef IMPACK_WITH_JP2K
+	printf(" JPEG2000");
 #endif
 	printf("\n  Compression types:");
 #ifdef IMPACK_WITH_ZLIB
@@ -109,6 +116,9 @@ void impack_build_info() {
 		tiffver++;
 	}
 	printf("\n");
+#endif
+#ifdef IMPACK_WITH_JP2K
+	printf("  openjpeg: %d.%d.%d / %s\n", OPJ_VERSION_MAJOR, OPJ_VERSION_MINOR, OPJ_VERSION_BUILD, opj_version());
 #endif
 #ifdef IMPACK_WITH_ZLIB
 	printf("  zlib: %s / %s\n", ZLIB_VERSION, zlibVersion());

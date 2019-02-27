@@ -18,7 +18,7 @@
 
 IMGS = $(shell ls *.png)
 
-all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp)
+all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2)
 
 %.webp: %.png
 	convert $< -define webp:lossless=true $@
@@ -29,4 +29,7 @@ all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp)
 %.bmp: %.png
 	convert $< out.bmp3
 	mv out.bmp3 $@
+
+%.jp2: %.png
+	convert $< $@
 

@@ -27,20 +27,19 @@
 #define PBKDF2_ITERATIONS 100000
 
 void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize) {
-
+	
 	struct hmac_sha512_ctx ctx;
 	hmac_sha512_set_key(&ctx, strlen(passphrase), (uint8_t*) passphrase);
 	PBKDF2(&ctx, hmac_sha512_update, hmac_sha512_digest, SHA512_DIGEST_SIZE, PBKDF2_ITERATIONS, saltsize, salt, keysize, keyout);
-
+	
 }
 
 void impack_derive_key_legacy(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize) {
-
+	
 	struct hmac_sha1_ctx ctx;
 	hmac_sha1_set_key(&ctx, strlen(passphrase), (uint8_t*) passphrase);
 	PBKDF2(&ctx, hmac_sha1_update, hmac_sha1_digest, SHA1_DIGEST_SIZE, 1000, saltsize, salt, keysize, keyout);
-
+	
 }
 
 #endif
-

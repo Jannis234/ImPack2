@@ -27,7 +27,7 @@
 #endif
 
 bool impack_random(uint8_t *dst, size_t count) {
-
+	
 #ifdef IMPACK_WINDOWS
 	HCRYPTPROV provider;
 	if (CryptAcquireContext(&provider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == 0) {
@@ -51,7 +51,7 @@ bool impack_random(uint8_t *dst, size_t count) {
 	fclose(devurandom);
 	return true;
 #endif
-
+	
 }
 
 #endif

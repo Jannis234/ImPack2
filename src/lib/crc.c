@@ -22,7 +22,7 @@
 uint64_t crc_table[256];
 
 void impack_crc_init() {
-
+	
 	for (int i = 0; i < 256; i++) {
 		uint64_t crc = i;
 		for (int j = 0; j < 8; j++) {
@@ -34,7 +34,7 @@ void impack_crc_init() {
 		}
 		crc_table[i] = crc;
 	}
-
+	
 }
 
 void impack_crc(uint64_t *crc, uint8_t *buf, size_t buflen) {

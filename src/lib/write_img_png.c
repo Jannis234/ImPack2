@@ -25,11 +25,11 @@
 #include "impack.h"
 
 impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height) {
-
+	
 	if (img_width > INT32_MAX || img_height > INT32_MAX) { // Maximum dimensions for PNG
 		return ERROR_IMG_SIZE;
 	}
-
+	
 	png_structp write_struct = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (write_struct == NULL) {
 		return ERROR_MALLOC;
@@ -54,17 +54,17 @@ impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint6
 		free(row_pointers);
 		return ERROR_OUTPUT_IO;
 	}
-
+	
 	png_init_io(write_struct, output_file);
 	png_set_user_limits(write_struct, INT32_MAX, INT32_MAX);
 	png_set_IHDR(write_struct, info_struct, img_width, img_height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 	png_set_rows(write_struct, info_struct, row_pointers);
 	png_write_png(write_struct, info_struct, PNG_TRANSFORM_IDENTITY, NULL);
-
+	
 	png_destroy_write_struct(&write_struct, &info_struct);
 	free(row_pointers);
 	return ERROR_OK;
-
+	
 }
 
 #endif

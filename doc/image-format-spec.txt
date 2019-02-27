@@ -26,9 +26,8 @@ various metadata:
     Currently, this number is always set to 0. It may be increased in the
     future to indicate an incompatible change to the image format.
 3.) Encryption flag (1 byte)
-    If this is set to 0, the data is not encrypted and set to 1 if it is.
-    This number may have a higher value in the future if a different
-    encryption algorithm is added.
+    If this is set to 0, the data is not encrypted. If encryption is enabled,
+    this number contains the ID of the encryption algorithm (see below).
 4.) Compression flag (1 byte)
     If this is set to 0, the data is not compressed. If compression is
     enabled, this number contains the ID of the compression algorithm (see
@@ -62,10 +61,18 @@ See https://tukaani.org/xz/xz-file-format.txt for more information.
 Encryption
 ----------
 
-Data and filename can be encrypted using AES-256 in CBC mode. The AES key is
-derived from the user's passphrase using PBKDF2 with HMAC-SHA512 and 100000
-iterations. The AES IV is also used as the salt for PBKDF2.
-If the last AES block is only filled partially, padding will be added. It is
+Data and filename can be encrypted using one of the following algorithms:
+
+ID=1: AES
+ID=2: Camellia
+ID=3: Serpent
+ID=4: Twofish
+
+Encryption is performed in CBC mode using a block size of 16 bytes and a key
+size of 32 bytes. The key is derived from the user's passphrase using PBKDF2
+with HMAC-SHA512 and 100000 iterations. The IV is also used as the salt for
+PBKDF2.
+If the last block is only filled partially, padding will be added. It is
 discarded after decryption. Padding is added to the filename and the data
 separately.
 

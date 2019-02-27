@@ -144,6 +144,7 @@ int main(int argc, char **argv) {
 		{ "custom-filename", 0, true, false, NULL },
 #ifdef IMPACK_WITH_CRYPTO
 		{ "encrypt", 'c', false, false, NULL },
+		{ "encryption-type", 0, true, false, NULL },
 		{ "passphrase", 'p', true, false, NULL },
 		{ "passphrase-file", 0, true, false, NULL },
 #endif
@@ -182,6 +183,7 @@ int main(int argc, char **argv) {
 	int option_custom_filename = impack_find_option(options, options_count, true, "custom-filename");
 #ifdef IMPACK_WITH_CRYPTO
 	int option_encrypt = impack_find_option(options, options_count, false, "c");
+	int option_encryption_type = impack_find_option(options, options_count, true, "encryption-type");
 #endif
 #ifdef IMPACK_WITH_COMPRESSION
 	int option_compress = impack_find_option(options, options_count, false, "z");
@@ -207,7 +209,7 @@ int main(int argc, char **argv) {
 	}
 	if (options[option_decode].found) {
 #ifdef IMPACK_WITH_CRYPTO
-		if (options[option_encrypt].found) {
+		if (options[option_encrypt].found || options[option_encryption_type].found) {
 			fprintf(stderr, "Can not request encryption when decoding\n");
 			return RETURN_USER_ERROR;
 		}
@@ -249,6 +251,12 @@ int main(int argc, char **argv) {
 			return RETURN_USER_ERROR;
 		}
 	}
+#ifdef IMPACK_WITH_CRYPTO
+	if (!options[option_encrypt].found && options[option_encryption_type].found) {
+		fprintf(stderr, "Can not select the encryption type when encryption is disabled\n");
+		return RETURN_USER_ERROR;
+	}
+#endif
 #ifdef IMPACK_WITH_COMPRESSION
 	if (!options[option_compress].found) {
 		if (options[option_compression_type].found) {
@@ -332,11 +340,18 @@ int main(int argc, char **argv) {
 			}
 		}
 		
-		bool encrypt = false;
+		impack_encryption_type_t encrypt = ENCRYPTION_NONE;
 		char *passphrase = NULL;
 #ifdef IMPACK_WITH_CRYPTO
 		if (options[option_encrypt].found) {
-			encrypt = true;
+			encrypt = impack_default_encryption();
+			if (options[option_encryption_type].found) {
+				encrypt = impack_select_encryption(options[option_encryption_type].arg_out);
+				if (encrypt == ENCRYPTION_NONE) {
+					fprintf(stderr, "Unknown encryption type\n");
+					return RETURN_USER_ERROR;
+				}
+			}
 			if (options[option_passphrase].found && options[option_passphrase_file].found) {
 				fprintf(stderr, "Multiple sources for a passphrase specified\n");
 				return RETURN_USER_ERROR;

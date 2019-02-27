@@ -19,9 +19,6 @@
 #include "config.h"
 #include <stdbool.h>
 #include <stdint.h>
-#ifdef IMPACK_WITH_CRYPTO
-#include <nettle/aes.h>
-#endif
 
 typedef enum {
 	ERROR_OK, // Success
@@ -48,6 +45,17 @@ typedef enum {
 	ERROR_COMPRESSION_UNSUPPORTED, // Required compression algorithm not compiled in
 	ERROR_COMPRESSION_UNKNOWN // Unknown compression algorithm
 } impack_error_t;
+
+#define IMPACK_CRYPT_BLOCK_SIZE 16 // 128 bits
+#define IMPACK_CRYPT_KEY_SIZE 32 // 256 bits
+
+typedef enum {
+	ENCRYPTION_NONE = 0,
+	ENCRYPTION_AES = 1,
+	ENCRYPTION_CAMELLIA = 2,
+	ENCRYPTION_SERPENT = 3,
+	ENCRYPTION_TWOFISH = 4
+} impack_encryption_type_t;
 
 typedef enum {
 	COMPRESSION_NONE = 0,
@@ -83,16 +91,14 @@ typedef struct {
 	uint64_t crc;
 	uint8_t checksum_legacy[64];
 	bool legacy;
-#ifdef IMPACK_WITH_CRYPTO
-	uint8_t aes_key[AES256_KEY_SIZE];
-	uint8_t aes_iv[AES_BLOCK_SIZE];
-#endif
+	uint8_t crypt_key[IMPACK_CRYPT_KEY_SIZE];
+	uint8_t crypt_iv[IMPACK_CRYPT_BLOCK_SIZE];
 	uint64_t data_length;
 	uint32_t filename_length;
 	char *filename;
 } impack_decode_state_t;
 
-impack_error_t impack_encode(char *input_path, char *output_path, bool encrypt, char *passphrase, impack_compression_type_t compress, int32_t compress_level, uint8_t channels, uint64_t img_width, uint64_t img_height, impack_img_format_t format, char *filename_include);
+impack_error_t impack_encode(char *input_path, char *output_path, impack_encryption_type_t encrypt, char *passphrase, impack_compression_type_t compress, int32_t compress_level, uint8_t channels, uint64_t img_width, uint64_t img_height, impack_img_format_t format, char *filename_include);
 // Decode stage 1: Load the image and check if the content is encrypted (may ask for the passphrase after this)
 impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_path);
 // Decode stage 2: Extract the included filename (select final output path after this)
@@ -105,6 +111,8 @@ impack_img_format_t impack_select_img_format(char *name, bool fileextension);
 impack_img_format_t impack_default_img_format();
 impack_compression_type_t impack_select_compression(char *name);
 impack_compression_type_t impack_default_compression();
+impack_encryption_type_t impack_select_encryption(char *name);
+impack_encryption_type_t impack_default_encryption();
 
 bool impack_compress_level_valid(impack_compression_type_t type, int32_t level);
 

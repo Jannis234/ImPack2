@@ -16,11 +16,18 @@
 #ifndef __IMPACK_INTERNAL_H__
 #define __IMPACK_INTERNAL_H__
 
+#include "config.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef IMPACK_WITH_CRYPTO
+#include <nettle/aes.h>
+#include <nettle/camellia.h>
+#include <nettle/serpent.h>
+#include <nettle/twofish.h>
+#endif
 #include "impack.h"
 
 #define IMPACK_FORMAT_VERSION 0
@@ -33,6 +40,16 @@ typedef enum {
 	COMPRESSION_RES_FINAL, // Compressed data ended
 	COMPRESSION_RES_ERROR
 } impack_compression_result_t;
+
+#ifdef IMPACK_WITH_CRYPTO
+typedef struct {
+	struct aes256_ctx aes;
+	struct camellia256_ctx camellia;
+	struct serpent_ctx serpent;
+	struct twofish_ctx twofish;
+	uint8_t iv[IMPACK_CRYPT_BLOCK_SIZE];
+} impack_crypt_ctx_t;
+#endif
 
 typedef struct {
 	void *lib_object;
@@ -64,6 +81,12 @@ void impack_secure_erase(uint8_t *buf, size_t len);
 // Derive a key from a passphrase using PBKDF2
 void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
 void impack_derive_key_legacy(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
+#ifdef IMPACK_WITH_CRYPTO
+void impack_set_encrypt_key(impack_crypt_ctx_t *ctx, uint8_t *key, impack_encryption_type_t type);
+void impack_set_decrypt_key(impack_crypt_ctx_t *ctx, uint8_t *key, impack_encryption_type_t type);
+void impack_encrypt(impack_crypt_ctx_t *ctx, uint8_t *data, uint64_t length, impack_encryption_type_t type);
+void impack_decrypt(impack_crypt_ctx_t *ctx, uint8_t *data, uint64_t length, impack_encryption_type_t type);
+#endif
 bool impack_compress_init(impack_compress_state_t *state);
 void impack_compress_free(impack_compress_state_t *state);
 impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);

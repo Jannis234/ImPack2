@@ -22,8 +22,6 @@
 #include <stdio.h>
 #include <string.h>
 #ifdef IMPACK_WITH_CRYPTO
-#include <nettle/aes.h>
-#include <nettle/cbc.h>
 #include <nettle/sha2.h>
 #endif
 #include "impack.h"
@@ -169,16 +167,16 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 			free(state->pixeldata);
 			return ERROR_INPUT_IMG_INVALID;
 		}
-		state->encryption = (flag == 255) ? 1 : 0;
+		state->encryption = (flag == 255) ? ENCRYPTION_AES : ENCRYPTION_NONE;
 	}
 	
 #ifdef IMPACK_WITH_CRYPTO
-	if (state->encryption > 1) {
+	if (state->encryption > ENCRYPTION_TWOFISH) {
 		free(state->pixeldata);
 		return ERROR_ENCRYPTION_UNKNOWN;
 	}
 #else
-	if (state->encryption > 0) {
+	if (state->encryption > ENCRYPTION_NONE) {
 		free(state->pixeldata);
 		return ERROR_ENCRYPTION_UNAVAILABLE;
 	}
@@ -241,7 +239,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	if (!state->legacy) {
 		if (!pixelbuf_read(state, (uint8_t*) &state->data_length, 8)) {
 #ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
+			if (state->encryption != ENCRYPTION_NONE) {
 				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 			}
 #endif
@@ -250,7 +248,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 		}
 		if (!pixelbuf_read(state, (uint8_t*) &state->filename_length, 4)) {
 #ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
+			if (state->encryption != ENCRYPTION_NONE) {
 				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 			}
 #endif
@@ -265,7 +263,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	uint64_t bytes_remaining = state->pixeldata_size - state->pixeldata_pos;
 	if (state->filename_length > bytes_remaining || state->filename_length == 0) {
 #ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != 0) {
+		if (state->encryption != ENCRYPTION_NONE) {
 			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 		}
 #endif
@@ -274,7 +272,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	}
 	if (state->data_length > bytes_remaining - state->filename_length) {
 #ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != 0) {
+		if (state->encryption != ENCRYPTION_NONE) {
 			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 		}
 #endif
@@ -284,13 +282,13 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	
 	uint64_t filename_length;
 #ifdef IMPACK_WITH_CRYPTO
-	struct CBC_CTX(struct aes256_ctx, AES_BLOCK_SIZE) decrypt_ctx;
+	impack_crypt_ctx_t decrypt_ctx;
 #endif
 	if (!state->legacy) {
 		uint64_t crc;
 		if (!pixelbuf_read(state, (uint8_t*) &crc, 8)) {
 #ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
+			if (state->encryption != ENCRYPTION_NONE) {
 				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 			}
 #endif
@@ -300,25 +298,25 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 		state->crc = impack_endian64(crc);
 		filename_length = state->filename_length;
 #ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != 0) {
-			if (!pixelbuf_read(state, decrypt_ctx.iv, AES_BLOCK_SIZE)) {
+		if (state->encryption != ENCRYPTION_NONE) {
+			if (!pixelbuf_read(state, decrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE)) {
 				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 				free(state->pixeldata);
 				return ERROR_INPUT_IMG_INVALID;
 			}
-			impack_derive_key(passphrase, state->aes_key, AES256_KEY_SIZE, decrypt_ctx.iv, AES_BLOCK_SIZE);
+			impack_derive_key(passphrase, state->crypt_key, IMPACK_CRYPT_KEY_SIZE, decrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE);
 			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-			aes256_set_decrypt_key(&decrypt_ctx.ctx, state->aes_key);
-			if (filename_length % AES_BLOCK_SIZE != 0) {
-				filename_length += AES_BLOCK_SIZE - (filename_length % AES_BLOCK_SIZE);
+			impack_set_decrypt_key(&decrypt_ctx, state->crypt_key, state->encryption);
+			if (filename_length % IMPACK_CRYPT_BLOCK_SIZE != 0) {
+				filename_length += IMPACK_CRYPT_BLOCK_SIZE - (filename_length % IMPACK_CRYPT_BLOCK_SIZE);
 			}
 		}
 #endif
 	} else {
 		filename_length = state->filename_length;
 #ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != 0) {
-			if (!pixelbuf_read(state, state->aes_iv, AES_BLOCK_SIZE)) {
+		if (state->encryption != ENCRYPTION_NONE) {
+			if (!pixelbuf_read(state, state->crypt_iv, IMPACK_CRYPT_BLOCK_SIZE)) {
 				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 				free(state->pixeldata);
 				return ERROR_INPUT_IMG_INVALID;
@@ -329,7 +327,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 				free(state->pixeldata);
 				return ERROR_INPUT_IMG_INVALID;
 			}
-			impack_derive_key_legacy(passphrase, state->aes_key, AES256_KEY_SIZE, salt, 32);
+			impack_derive_key_legacy(passphrase, state->crypt_key, IMPACK_CRYPT_KEY_SIZE, salt, 32);
 			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 		}
 #endif
@@ -338,9 +336,9 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	state->filename = malloc(filename_length);
 	if (state->filename == NULL) {
 #ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != 0) {
-			impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
-			impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+		if (state->encryption != ENCRYPTION_NONE) {
+			impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
+			impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 		}
 #endif
 		free(state->pixeldata);
@@ -348,9 +346,9 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	}
 	if (!pixelbuf_read(state, (uint8_t*) state->filename, filename_length)) {
 #ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != 0) {
-			impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
-			impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+		if (state->encryption != ENCRYPTION_NONE) {
+			impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
+			impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 		}
 #endif
 		free(state->pixeldata);
@@ -358,19 +356,19 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 		return ERROR_INPUT_IMG_INVALID;
 	}
 #ifdef IMPACK_WITH_CRYPTO
-	if (state->encryption != 0 && !state->legacy) {
-		CBC_DECRYPT(&decrypt_ctx, aes256_decrypt, filename_length, (uint8_t*) state->filename, (uint8_t*) state->filename);
-		memcpy(state->aes_iv, decrypt_ctx.iv, AES_BLOCK_SIZE);
-		impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+	if (state->encryption != ENCRYPTION_NONE && !state->legacy) {
+		impack_decrypt(&decrypt_ctx, (uint8_t*) state->filename, filename_length, state->encryption);
+		memcpy(state->crypt_iv, decrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE);
+		impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 	}
 #endif
 	
 	for (uint32_t i = 0; i < state->filename_length; i++) {
 		if (!isprint(state->filename[i])) { // Search for non-printable characters in the filename
 #ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
-				impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
-				impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+			if (state->encryption != ENCRYPTION_NONE) {
+				impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
+				impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 			}
 #endif
 			free(state->pixeldata);
@@ -396,8 +394,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 				char *newname = malloc(state->filename_length + output_path_length + 2);
 				if (newname == NULL) {
 #ifdef IMPACK_WITH_CRYPTO
-					if (state->encryption != 0) {
-						impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
+					if (state->encryption != ENCRYPTION_NONE) {
+						impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
 					}
 #endif
 					free(state->pixeldata);
@@ -413,8 +411,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 			}
 			if (output_file == NULL) {
 #ifdef IMPACK_WITH_CRYPTO
-				if (state->encryption != 0) {
-					impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
+				if (state->encryption != ENCRYPTION_NONE) {
+					impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
 				}
 #endif
 				free(state->filename);
@@ -436,8 +434,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 	uint8_t *buf = malloc(BUFSIZE);
 	if (buf == NULL) {
 #ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != 0) {
-			impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
+		if (state->encryption != ENCRYPTION_NONE) {
+			impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
 		}
 #endif
 		free(state->pixeldata);
@@ -446,11 +444,11 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 	}
 	
 #ifdef IMPACK_WITH_CRYPTO
-	struct CBC_CTX(struct aes256_ctx, AES_BLOCK_SIZE) decrypt_ctx;
-	if (state->encryption != 0) {
-		aes256_set_decrypt_key(&decrypt_ctx.ctx, state->aes_key);
-		memcpy(decrypt_ctx.iv, state->aes_iv, AES_BLOCK_SIZE);
-		impack_secure_erase(state->aes_key, AES256_KEY_SIZE);
+	impack_crypt_ctx_t decrypt_ctx;
+	if (state->encryption != ENCRYPTION_NONE) {
+		impack_set_decrypt_key(&decrypt_ctx, state->crypt_key, state->encryption);
+		memcpy(decrypt_ctx.iv, state->crypt_iv, IMPACK_CRYPT_BLOCK_SIZE);
+		impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
 	}
 #endif
 	
@@ -462,8 +460,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 		decompress_state.bufsize = BUFSIZE;
 		if (!impack_compress_init(&decompress_state)) {
 #ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
-				impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+			if (state->encryption != ENCRYPTION_NONE) {
+				impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 			}
 #endif
 			free(state->pixeldata);
@@ -494,8 +492,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 				impack_compression_result_t res = impack_compress_read(&decompress_state, buf, &lenout);
 				if (res == COMPRESSION_RES_ERROR) {
 #ifdef IMPACK_WITH_CRYPTO
-					if (state->encryption != 0) {
-						impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+					if (state->encryption != ENCRYPTION_NONE) {
+						impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 					}
 #endif
 					impack_compress_free(&decompress_state);
@@ -510,17 +508,17 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					}
 					uint32_t padding = 0;
 #ifdef IMPACK_WITH_CRYPTO
-					if (state->encryption != 0) {
-						if (remaining % AES_BLOCK_SIZE != 0) {
-							padding = AES_BLOCK_SIZE - (remaining % AES_BLOCK_SIZE);
+					if (state->encryption != ENCRYPTION_NONE) {
+						if (remaining % IMPACK_CRYPT_BLOCK_SIZE != 0) {
+							padding = IMPACK_CRYPT_BLOCK_SIZE - (remaining % IMPACK_CRYPT_BLOCK_SIZE);
 							remaining += padding;
 						}
 					}
 #endif
 					if (!pixelbuf_read(state, buf, remaining)) {
 #ifdef IMPACK_WITH_CRYPTO
-						if (state->encryption != 0) {
-							impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+						if (state->encryption != ENCRYPTION_NONE) {
+							impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 						}
 #endif
 						impack_compress_free(&decompress_state);
@@ -530,8 +528,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 						return ERROR_INPUT_IMG_INVALID;
 					}
 #ifdef IMPACK_WITH_CRYPTO
-					if (state->encryption != 0) {
-						CBC_DECRYPT(&decrypt_ctx, aes256_decrypt, remaining, buf, buf);
+					if (state->encryption != ENCRYPTION_NONE) {
+						impack_decrypt(&decrypt_ctx, buf, remaining, state->encryption);
 						if (state->legacy && remaining == state->data_length) {
 							padding = buf[remaining - 1];
 						}
@@ -550,8 +548,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					if (res == COMPRESSION_RES_FINAL) {
 						if (state->data_length != 0) {
 #ifdef IMPACK_WITH_CRYPTO
-							if (state->encryption != 0) {
-								impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+							if (state->encryption != ENCRYPTION_NONE) {
+								impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 							}
 #endif
 							impack_compress_free(&decompress_state);
@@ -574,17 +572,17 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 			}
 			uint32_t padding = 0;
 #ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
-				if (remaining % AES_BLOCK_SIZE != 0) {
-					padding = AES_BLOCK_SIZE - (remaining % AES_BLOCK_SIZE);
+			if (state->encryption != ENCRYPTION_NONE) {
+				if (remaining % IMPACK_CRYPT_BLOCK_SIZE != 0) {
+					padding = IMPACK_CRYPT_BLOCK_SIZE - (remaining % IMPACK_CRYPT_BLOCK_SIZE);
 					remaining += padding;
 				}
 			}
 #endif
 			if (!pixelbuf_read(state, buf, remaining)) {
 #ifdef IMPACK_WITH_CRYPTO
-				if (state->encryption != 0) {
-					impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+				if (state->encryption != ENCRYPTION_NONE) {
+					impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 				}
 #endif
 				free(state->pixeldata);
@@ -593,8 +591,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 				return ERROR_INPUT_IMG_INVALID;
 			}
 #ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
-				CBC_DECRYPT(&decrypt_ctx, aes256_decrypt, remaining, buf, buf);
+			if (state->encryption != ENCRYPTION_NONE) {
+				impack_decrypt(&decrypt_ctx, buf, remaining, state->encryption);
 				if (state->legacy && remaining == state->data_length) {
 					padding = buf[remaining - 1];
 				}
@@ -622,8 +620,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 #endif
 		if (fwrite(buf, 1, remaining, output_file) != remaining) {
 #ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != 0) {
-				impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+			if (state->encryption != ENCRYPTION_NONE) {
+				impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 			}
 #endif
 #ifdef IMPACK_WITH_COMPRESSION
@@ -639,8 +637,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 	}
 
 #ifdef IMPACK_WITH_CRYPTO
-	if (state->encryption != 0) {
-		impack_secure_erase((uint8_t*) &decrypt_ctx.ctx, sizeof(struct aes256_ctx));
+	if (state->encryption != ENCRYPTION_NONE) {
+		impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
 	}
 #endif
 #ifdef IMPACK_WITH_COMPRESSION

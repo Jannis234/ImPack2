@@ -13,79 +13,70 @@
  * You should have received a copy of the GNU General Public License
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include "config.h"
 #include "impack.h"
+
+bool check_case(char *s, char *upper, char *lower) {
+	
+	for (size_t i = 0; i < strlen(s); i++) {
+		if (s[i] != upper[i] && s[i] != lower[i]) {
+			return false;
+		}
+	}
+	return true;
+	
+}
 
 impack_img_format_t impack_select_img_format(char *name, bool fileextension) {
 	
 	size_t namelen = strlen(name);
 #ifdef IMPACK_WITH_PNG
 	if (namelen == 3) {
-		if ((name[0] == 'P' || name[0] == 'p') && \
-			(name[1] == 'N' || name[1] == 'n') && \
-			(name[2] == 'G' || name[2] == 'g')) {
+		if (check_case(name, "PNG", "png")) {
 			return FORMAT_PNG;
 		}
 	}
 #endif
 #ifdef IMPACK_WITH_WEBP
 	if (namelen == 4) {
-		if ((name[0] == 'W' || name[0] == 'w') && \
-			(name[1] == 'E' || name[1] == 'e') && \
-			(name[2] == 'B' || name[2] == 'b') && \
-			(name[3] == 'P' || name[3] == 'p')) {
+		if (check_case(name, "WEBP", "webp")) {
 			return FORMAT_WEBP;
 		}
 	}
 #endif
 #ifdef IMPACK_WITH_TIFF
 	if (namelen == 4) {
-		if ((name[0] == 'T' || name[0] == 't') && \
-			(name[1] == 'I' || name[1] == 'i') && \
-			(name[2] == 'F' || name[2] == 'f') && \
-			(name[3] == 'F' || name[3] == 'f')) {
+		if (check_case(name, "TIFF", "tiff")) {
 			return FORMAT_TIFF;
 		}
 	}
 	if (namelen == 3 && fileextension) {
-		if ((name[0] == 'T' || name[0] == 't') && \
-			(name[1] == 'I' || name[1] == 'i') && \
-			(name[2] == 'F' || name[2] == 'f')) {
+		if (check_case(name, "TIF", "tif")) {
 			return FORMAT_TIFF;
 		}
 	}
 #endif
 #ifdef IMPACK_WITH_BMP
 	if (namelen == 3) {
-		if ((name[0] == 'B' || name[0] == 'b') && \
-			(name[1] == 'M' || name[1] == 'm') && \
-			(name[2] == 'P' || name[2] == 'p')) {
+		if (check_case(name, "BMP", "bmp")) {
 			return FORMAT_BMP;
 		}
 	}
 #endif
 #ifdef IMPACK_WITH_JP2K
 	if (fileextension && namelen == 3) {
-		if ((name[0] == 'J' || name[0] == 'j') && \
-			(name[1] == 'P' || name[1] == 'p') && \
-			(name[2] == '2')) {
+		if (check_case(name, "JP2", "jp2")) {
 			return FORMAT_JP2K;
 		}
-		if ((name[0] == 'J' || name[0] == 'j') && \
-			(name[1] == '2') && \
-			(name[2] == 'K' || name[2] == 'k')) {
+		if (check_case(name, "J2K", "j2k")) {
 			return FORMAT_JP2K;
 		}
 	}
 	if (!fileextension && namelen == 8) {
-		if ((name[0] == 'J' || name[0] == 'j') && \
-			(name[1] == 'P' || name[1] == 'p') && \
-			(name[2] == 'E' || name[2] == 'e') && \
-			(name[3] == 'G' || name[3] == 'g') && \
-			(name[4] == '2' && name[5] == '0') && \
-			(name[6] == '0' && name[7] == '0')) {
+		if (check_case(name, "JPEG2000", "jpeg2000")) {
 			return FORMAT_JP2K;
 		}
 	}
@@ -118,57 +109,35 @@ impack_compression_type_t impack_select_compression(char *name) {
 	size_t namelen = strlen(name);
 #ifdef IMPACK_WITH_ZLIB
 	if (namelen == 7) {
-		if ((name[0] == 'D' || name[0] == 'd') && \
-			(name[1] == 'E' || name[1] == 'e') && \
-			(name[2] == 'F' || name[2] == 'f') && \
-			(name[3] == 'L' || name[3] == 'l') && \
-			(name[4] == 'A' || name[4] == 'a') && \
-			(name[5] == 'T' || name[5] == 't') && \
-			(name[6] == 'E' || name[6] == 'e')) {
+		if (check_case(name, "DEFLATE", "deflate")) {
 			return COMPRESSION_ZLIB;
 		}
 	}
 #endif
 #ifdef IMPACK_WITH_ZSTD
 	if (namelen == 4) {
-		if ((name[0] == 'Z' || name[0] == 'z') && \
-			(name[1] == 'S' || name[1] == 's') && \
-			(name[2] == 'T' || name[2] == 't') && \
-			(name[3] == 'D' || name[3] == 'd')) {
+		if (check_case(name, "ZSTD", "zstd")) {
 			return COMPRESSION_ZSTD;
 		}
 	}
 #endif
 #ifdef IMPACK_WITH_LZMA
 	if (namelen == 5) {
-		if ((name[0] == 'L' || name[0] == 'l') && \
-			(name[1] == 'Z' || name[1] == 'z') && \
-			(name[2] == 'M' || name[2] == 'm') && \
-			(name[3] == 'A' || name[3] == 'a') && \
-			(name[4] == '2')) {
+		if (check_case(name, "LZMA2", "lzma2")) {
 			return COMPRESSION_LZMA;
 		}
 	}
 #endif
 #ifdef IMPACK_WITH_BZIP2
 	if (namelen == 5) {
-		if ((name[0] == 'B' || name[0] == 'b') && \
-			(name[1] == 'Z' || name[1] == 'z') && \
-			(name[2] == 'I' || name[2] == 'i') && \
-			(name[3] == 'P' || name[3] == 'p') && \
-			(name[4] == '2')) {
+		if (check_case(name, "BZIP2", "bzip2")) {
 			return COMPRESSION_BZIP2;
 		}
 	}
 #endif
 #ifdef IMPACK_WITH_BROTLI
 	if (namelen == 6) {
-		if ((name[0] == 'B' || name[0] == 'b') && \
-			(name[1] == 'R' || name[1] == 'r') && \
-			(name[2] == 'O' || name[2] == 'o') && \
-			(name[3] == 'T' || name[3] == 't') && \
-			(name[4] == 'L' || name[4] == 'l') && \
-			(name[5] == 'I' || name[5] == 'i')) {
+		if (check_case(name, "BROTLI", "brotli")) {
 			return COMPRESSION_BROTLI;
 		}
 	}
@@ -195,3 +164,34 @@ impack_compression_type_t impack_default_compression() {
 	
 }
 #endif
+
+impack_encryption_type_t impack_select_encryption(char *name) {
+	
+	size_t namelen = strlen(name);
+	if (namelen == 3) {
+		if (check_case(name, "AES", "aes")) {
+			return ENCRYPTION_AES;
+		}
+	}
+	if (namelen == 7) {
+		if (check_case(name, "SERPENT", "serpent")) {
+			return ENCRYPTION_SERPENT;
+		}
+		if (check_case(name, "TWOFISH", "twofish")) {
+			return ENCRYPTION_TWOFISH;
+		}
+	}
+	if (namelen == 8) {
+		if (check_case(name, "CAMELLIA", "camellia")) {
+			return ENCRYPTION_CAMELLIA;
+		}
+	}
+	return ENCRYPTION_NONE;
+	
+}
+
+impack_encryption_type_t impack_default_encryption() {
+	
+	return ENCRYPTION_AES;
+	
+}

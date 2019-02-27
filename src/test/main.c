@@ -238,7 +238,7 @@ bool test_decode_format(char *msg, char *filename, char *passphrase, bool should
 	
 }
 
-bool encode_run(impack_img_format_t format, bool encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels) {
+bool encode_run(impack_img_format_t format, impack_encryption_type_t encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels) {
 	
 	impack_error_t res = impack_encode("testdata/input.bin", "testout_encode.tmp", encrypt, passphrase, compress, 0, channels, width, height, format, "testdata/input.bin");
 	if (res != ERROR_OK) {
@@ -251,7 +251,7 @@ bool encode_run(impack_img_format_t format, bool encrypt, char *passphrase, impa
 	
 }
 
-bool test_cycle_format_run(char *msg, bool encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels, impack_img_format_t format, char *format_name) {
+bool test_cycle_format_run(char *msg, impack_encryption_type_t encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels, impack_img_format_t format, char *format_name) {
 	
 	printf("%s, %s: ", msg, format_name);
 	char *passarg = NULL;
@@ -271,7 +271,7 @@ bool test_cycle_format_run(char *msg, bool encrypt, char *passphrase, impack_com
 	
 }
 
-bool test_cycle_format(char *msg, bool encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels) {
+bool test_cycle_format(char *msg, impack_encryption_type_t encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels) {
 	
 	bool res = true;
 #ifdef IMPACK_WITH_PNG
@@ -324,21 +324,24 @@ bool test_cycle() {
 	res &= test_cycle_format("Compressed data, Brotli compression", false, NULL, COMPRESSION_BROTLI, 0, 0, allchannels);
 #endif
 #ifdef IMPACK_WITH_CRYPTO
-	res &= test_cycle_format("Encrypted data", true, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, AES encryption", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Camellia encryption", ENCRYPTION_CAMELLIA, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Serpent encryption", ENCRYPTION_SERPENT, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Twofish encryption", ENCRYPTION_TWOFISH, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
 #ifdef IMPACK_WITH_ZLIB
-	res &= test_cycle_format("Encrypted and compressed data, deflate compression", true, PASSPHRASE_CORRECT, COMPRESSION_ZLIB, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted and compressed data, deflate compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_ZLIB, 0, 0, allchannels);
 #endif
 #ifdef IMPACK_WITH_ZSTD
-	res &= test_cycle_format("Encrypted and compressed data, ZSTD compression", true, PASSPHRASE_CORRECT, COMPRESSION_ZSTD, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted and compressed data, ZSTD compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_ZSTD, 0, 0, allchannels);
 #endif
 #ifdef IMPACK_WITH_LZMA
-	res &= test_cycle_format("Encrypted and compressed data, LZMA2 compression", true, PASSPHRASE_CORRECT, COMPRESSION_LZMA, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted and compressed data, LZMA2 compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_LZMA, 0, 0, allchannels);
 #endif
 #ifdef IMPACK_WITH_BZIP2
-	res &= test_cycle_format("Encrypted and compressed data, Bzip2 compression", true, PASSPHRASE_CORRECT, COMPRESSION_BZIP2, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted and compressed data, Bzip2 compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_BZIP2, 0, 0, allchannels);
 #endif
 #ifdef IMPACK_WITH_BROTLI
-	res &= test_cycle_format("Encrypted and compressed data, Brotli compression", true, PASSPHRASE_CORRECT, COMPRESSION_BROTLI, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted and compressed data, Brotli compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_BROTLI, 0, 0, allchannels);
 #endif
 #endif
 	return res;
@@ -380,10 +383,22 @@ bool test_decode() {
 	res &= test_decode_format("Corrupted compressed data, Brotli compression", "testdata/invalid_compressed_brotli", NULL, true);
 #endif
 #ifdef IMPACK_WITH_CRYPTO
-	res &= test_decode_format("Encrypted data", "testdata/valid_encrypted", PASSPHRASE_CORRECT, false);
-	res &= test_decode_format("Encrypted data, incorrect passphrase", "testdata/valid_encrypted", PASSPHRASE_INCORRECT, true);
-	res &= test_decode_format("Corrupted encrypted data", "tesdata/invalid_encrypted_data", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Encrypted data, incorrect IV", "testdata/invalid_encrypted_iv", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted data, AES encryption", "testdata/valid_encrypted_aes", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Camellia encryption", "testdata/valid_encrypted_camellia", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Serpent encryption", "testdata/valid_encrypted_serpent", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Twofish encryption", "testdata/valid_encrypted_twofish", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, AES encryption, incorrect passphrase", "testdata/valid_encrypted_aes", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Camellia encryption, incorrect passphrase", "testdata/valid_encrypted_camellia", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Serpent encryption, incorrect passphrase", "testdata/valid_encrypted_serpent", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Twofish encryption, incorrect passphrase", "testdata/valid_encrypted_twofish", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Corrupted encrypted data, AES encryption", "tesdata/invalid_encrypted_data_aes", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupted encrypted data, Camellia encryption", "tesdata/invalid_encrypted_data_camellia", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupted encrypted data, Serpent encryption", "tesdata/invalid_encrypted_data_serpent", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupted encrypted data, Twofish encryption", "tesdata/invalid_encrypted_data_twofish", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted data, AES encryption, incorrect IV", "testdata/invalid_encrypted_iv_aes", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted data, Camellia encryption, incorrect IV", "testdata/invalid_encrypted_iv_camellia", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted data, Serpent encryption, incorrect IV", "testdata/invalid_encrypted_iv_serpent", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted data, Twofish encryption, incorrect IV", "testdata/invalid_encrypted_iv_twofish", PASSPHRASE_CORRECT, true);
 	res &= test_decode_format("Legacy image, encrypted data", "testdata/valid_legacy_encrypted", PASSPHRASE_CORRECT, false);
 	res &= test_decode_format("Legacy image, encrypted data, incorrect passphrase", "testdata/valid_legacy_encrypted", PASSPHRASE_INCORRECT, true);
 	res &= test_decode_format("Legacy image, corrupted encrypted data", "testdata/invalid_legacy_encrypted", PASSPHRASE_CORRECT, true);

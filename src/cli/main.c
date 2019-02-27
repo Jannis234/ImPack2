@@ -395,7 +395,7 @@ int main(int argc, char **argv) {
 		}
 #ifdef IMPACK_WITH_CRYPTO
 		if (state.encryption != 0) {
-			int res = get_passphrase(&passphrase, options, options_count, false);
+			res = get_passphrase(&passphrase, options, options_count, false);
 			if (res != ERROR_OK) {
 				free(state.pixeldata);
 				return res;

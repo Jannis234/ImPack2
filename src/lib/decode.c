@@ -468,6 +468,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 #endif
 			free(state->pixeldata);
 			fclose(output_file);
+			free(buf);
 			return ERROR_MALLOC;
 		}
 	}

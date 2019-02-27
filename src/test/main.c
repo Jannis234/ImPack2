@@ -172,7 +172,7 @@ bool decode_run(char *input_file, char *passphrase, bool shouldfail) {
 			printerror = false;
 		}
 		printf("  Unable to open testout_decode.tmp\n");
-		haserror = true;
+		return false;
 	}
 	int32_t bytes_read = fread(buf, 1, REF_LENGTH, f);
 	fclose(f);
@@ -182,7 +182,7 @@ bool decode_run(char *input_file, char *passphrase, bool shouldfail) {
 			printerror = false;
 		}
 		printf("  Unable to read testout_decode.tmp, got %d bytes\n", bytes_read);
-		haserror = true;
+		return false;
 	}
 	if (memcmp(buf, ref_file, REF_LENGTH) != 0) {
 		if (printerror) {

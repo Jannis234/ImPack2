@@ -45,6 +45,7 @@ bool impack_random(uint8_t *dst, size_t count) {
 		return false;
 	}
 	if (fread(dst, 1, count, devurandom) != count) {
+		fclose(devurandom);
 		return false;
 	}
 	fclose(devurandom);

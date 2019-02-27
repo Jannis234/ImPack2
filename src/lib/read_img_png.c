@@ -35,20 +35,14 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 		png_destroy_read_struct(&read_struct, NULL, NULL);
 		return ERROR_MALLOC;
 	}
-
+	
 	*pixeldata = NULL;
 	uint8_t **row_pointers = NULL;
 	if (setjmp(png_jmpbuf(read_struct))) {
 		png_destroy_read_struct(&read_struct, &info_struct, NULL);
-		if (pixeldata != NULL) {
-			free(pixeldata);
-		}
-		if (row_pointers != NULL) {
-			free(row_pointers);
-		}
 		return ERROR_INPUT_IO;
 	}
-
+	
 	png_init_io(read_struct, input_file);
 	png_set_sig_bytes(read_struct, 8); // Skip the magic number that was already read previously
 	png_set_user_limits(read_struct, INT32_MAX, INT32_MAX); // Let the user process stupidly large images (if they have the required memory)
@@ -73,7 +67,7 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	if (color_type & PNG_COLOR_MASK_ALPHA) {
 		png_set_strip_alpha(read_struct);
 	}
-
+	
 	*pixeldata = malloc((uint64_t) width * (uint64_t) height * 3);
 	if (*pixeldata == NULL) {
 		png_destroy_read_struct(&read_struct, &info_struct, NULL);
@@ -94,7 +88,7 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	png_destroy_read_struct(&read_struct, &info_struct, NULL);
 	free(row_pointers);
 	return ERROR_OK;
-
+	
 }
 
 #endif

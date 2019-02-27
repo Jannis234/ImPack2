@@ -1,2 +1,12 @@
+Version 0.2:
+	- Support selecting a different encryption algorithm
+	- Camellia encryption
+	- Serpent encryption
+	- Twofish encryption
+	- Bzip2 compression (using libbzip2)
+	- Brotli compression (using libbrotli)
+	- JPEG2000 image support (using openjpeg)
+	- "make install" creates directories if they don't already exist
+
 Version 0.1:
 	- Initial release

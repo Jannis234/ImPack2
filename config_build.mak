@@ -16,6 +16,8 @@
 # Options to control features that need additional dependencies
 # Change any option to 0 to disable it
 
+WITH_GTK = 1
+
 # Required to create and unpack an image with encrypted data
 WITH_NETTLE = 1
 

@@ -2,8 +2,11 @@
 *.d
 *.a
 *.tmp
+*.exe
 depend.mak
 src/include/config_generated.h
+src/gui/gresources_generated.c
 impack
+impack-gtk
 testsuite
 impack.1

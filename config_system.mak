@@ -33,6 +33,11 @@ CCFLAGS = -O2 -pipe -ggdb
 LIBS =
 EXEEXT =
 
+ifeq ($(WITH_GTK), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags gtk+-3.0)
+GTK_LIBS = $(shell $(PKG_CONFIG) --libs gtk+-3.0)
+endif
+
 ifeq ($(WITH_NETTLE), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags nettle)
 LIBS += $(shell $(PKG_CONFIG) --libs nettle)

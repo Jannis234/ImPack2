@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-IMPACK_VERSION = 0.2
-#IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
+#IMPACK_VERSION = 0.2
+IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
 
 include config_system.mak
 
@@ -25,6 +25,11 @@ CLI_SRC = src/cli/main.c \
 	src/cli/help.c \
 	src/cli/error.c \
 	src/cli/readpass.c
+GUI_SRC = src/gui/main.c \
+	src/gui/gresources_generated.c \
+	src/gui/window_main.c
+GUI_RES = src/gui/res/gresources.xml \
+	src/gui/res/window_main.ui
 TEST_SRC = src/test/main.c \
 	src/test/build_info.c
 LIB_SRC = src/lib/encode.c \
@@ -57,29 +62,39 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/compress_brotli.c \
 	src/lib/select.c
 
-.PHONY: all depend clean check cli man man-cli install install-cli install-man install-man-cli uninstall
+.PHONY: all depend clean check cli man gui install install-cli install-man install-gui uninstall
 
+ifeq ($(WITH_GTK), 1)
+all: cli man gui
+else
 all: cli man
+endif
 
 depend: depend.mak
 
 cli: impack$(EXEEXT)
 
-man: man-cli
+man: impack.1
 
-man-cli: impack.1
+gui: impack-gtk$(EXEEXT)
 
+ifeq ($(WITH_GTK), 1)
+install: install-cli install-man install-gui
+else
 install: install-cli install-man
-
-install-man: install-man-cli
+endif
 
 install-cli: cli
 	mkdir -p $(BINDIR)
 	$(INSTALL) impack$(EXEEXT) $(BINDIR)
 
-install-man-cli: man-cli
+install-man: man-cli
 	mkdir -p $(MANDIR)
 	$(INSTALL) impack.1 $(MANDIR)/man1
+
+install-gui: gui
+	mkdir -p $(BINDIR)
+	$(INSTALL) impack-gtk$(EXEEXT) $(BINDIR)
 
 uninstall:
 	rm -f $(BINDIR)/impack$(EXEEXT)
@@ -90,16 +105,21 @@ check: testsuite$(EXEEXT)
 
 clean:
 	rm -f $(CLI_SRC:.c=.o) $(CLI_SRC:.c=.d)
+	rm -f $(GUI_SRC:.c=.o) $(GUI_SRC:.c=.d)
 	rm -f $(TEST_SRC:.c=.o) $(TEST_SRC:.c=.d)
 	rm -f $(LIB_SRC:.c=.o) $(LIB_SRC:.c=.d)
-	rm -f impack$(EXEEXT) testsuite$(EXEEXT) libimpack.a
+	rm -f impack$(EXEEXT) impack-gtk$(EXEEXT) testsuite$(EXEEXT) libimpack.a
 	rm -f impack.1
 	rm -f depend.mak
 	rm -f src/include/config_generated.h
+	rm -f src/gui/gresources_generated.c
 	rm -f testout_encode.tmp testout_decode.tmp
 
 impack$(EXEEXT): libimpack.a $(CLI_SRC:.c=.o)
 	$(CCLD) -o impack$(EXEEXT) $(CLI_SRC:.c=.o) libimpack.a $(LIBS)
+
+impack-gtk$(EXEEXT): libimpack.a $(GUI_SRC:.c=.o)
+	$(CCLD) -o impack-gtk$(EXEEXT) $(GUI_SRC:.c=.o) libimpack.a $(LIBS) $(GTK_LIBS)
 
 testsuite$(EXEEXT): libimpack.a $(TEST_SRC:.c=.o)
 	$(CCLD) -o testsuite$(EXEEXT) $(TEST_SRC:.c=.o) libimpack.a $(LIBS)
@@ -111,17 +131,27 @@ libimpack.a: $(LIB_SRC:.c=.o)
 	$(AR) cr libimpack.a $(LIB_SRC:.c=.o)
 	$(RANLIB) libimpack.a
 
+ifeq ($(WITH_GTK), 1)
+depend.mak: $(CLI_SRC:.c=.d) $(GUI_SRC:.c=.d) $(LIB_SRC:.c=.d)
+	cat $(CLI_SRC:.c=.d) > depend.mak
+	cat $(GUI_SRC:.c=.d) >> depend.mak
+	cat $(LIB_SRC:.c=.d) >> depend.mak
+else
 depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
 	cat $(CLI_SRC:.c=.d) > depend.mak
 	cat $(LIB_SRC:.c=.d) >> depend.mak
+endif
 
 src/include/config_generated.h: config_build.mak src/gen_config.sh
 	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_LIBTIFF) $(WITH_LIBNSBMP) $(WITH_OPENJPEG2) $(WITH_ZLIB) $(WITH_ZSTD) $(WITH_LZMA) $(WITH_BZIP2) $(WITH_BROTLI) > src/include/config_generated.h
 
+src/gui/gresources_generated.c: $(GUI_RES)
+	glib-compile-resources src/gui/res/gresources.xml --generate-source --sourcedir=src/gui/res --target=src/gui/gresources_generated.c
+
 %.d: %.c config_build.mak config_system.mak src/include/config_generated.h
 	$(CC) $(CFLAGS) -M -MT $(<:.c=.o) -o $@ $<
 
-%.o: %.c
+%.o: %.c #config_build.mak config_system.mak src/include/config_generated.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 include depend.mak

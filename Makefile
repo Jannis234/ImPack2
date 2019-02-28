@@ -88,7 +88,7 @@ install-cli: cli
 	mkdir -p $(BINDIR)
 	$(INSTALL) impack$(EXEEXT) $(BINDIR)
 
-install-man: man-cli
+install-man: man
 	mkdir -p $(MANDIR)
 	$(INSTALL) impack.1 $(MANDIR)/man1
 

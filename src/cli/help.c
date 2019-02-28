@@ -78,6 +78,7 @@ void impack_print_help() {
 	printf("  --passphrase-file:   Read the passphrase from a file (for automation/\n");
 	printf("                       scripting)\n");
 	printf("                       This will only read the first line from that file\n");
+	printf("  --encryption-type:   Select the encryption algorithm that will be used\n");
 	printf("\n");
 #endif
 #ifdef IMPACK_WITH_COMPRESSION
@@ -126,6 +127,12 @@ void impack_print_help() {
 	print_format("WebP", &linelen, &is_first, default_format == FORMAT_WEBP);
 #endif
 	printf("\n");
+	
+#ifdef IMPACK_WITH_CRYPTO
+	printf("\n");
+	printf("Supported encryption types:\n");
+	printf("  AES (Default), Camellia, Serpent, Twofish\n");
+#endif
 	
 #ifdef IMPACK_WITH_COMPRESSION
 	printf("\n");

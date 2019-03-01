@@ -21,6 +21,8 @@
 #include "impack.h"
 
 GtkBuilder *builder;
+bool encode_color_checkbox_state[4];
+bool encode_color_checkbox_enabled;
 
 int enabled_compression_types() {
 	
@@ -138,10 +140,84 @@ void encode_compress_checkbox_toggle() {
 void encode_advanced_checkbox_toggle() {
 	
 	GtkCheckButton *box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeAdvancedCheckbox"));
+	GtkRevealer *reveal = GTK_REVEALER(gtk_builder_get_object(builder, "EncodeAdvancedReveal"));
+	gtk_revealer_set_reveal_child(reveal, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
 	GtkRevealer *encrypt_reveal = GTK_REVEALER(gtk_builder_get_object(builder, "EncodeEncryptAdvancedReveal"));
 	gtk_revealer_set_reveal_child(encrypt_reveal, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
 	build_encode_compression_type_box(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
 	encode_compress_checkbox_toggle();
+	
+}
+
+void encode_color_checkbox_toggle() {
+	
+	encode_color_checkbox_enabled = false;
+	GtkCheckButton *color_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorBox"));
+	GtkCheckButton *grayscale_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorGrayscaleBox"));
+	GtkCheckButton *red_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorRedBox"));
+	GtkCheckButton *green_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorGreenBox"));
+	GtkCheckButton *blue_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorBlueBox"));
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_box))) {
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(grayscale_box), encode_color_checkbox_state[3]);
+		gtk_widget_set_sensitive(GTK_WIDGET(grayscale_box), true);
+		if (encode_color_checkbox_state[3]) {
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(red_box), false);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(green_box), false);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(blue_box), false);
+		} else {
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(red_box), encode_color_checkbox_state[0]);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(green_box), encode_color_checkbox_state[1]);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(blue_box), encode_color_checkbox_state[2]);
+			gtk_widget_set_sensitive(GTK_WIDGET(red_box), true);
+			gtk_widget_set_sensitive(GTK_WIDGET(green_box), true);
+			gtk_widget_set_sensitive(GTK_WIDGET(blue_box), true);
+		}
+	} else {
+		encode_color_checkbox_state[3] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(grayscale_box));
+		if (!encode_color_checkbox_state[3]) {
+			encode_color_checkbox_state[0] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(red_box));
+			encode_color_checkbox_state[1] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(green_box));
+			encode_color_checkbox_state[2] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(blue_box));
+		}
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(red_box), true);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(green_box), true);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(blue_box), true);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(grayscale_box), false);
+		gtk_widget_set_sensitive(GTK_WIDGET(red_box), false);
+		gtk_widget_set_sensitive(GTK_WIDGET(green_box), false);
+		gtk_widget_set_sensitive(GTK_WIDGET(blue_box), false);
+		gtk_widget_set_sensitive(GTK_WIDGET(grayscale_box), false);
+	}
+	encode_color_checkbox_enabled = true;
+	
+}
+
+void encode_grayscale_checkbox_toggle() {
+	
+	if (encode_color_checkbox_enabled) { // Prevent this from running when encode_color_checkbox_toggle() changes the grayscale checkbox
+		GtkCheckButton *grayscale_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorGrayscaleBox"));
+		GtkCheckButton *red_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorRedBox"));
+		GtkCheckButton *green_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorGreenBox"));
+		GtkCheckButton *blue_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorBlueBox"));
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(grayscale_box))) {
+			encode_color_checkbox_state[0] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(red_box));
+			encode_color_checkbox_state[1] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(green_box));
+			encode_color_checkbox_state[2] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(blue_box));
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(red_box), false);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(green_box), false);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(blue_box), false);
+			gtk_widget_set_sensitive(GTK_WIDGET(red_box), false);
+			gtk_widget_set_sensitive(GTK_WIDGET(green_box), false);
+			gtk_widget_set_sensitive(GTK_WIDGET(blue_box), false);
+		} else {
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(red_box), encode_color_checkbox_state[0]);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(green_box), encode_color_checkbox_state[1]);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(blue_box), encode_color_checkbox_state[2]);
+			gtk_widget_set_sensitive(GTK_WIDGET(red_box), true);
+			gtk_widget_set_sensitive(GTK_WIDGET(green_box), true);
+			gtk_widget_set_sensitive(GTK_WIDGET(blue_box), true);
+		}
+	}
 	
 }
 
@@ -150,6 +226,8 @@ void window_main_add_callbacks(GtkBuilder *b) {
 	gtk_builder_add_callback_symbol(b, "encode_encrypt_checkbox_toggle", encode_encrypt_checkbox_toggle);
 	gtk_builder_add_callback_symbol(b, "encode_compress_checkbox_toggle", encode_compress_checkbox_toggle);
 	gtk_builder_add_callback_symbol(b, "encode_advanced_checkbox_toggle", encode_advanced_checkbox_toggle);
+	gtk_builder_add_callback_symbol(b, "encode_color_checkbox_toggle", encode_color_checkbox_toggle);
+	gtk_builder_add_callback_symbol(b, "encode_grayscale_checkbox_toggle", encode_grayscale_checkbox_toggle);
 	
 }
 
@@ -178,5 +256,10 @@ void window_main_setup(GtkBuilder *b) {
 	GtkCheckButton *compress_box = GTK_CHECK_BUTTON(gtk_builder_get_object(b, "EncodeCompressCheckbox"));
 	gtk_widget_set_visible(GTK_WIDGET(compress_box), false);
 #endif
+	encode_color_checkbox_state[0] = true;
+	encode_color_checkbox_state[1] = true;
+	encode_color_checkbox_state[2] = true;
+	encode_color_checkbox_state[3] = false;
+	encode_color_checkbox_enabled = true;
 	
 }

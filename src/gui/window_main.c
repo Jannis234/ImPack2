@@ -15,6 +15,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
 #include "config.h"
@@ -237,6 +238,150 @@ void encode_height_checkbox_toggled() {
 	
 }
 
+GtkFileChooserDialog* create_open_file_dialog() {
+	
+	GtkFileChooserDialog *dialog = GTK_FILE_CHOOSER_DIALOG(gtk_file_chooser_dialog_new("Select input file", GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_FILE_CHOOSER_ACTION_OPEN, "Cancel", GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_ACCEPT, NULL));
+	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
+	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), false);
+	GtkFileFilter *img_filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(img_filter, "Images");
+#ifdef IMPACK_WITH_PNG
+	gtk_file_filter_add_pattern(img_filter, "*.png");
+#endif
+#ifdef IMPACK_WITH_WEBP
+	gtk_file_filter_add_pattern(img_filter, "*.webp");
+#endif
+#ifdef IMPACK_WITH_TIFF
+	gtk_file_filter_add_pattern(img_filter, "*.tiff");
+	gtk_file_filter_add_pattern(img_filter, "*.tif");
+#endif
+#ifdef IMPACK_WITH_BMP
+	gtk_file_filter_add_pattern(img_filter, "*.bmp");
+#endif
+#ifdef IMPACK_WITH_JP2K
+	gtk_file_filter_add_pattern(img_filter, "*.jp2");
+	gtk_file_filter_add_pattern(img_filter, "*.j2k");
+#endif
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), img_filter);
+	GtkFileFilter *all_filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(all_filter, "All files");
+	gtk_file_filter_add_pattern(all_filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), all_filter);
+	return dialog;
+	
+}
+
+void encode_open_button_click() {
+	
+	GtkFileChooserDialog *dialog = create_open_file_dialog();
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+		GtkEntry *entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodeInputText"));
+		char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		gtk_entry_set_text(entry, filename);
+		g_free(filename);
+	}
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+	
+}
+
+void decode_open_button_click() {
+	
+	GtkFileChooserDialog *dialog = create_open_file_dialog();
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+		GtkEntry *entry = GTK_ENTRY(gtk_builder_get_object(builder, "DecodeInputText"));
+		char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		gtk_entry_set_text(entry, filename);
+		g_free(filename);
+	}
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+	
+}
+
+void encode_output_button_click() {
+	
+	GtkFileChooserDialog *dialog = GTK_FILE_CHOOSER_DIALOG(gtk_file_chooser_dialog_new("Select output file", GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_FILE_CHOOSER_ACTION_SAVE, "Cancel", GTK_RESPONSE_CANCEL, "Select", GTK_RESPONSE_ACCEPT, NULL));
+	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
+	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), false);
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
+	GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10));
+	GtkLabel *label = GTK_LABEL(gtk_label_new("Image format:"));
+	GtkComboBoxText *cbox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
+#ifdef IMPACK_WITH_BMP
+	gtk_combo_box_text_append(cbox, "bmp", "BMP");
+#endif
+#ifdef IMPACK_WITH_JP2K
+	gtk_combo_box_text_append(cbox, "jp2", "JPEG 2000");
+#endif
+#ifdef IMPACK_WITH_PNG
+	gtk_combo_box_text_append(cbox, "png", "PNG");
+#endif
+#ifdef IMPACK_WITH_TIFF
+	gtk_combo_box_text_append(cbox, "tiff", "TIFF");
+#endif
+#ifdef IMPACK_WITH_WEBP
+	gtk_combo_box_text_append(cbox, "webp", "WebP");
+#endif
+	char *default_format = NULL;
+	switch (impack_default_img_format()) {
+		case FORMAT_BMP:
+			default_format = "bmp";
+			break;
+		case FORMAT_JP2K:
+			default_format = "jp2";
+			break;
+		case FORMAT_PNG:
+			default_format = "png";
+			break;
+		case FORMAT_TIFF:
+			default_format = "tiff";
+			break;
+		case FORMAT_WEBP:
+			default_format = "webp";
+			break;
+		default:
+			abort();
+	}
+	gtk_combo_box_set_active_id(GTK_COMBO_BOX(cbox), default_format);
+	gtk_box_pack_end(box, GTK_WIDGET(cbox), false, false, 0);
+	gtk_box_pack_end(box, GTK_WIDGET(label), false, false, 0);
+	gtk_widget_set_hexpand(GTK_WIDGET(box), true);
+	gtk_widget_show(GTK_WIDGET(box));
+	gtk_widget_show(GTK_WIDGET(label));
+	gtk_widget_show(GTK_WIDGET(cbox));
+	gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(dialog), GTK_WIDGET(box));
+	
+	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+		GtkEntry *entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodeOutputText"));
+		char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		char *fileext = filename + strlen(filename) - 1;
+		while (filename != fileext) {
+			if (*fileext == '.' || *fileext == '/' || *fileext == '\\') {
+				break;
+			}
+			fileext--;
+		}
+		bool addext = true;
+		const gchar *format_selected = gtk_combo_box_get_active_id(GTK_COMBO_BOX(cbox));
+		if (fileext != filename && *fileext == '.') {
+			if (strcmp(format_selected, fileext + 1) == 0) {
+				addext = false; // Extension already typed in by the user
+			}
+		}
+		if (addext) {
+			char *newname = malloc(strlen(filename) + strlen(format_selected) + 2);
+			if (newname != NULL) {
+				sprintf(newname, "%s.%s", filename, format_selected);
+				g_free(filename);
+				filename = newname;
+			}
+		}
+		gtk_entry_set_text(entry, filename);
+		g_free(filename);
+	}
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+	
+}
+
 void window_main_add_callbacks(GtkBuilder *b) {
 	
 	gtk_builder_add_callback_symbol(b, "encode_encrypt_checkbox_toggle", encode_encrypt_checkbox_toggle);
@@ -246,6 +391,9 @@ void window_main_add_callbacks(GtkBuilder *b) {
 	gtk_builder_add_callback_symbol(b, "encode_grayscale_checkbox_toggle", encode_grayscale_checkbox_toggle);
 	gtk_builder_add_callback_symbol(b, "encode_width_checkbox_toggled", encode_width_checkbox_toggled);
 	gtk_builder_add_callback_symbol(b, "encode_height_checkbox_toggled", encode_height_checkbox_toggled);
+	gtk_builder_add_callback_symbol(b, "encode_open_button_click", encode_open_button_click);
+	gtk_builder_add_callback_symbol(b, "decode_open_button_click", decode_open_button_click);
+	gtk_builder_add_callback_symbol(b, "encode_output_button_click", encode_output_button_click);
 	
 }
 

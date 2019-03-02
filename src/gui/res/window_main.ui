@@ -21,14 +21,10 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-open</property>
   </object>
-  <object class="GtkImage" id="DecodeOutputButtonIcon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-open</property>
-  </object>
   <object class="GtkAdjustment" id="EncodeHeightAdjustment">
     <property name="lower">1</property>
     <property name="upper">4294967295</property>
+    <property name="value">1000</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -45,6 +41,7 @@
   <object class="GtkAdjustment" id="EncodeWidthAdjustment">
     <property name="lower">1</property>
     <property name="upper">4294967295</property>
+    <property name="value">1000</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -124,6 +121,7 @@
                         <property name="receives_default">True</property>
                         <property name="image">EncodeInputButtonIcon</property>
                         <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="encode_open_button_click" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
@@ -137,6 +135,7 @@
                         <property name="receives_default">True</property>
                         <property name="image">EncodeOutputButtonIcon</property>
                         <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="encode_output_button_click" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
@@ -726,41 +725,17 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="DecodeOutputLabel">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">end</property>
-                        <property name="label" translatable="yes">Output:</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkButton" id="DecodeInputButton">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">DecodeInputButtonIcon</property>
                         <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="decode_open_button_click" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">2</property>
                         <property name="top_attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="DecodeOutputButton">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="image">DecodeOutputButtonIcon</property>
-                        <property name="always_show_image">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">1</property>
                       </packing>
                     </child>
                     <child>
@@ -772,17 +747,6 @@
                       <packing>
                         <property name="left_attach">1</property>
                         <property name="top_attach">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="DecodeOutputText">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="hexpand">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
                       </packing>
                     </child>
                   </object>

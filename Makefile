@@ -30,7 +30,8 @@ GUI_SRC = src/gui/main.c \
 	src/gui/window_main.c \
 	src/gui/work_thread.c
 GUI_RES = src/gui/res/gresources.xml \
-	src/gui/res/window_main.ui
+	src/gui/res/window_main.ui \
+	src/gui/res/icon.png
 TEST_SRC = src/test/main.c \
 	src/test/build_info.c
 LIB_SRC = src/lib/encode.c \

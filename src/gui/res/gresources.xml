@@ -17,5 +17,6 @@
 <gresources>
 	<gresource prefix="/impack2">
 		<file preprocess="xml-stripblanks">window_main.ui</file>
+		<file>icon.png</file>
 	</gresource>
 </gresources>

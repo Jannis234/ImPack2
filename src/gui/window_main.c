@@ -625,6 +625,14 @@ void window_main_add_callbacks(GtkBuilder *b) {
 void window_main_setup(GtkBuilder *b) {
 	
 	builder = b;
+	GtkWindow *window = GTK_WINDOW(gtk_builder_get_object(b, "MainWindow"));
+	GError *error;
+	GdkPixbuf *icon = gdk_pixbuf_new_from_resource("/impack2/icon.png", &error);
+	if (icon == NULL) {
+		g_free(error); // Ignore
+	} else {
+		gtk_window_set_icon(window, icon);
+	}
 #ifdef IMPACK_WITH_CRYPTO
 	GtkComboBoxText *encrypt_box = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(b, "EncodeEncryptTypeBox"));
 	gtk_combo_box_text_append(encrypt_box, "aes", "AES");

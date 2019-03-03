@@ -26,6 +26,7 @@
 GtkBuilder *builder;
 bool encode_color_checkbox_state[4];
 bool encode_color_checkbox_enabled;
+bool encode_compress_box_enabled;
 
 int enabled_compression_types() {
 	
@@ -51,6 +52,7 @@ int enabled_compression_types() {
 
 void build_encode_compression_type_box(bool advanced) {
 	
+	encode_compress_box_enabled = false;
 	GtkComboBoxText *box = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "EncodeCompressTypeBox"));
 	const gchar *last_active = gtk_combo_box_get_active_id(GTK_COMBO_BOX(box));
 	char *next_active = NULL;
@@ -107,6 +109,7 @@ void build_encode_compression_type_box(bool advanced) {
 		gtk_combo_box_text_append(box, "normal", "Normal (Fast)");
 		gtk_combo_box_text_append(box, "strong", "Strong (Slow)");
 	}
+	encode_compress_box_enabled = true;
 	gtk_combo_box_set_active_id(GTK_COMBO_BOX(box), next_active);
 	
 }
@@ -147,6 +150,8 @@ void encode_advanced_checkbox_toggle() {
 	gtk_revealer_set_reveal_child(reveal, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
 	GtkRevealer *encrypt_reveal = GTK_REVEALER(gtk_builder_get_object(builder, "EncodeEncryptAdvancedReveal"));
 	gtk_revealer_set_reveal_child(encrypt_reveal, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
+	GtkRevealer *compress_reveal = GTK_REVEALER(gtk_builder_get_object(builder, "EncodeCompressAdvancedReveal"));
+	gtk_revealer_set_reveal_child(compress_reveal, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
 	build_encode_compression_type_box(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
 	encode_compress_checkbox_toggle();
 	
@@ -237,6 +242,40 @@ void encode_height_checkbox_toggled() {
 	GtkCheckButton *box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeHeightBox"));
 	GtkSpinButton *number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeHeightNumber"));
 	gtk_widget_set_sensitive(GTK_WIDGET(number), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
+	
+}
+
+void encode_compress_level_checkbox_toggled() {
+	
+	GtkCheckButton *box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeCompressLevelCheckbox"));
+	GtkSpinButton *number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeCompressLevelNumber"));
+	gtk_widget_set_sensitive(GTK_WIDGET(number), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
+	
+}
+
+void encode_compress_type_change() {
+	
+	if (encode_compress_box_enabled) { // Prevent this from running during build_encode_compression_type_box()
+		GtkSpinButton *number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeCompressLevelNumber"));
+		GtkAdjustment *adj = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "EncodeCompressLevelAdjust"));
+		GtkComboBoxText *box = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "EncodeCompressTypeBox"));
+		const gchar *active = gtk_combo_box_get_active_id(GTK_COMBO_BOX(box));
+		impack_compression_type_t compress_type = COMPRESSION_NONE;
+		if (strcmp(active, "normal") == 0) {
+			compress_type = impack_default_compression();
+		} else if (strcmp(active, "strong") == 0) {
+			compress_type = COMPRESSION_LZMA;
+		} else {
+			compress_type = impack_select_compression((char*) active);
+		}
+		int level = 1;
+		while (impack_compress_level_valid(compress_type, level)) {
+			level++;
+		}
+		level--;
+		gtk_adjustment_set_upper(adj, level);
+		gtk_spin_button_set_value(number, level);
+	}
 	
 }
 
@@ -551,26 +590,36 @@ void encode_button_click() {
 	}
 	GtkCheckButton *compress_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeCompressCheckbox"));
 	encode_params.compress = COMPRESSION_NONE;
-	encode_params.compress_level = 0; // TODO
+	encode_params.compress_level = 0;
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(compress_box))) {
 		GtkComboBoxText *compress_type_box = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "EncodeCompressTypeBox"));
+		const gchar *compress_type = gtk_combo_box_get_active_id(GTK_COMBO_BOX(compress_type_box));
 		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(adv_box))) {
-			encode_params.compress = impack_select_compression((char*) gtk_combo_box_get_active_id(GTK_COMBO_BOX(compress_type_box)));
+			encode_params.compress = impack_select_compression((char*) compress_type);
+			GtkCheckButton *compress_level_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeCompressLevelCheckbox"));
+			if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(compress_level_box))) {
+				GtkSpinButton *compress_level_number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeCompressLevelNumber"));
+				encode_params.compress_level = gtk_spin_button_get_value_as_int(compress_level_number);
+			}
 		} else {
-			encode_params.compress = impack_default_compression();
+			if (strcmp(compress_type, "normal") == 0) {
+				encode_params.compress = impack_default_compression();
+			} else {
+				encode_params.compress = COMPRESSION_LZMA;
+			}
 		}
 	}
 	GtkCheckButton *width_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeWidthBox"));
 	encode_params.img_width = 0;
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(width_box))) {
 		GtkSpinButton *width_number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeWidthNumber"));
-		encode_params.img_width = gtk_spin_button_get_value(width_number);
+		encode_params.img_width = gtk_spin_button_get_value_as_int(width_number);
 	}
 	GtkCheckButton *height_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeHeightBox"));
 	encode_params.img_height = 0;
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(height_box))) {
 		GtkSpinButton *height_number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeHeightNumber"));
-		encode_params.img_height = gtk_spin_button_get_value(height_number);
+		encode_params.img_height = gtk_spin_button_get_value_as_int(height_number);
 	}
 	encode_params.filename_include = encode_params.input_path; // TODO
 	
@@ -738,6 +787,8 @@ void window_main_add_callbacks(GtkBuilder *b) {
 	gtk_builder_add_callback_symbol(b, "encode_grayscale_checkbox_toggle", encode_grayscale_checkbox_toggle);
 	gtk_builder_add_callback_symbol(b, "encode_width_checkbox_toggled", encode_width_checkbox_toggled);
 	gtk_builder_add_callback_symbol(b, "encode_height_checkbox_toggled", encode_height_checkbox_toggled);
+	gtk_builder_add_callback_symbol(b, "encode_compress_level_checkbox_toggled", encode_compress_level_checkbox_toggled);
+	gtk_builder_add_callback_symbol(b, "encode_compress_type_change", encode_compress_type_change);
 	gtk_builder_add_callback_symbol(b, "encode_open_button_click", encode_open_button_click);
 	gtk_builder_add_callback_symbol(b, "decode_open_button_click", decode_open_button_click);
 	gtk_builder_add_callback_symbol(b, "encode_output_button_click", encode_output_button_click);

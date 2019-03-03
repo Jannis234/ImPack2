@@ -125,6 +125,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Open a dialog to pick a file</property>
                         <property name="image">EncodeInputButtonIcon</property>
                         <property name="always_show_image">True</property>
                         <signal name="clicked" handler="encode_open_button_click" swapped="no"/>
@@ -139,6 +140,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Open a dialog to pick a path</property>
                         <property name="image">EncodeOutputButtonIcon</property>
                         <property name="always_show_image">True</property>
                         <signal name="clicked" handler="encode_output_button_click" swapped="no"/>
@@ -152,6 +154,7 @@
                       <object class="GtkEntry" id="EncodeInputText">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">Path to the file that should be stored inside an image</property>
                         <property name="hexpand">True</property>
                       </object>
                       <packing>
@@ -163,6 +166,7 @@
                       <object class="GtkEntry" id="EncodeOutputText">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">Path where the created image should be saved</property>
                         <property name="hexpand">True</property>
                       </object>
                       <packing>
@@ -190,6 +194,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Encrypt the data before creating the image</property>
                         <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="encode_encrypt_checkbox_toggle" swapped="no"/>
@@ -206,6 +211,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
+                        <property name="tooltip_text" translatable="yes">Compress the data before creating the image</property>
                         <property name="halign">start</property>
                         <property name="draw_indicator">True</property>
                         <signal name="toggled" handler="encode_compress_checkbox_toggle" swapped="no"/>
@@ -406,6 +412,7 @@
                               <object class="GtkLabel" id="EncodeCompressTypeLabel">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
+                                <property name="margin_right">10</property>
                                 <property name="label" translatable="yes">Compression type:</property>
                               </object>
                               <packing>
@@ -449,6 +456,7 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Select a custom compression level (higher means better compression but slower speed)</property>
                                     <property name="margin_right">10</property>
                                     <property name="draw_indicator">True</property>
                                     <signal name="toggled" handler="encode_compress_level_checkbox_toggled" swapped="no"/>
@@ -464,6 +472,7 @@
                                     <property name="visible">True</property>
                                     <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
+                                    <property name="tooltip_text" translatable="yes">Select a custom compression level (higher means better compression but slower speed)</property>
                                     <property name="adjustment">EncodeCompressLevelAdjust</property>
                                     <property name="snap_to_ticks">True</property>
                                     <property name="numeric">True</property>
@@ -517,10 +526,11 @@
                         </child>
                         <child>
                           <object class="GtkCheckButton" id="EncodeNoFilenameCheckbox">
-                            <property name="label" translatable="yes">Do not store the filename in the image</property>
+                            <property name="label" translatable="yes">Do not store the filename</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Do not store the filename of the input file inside the image</property>
                             <property name="margin_bottom">5</property>
                             <property name="draw_indicator">True</property>
                             <signal name="toggled" handler="encode_no_filename_toggled" swapped="no"/>
@@ -542,6 +552,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="tooltip_text" translatable="yes">Store a custom filename instead of the original one inside the image</property>
                                 <property name="margin_right">10</property>
                                 <property name="draw_indicator">True</property>
                                 <signal name="toggled" handler="encode_custom_filename_toggled" swapped="no"/>
@@ -557,6 +568,7 @@
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">True</property>
+                                <property name="tooltip_text" translatable="yes">Store a custom filename instead of the original one inside the image</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -599,6 +611,7 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
+                                    <property name="tooltip_text" translatable="yes">Select the color channels that will be used for storing data</property>
                                     <property name="halign">start</property>
                                     <property name="margin_right">10</property>
                                     <property name="draw_indicator">True</property>
@@ -732,6 +745,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="tooltip_text" translatable="yes">Select a custom size for the image</property>
                                 <property name="halign">start</property>
                                 <property name="draw_indicator">True</property>
                                 <signal name="toggled" handler="encode_width_checkbox_toggled" swapped="no"/>
@@ -747,6 +761,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="tooltip_text" translatable="yes">Select a custom size for the image</property>
                                 <property name="halign">start</property>
                                 <property name="draw_indicator">True</property>
                                 <signal name="toggled" handler="encode_height_checkbox_toggled" swapped="no"/>
@@ -761,6 +776,7 @@
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">True</property>
+                                <property name="tooltip_text" translatable="yes">Select a custom size for the image</property>
                                 <property name="halign">start</property>
                                 <property name="adjustment">EncodeWidthAdjustment</property>
                                 <property name="snap_to_ticks">True</property>
@@ -777,6 +793,7 @@
                                 <property name="visible">True</property>
                                 <property name="sensitive">False</property>
                                 <property name="can_focus">True</property>
+                                <property name="tooltip_text" translatable="yes">Select a custom size for the image</property>
                                 <property name="halign">start</property>
                                 <property name="adjustment">EncodeHeightAdjustment</property>
                                 <property name="snap_to_ticks">True</property>
@@ -821,6 +838,7 @@
                           <object class="GtkLabel" id="EncodeButtonLabel">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">Start creating the image</property>
                             <property name="label" translatable="yes">Start</property>
                           </object>
                           <packing>
@@ -881,6 +899,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Open a dialog to pick a file</property>
                         <property name="image">DecodeInputButtonIcon</property>
                         <property name="always_show_image">True</property>
                         <signal name="clicked" handler="decode_open_button_click" swapped="no"/>
@@ -894,6 +913,7 @@
                       <object class="GtkEntry" id="DecodeInputText">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="tooltip_text" translatable="yes">Path to the image that should be decoded</property>
                         <property name="hexpand">True</property>
                       </object>
                       <packing>
@@ -925,6 +945,7 @@
                           <object class="GtkLabel" id="DecodeButtonLabel">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">Start extracting the file</property>
                             <property name="label" translatable="yes">Start</property>
                           </object>
                           <packing>

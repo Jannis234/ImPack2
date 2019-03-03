@@ -56,7 +56,7 @@
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkStackSwitcher">
+          <object class="GtkStackSwitcher" id="MainStackSwitcher">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">center</property>
@@ -681,12 +681,39 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="EncodeRunButton">
-                    <property name="label" translatable="yes">Start</property>
                     <property name="height_request">75</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="hexpand">True</property>
+                    <signal name="clicked" handler="encode_button_click" swapped="no"/>
+                    <child>
+                      <object class="GtkStack" id="EncodeButtonStack">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="transition_type">crossfade</property>
+                        <child>
+                          <object class="GtkLabel" id="EncodeButtonLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Start</property>
+                          </object>
+                          <packing>
+                            <property name="title" translatable="yes">EncodeButtonLabelPage</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinner" id="EncodeButtonSpinner">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="title" translatable="yes">EncodeButtonSpinnerPage</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -758,12 +785,39 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="DecodeRunButton">
-                    <property name="label" translatable="yes">Start</property>
                     <property name="height_request">75</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="hexpand">True</property>
+                    <signal name="clicked" handler="decode_button_click" swapped="no"/>
+                    <child>
+                      <object class="GtkStack" id="DecodeButtonStack">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="transition_type">crossfade</property>
+                        <child>
+                          <object class="GtkLabel" id="DecodeButtonLabel">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Start</property>
+                          </object>
+                          <packing>
+                            <property name="title" translatable="yes">DecodeButtonLabelPage</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinner" id="DecodeButtonSpinner">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="title" translatable="yes">DecodeButtonSpinnerPage</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>

@@ -20,6 +20,7 @@
 #include <gtk/gtk.h>
 #include "config.h"
 #include "impack.h"
+#include "gui.h"
 
 GtkBuilder *builder;
 bool encode_color_checkbox_state[4];
@@ -238,31 +239,33 @@ void encode_height_checkbox_toggled() {
 	
 }
 
-GtkFileChooserDialog* create_open_file_dialog() {
+GtkFileChooserDialog* create_open_file_dialog(bool filter) {
 	
 	GtkFileChooserDialog *dialog = GTK_FILE_CHOOSER_DIALOG(gtk_file_chooser_dialog_new("Select input file", GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_FILE_CHOOSER_ACTION_OPEN, "Cancel", GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_ACCEPT, NULL));
 	gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
 	gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), false);
-	GtkFileFilter *img_filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(img_filter, "Images");
+	if (filter) {
+		GtkFileFilter *img_filter = gtk_file_filter_new();
+		gtk_file_filter_set_name(img_filter, "Images");
 #ifdef IMPACK_WITH_PNG
-	gtk_file_filter_add_pattern(img_filter, "*.png");
+		gtk_file_filter_add_pattern(img_filter, "*.png");
 #endif
 #ifdef IMPACK_WITH_WEBP
-	gtk_file_filter_add_pattern(img_filter, "*.webp");
+		gtk_file_filter_add_pattern(img_filter, "*.webp");
 #endif
 #ifdef IMPACK_WITH_TIFF
-	gtk_file_filter_add_pattern(img_filter, "*.tiff");
-	gtk_file_filter_add_pattern(img_filter, "*.tif");
+		gtk_file_filter_add_pattern(img_filter, "*.tiff");
+		gtk_file_filter_add_pattern(img_filter, "*.tif");
 #endif
 #ifdef IMPACK_WITH_BMP
-	gtk_file_filter_add_pattern(img_filter, "*.bmp");
+		gtk_file_filter_add_pattern(img_filter, "*.bmp");
 #endif
 #ifdef IMPACK_WITH_JP2K
-	gtk_file_filter_add_pattern(img_filter, "*.jp2");
-	gtk_file_filter_add_pattern(img_filter, "*.j2k");
+		gtk_file_filter_add_pattern(img_filter, "*.jp2");
+		gtk_file_filter_add_pattern(img_filter, "*.j2k");
 #endif
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), img_filter);
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), img_filter);
+	}
 	GtkFileFilter *all_filter = gtk_file_filter_new();
 	gtk_file_filter_set_name(all_filter, "All files");
 	gtk_file_filter_add_pattern(all_filter, "*");
@@ -273,7 +276,7 @@ GtkFileChooserDialog* create_open_file_dialog() {
 
 void encode_open_button_click() {
 	
-	GtkFileChooserDialog *dialog = create_open_file_dialog();
+	GtkFileChooserDialog *dialog = create_open_file_dialog(false);
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
 		GtkEntry *entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodeInputText"));
 		char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
@@ -286,7 +289,7 @@ void encode_open_button_click() {
 
 void decode_open_button_click() {
 	
-	GtkFileChooserDialog *dialog = create_open_file_dialog();
+	GtkFileChooserDialog *dialog = create_open_file_dialog(true);
 	if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
 		GtkEntry *entry = GTK_ENTRY(gtk_builder_get_object(builder, "DecodeInputText"));
 		char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
@@ -382,6 +385,226 @@ void encode_output_button_click() {
 	
 }
 
+void show_error(char *msg) {
+	
+	GtkMessageDialog *dialog = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, msg));
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+	
+}
+
+void show_impack_error(impack_error_t error) {
+	
+	char *msg = NULL;
+	switch (error) {
+		case ERROR_INPUT_NOT_FOUND:
+			msg = "Can not read input file: No such file or directory";
+			break;
+		case ERROR_INPUT_PERMISSION:
+			msg = "Can not read input file: Permission denied";
+			break;
+		case ERROR_INPUT_DIRECTORY:
+			msg = "Can not read input file: Path is a directory";
+			break;
+		case ERROR_INPUT_IO:
+			msg = "Can not read input file: I/O error";
+			break;
+		case ERROR_OUTPUT_NOT_FOUND:
+			msg = "Can not write output file: No such directory";
+			break;
+		case ERROR_OUTPUT_PERMISSION:
+			msg = "Can not write output file: Permission denied";
+			break;
+		case ERROR_OUTPUT_DIRECTORY:
+			msg = "Can not write output file: Path is a directory";
+			break;
+		case ERROR_OUTPUT_IO:
+			msg = "Can not write output file: I/O error";
+			break;
+		case ERROR_MALLOC:
+			msg = "Out of memory";
+			break;
+		case ERROR_RANDOM:
+			msg = "Can not gather random data for encryption";
+			break;
+		case ERROR_IMG_SIZE:
+			msg = "Invalid image size for the selected output format";
+			break;
+		case ERROR_IMG_TOO_SMALL:
+			msg = "Selected image size is too small";
+			break;
+		case ERROR_IMG_FORMAT_UNSUPPORTED:
+			msg = "The image file format is unsupported by this build of ImPack2";
+			break;
+		case ERROR_IMG_FORMAT_UNKNOWN:
+			msg = "Unknown image file format";
+			break;
+		case ERROR_INPUT_IMG_INVALID:
+			msg = "The image contains invalid data";
+			break;
+		case ERROR_INPUT_IMG_VERSION:
+			msg = "The image was created by an incompatible newer version of ImPack2";
+			break;
+		case ERROR_CRC:
+			msg = "The data contained inside the image seems to be corrupted";
+			break;
+		case ERROR_ENCRYPTION_UNAVAILABLE:
+			msg = "The image contains encrypted data, but encryption is unsupported by this build of ImPack2";
+			break;
+		case ERROR_ENCRYPTION_UNKNOWN:
+			msg = "The image was created by an incompatible newer version of ImPack2";
+			break;
+		case ERROR_COMPRESSION_UNAVAILABLE:
+			msg = "The image contains compressed data, but compression is unsupported by this build of ImPack2";
+			break;
+		case ERROR_COMPRESSION_UNSUPPORTED:
+			msg = "The image was compressed with an algorithm that is unsupported by this build of ImPack2";
+			break;
+		case ERROR_COMPRESSION_UNKNOWN:
+			msg = "The image was created by an incompatible newer version of ImPack2";
+			break;
+		default:
+			abort();
+	}
+	show_error(msg);
+	
+}
+
+void encode_button_click() {
+	
+	GtkEntry *input_entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodeInputText"));
+	if (gtk_entry_get_text_length(input_entry) == 0) {
+		show_error("Please select an input file");
+		return;
+	}
+	GtkEntry *output_entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodeOutputText"));
+	if (gtk_entry_get_text_length(output_entry) == 0) {
+		show_error("Please select an output file");
+		return;
+	}
+	GtkCheckButton *encrypt_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeEncryptCheckbox"));
+	GtkEntry *pass_entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodePassphraseText"));
+	GtkEntry *pass_confirm_entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodePassphraseConfirmText"));
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(encrypt_box))) {
+		if (strcmp(gtk_entry_get_text(pass_entry), gtk_entry_get_text(pass_confirm_entry)) != 0) {
+			show_error("The passphrases do not match");
+			return;
+		}
+	}
+	GtkCheckButton *adv_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeAdvancedCheckbox"));
+	GtkCheckButton *color_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorBox"));
+	GtkCheckButton *grayscale_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorGrayscaleBox"));
+	GtkCheckButton *color_red_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorRedBox"));
+	GtkCheckButton *color_green_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorGreenBox"));
+	GtkCheckButton *color_blue_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeColorBlueBox"));
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(adv_box))) {
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_box)) && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(grayscale_box))) {
+			if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_red_box)) && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_green_box)) && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_blue_box))) {
+				show_error("Please select at least one color channel");
+				return;
+			}
+		}
+	}
+	
+	encode_thread_data_t encode_params;
+	encode_params.input_path = (char*) gtk_entry_get_text(input_entry);
+	encode_params.output_path = (char*) gtk_entry_get_text(output_entry);
+	encode_params.channels = 0;
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(adv_box)) && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_box))) {
+		if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(grayscale_box))) {
+			if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_red_box))) {
+				encode_params.channels |= CHANNEL_RED;
+			}
+			if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_green_box))) {
+				encode_params.channels |= CHANNEL_GREEN;
+			}
+			if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(color_blue_box))) {
+				encode_params.channels |= CHANNEL_BLUE;
+			}
+		}
+	} else {
+		encode_params.channels = CHANNEL_RED | CHANNEL_GREEN | CHANNEL_BLUE;
+	}
+	encode_params.encrypt = ENCRYPTION_NONE;
+	encode_params.passphrase = NULL;
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(encrypt_box))) {
+		GtkComboBoxText *encrypt_type_box = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "EncodeEncryptTypeBox"));
+		const gchar *passphrase = gtk_entry_get_text(pass_entry);
+		encode_params.passphrase = malloc(strlen(passphrase) + 1);
+		if (encode_params.passphrase == NULL) {
+			show_error("Out of memory");
+			return;
+		}
+		strcpy(encode_params.passphrase, passphrase);
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(adv_box))) {
+			encode_params.encrypt = impack_select_encryption((char*) gtk_combo_box_get_active_id(GTK_COMBO_BOX(encrypt_type_box)));
+		} else {
+			encode_params.encrypt = impack_default_encryption();
+		}
+	}
+	GtkCheckButton *compress_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeCompressCheckbox"));
+	encode_params.compress = COMPRESSION_NONE;
+	encode_params.compress_level = 0; // TODO
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(compress_box))) {
+		GtkComboBoxText *compress_type_box = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "EncodeCompressTypeBox"));
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(adv_box))) {
+			encode_params.compress = impack_select_compression((char*) gtk_combo_box_get_active_id(GTK_COMBO_BOX(compress_type_box)));
+		} else {
+			encode_params.compress = impack_default_compression();
+		}
+	}
+	GtkCheckButton *width_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeWidthBox"));
+	encode_params.img_width = 0;
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(width_box))) {
+		GtkSpinButton *width_number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeWidthNumber"));
+		encode_params.img_width = gtk_spin_button_get_value(width_number);
+	}
+	GtkCheckButton *height_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeHeightBox"));
+	encode_params.img_height = 0;
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(height_box))) {
+		GtkSpinButton *height_number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeHeightNumber"));
+		encode_params.img_height = gtk_spin_button_get_value(height_number);
+	}
+	encode_params.filename_include = encode_params.input_path; // TODO
+	
+	GtkStack *main_stack = GTK_STACK(gtk_builder_get_object(builder, "MainStack"));
+	GtkStackSwitcher *main_switcher = GTK_STACK_SWITCHER(gtk_builder_get_object(builder, "MainStackSwitcher"));
+	GtkWindow *window = GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow"));
+	GtkStack *encode_button_stack = GTK_STACK(gtk_builder_get_object(builder, "EncodeButtonStack"));
+	GtkSpinner *encode_button_spinner = GTK_SPINNER(gtk_builder_get_object(builder, "EncodeButtonSpinner"));
+	gtk_widget_set_sensitive(GTK_WIDGET(main_stack), false);
+	gtk_widget_set_sensitive(GTK_WIDGET(main_switcher), false);
+	gtk_window_set_deletable(window, false);
+	gtk_stack_set_visible_child(encode_button_stack, GTK_WIDGET(encode_button_spinner));
+	gtk_spinner_start(encode_button_spinner);
+	if (!encode_thread_run(&encode_params)) {
+		show_error("Out of memory");
+		return;
+	}
+	free(encode_params.passphrase);
+	GtkLabel *encode_button_label = GTK_LABEL(gtk_builder_get_object(builder, "EncodeButtonLabel"));
+	gtk_widget_set_sensitive(GTK_WIDGET(main_stack), true);
+	gtk_widget_set_sensitive(GTK_WIDGET(main_switcher), true);
+	gtk_window_set_deletable(window, true);
+	gtk_stack_set_visible_child(encode_button_stack, GTK_WIDGET(encode_button_label));
+	gtk_spinner_stop(encode_button_spinner);
+	
+	if (encode_params.res == ERROR_OK) {
+		GtkMessageDialog *dialog = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Encoding successful"));
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+	} else {
+		show_impack_error(encode_params.res);
+	}
+	
+}
+
+void decode_button_click() {
+	
+	
+	
+}
+
 void window_main_add_callbacks(GtkBuilder *b) {
 	
 	gtk_builder_add_callback_symbol(b, "encode_encrypt_checkbox_toggle", encode_encrypt_checkbox_toggle);
@@ -394,6 +617,8 @@ void window_main_add_callbacks(GtkBuilder *b) {
 	gtk_builder_add_callback_symbol(b, "encode_open_button_click", encode_open_button_click);
 	gtk_builder_add_callback_symbol(b, "decode_open_button_click", decode_open_button_click);
 	gtk_builder_add_callback_symbol(b, "encode_output_button_click", encode_output_button_click);
+	gtk_builder_add_callback_symbol(b, "encode_button_click", encode_button_click);
+	gtk_builder_add_callback_symbol(b, "decode_button_click", decode_button_click);
 	
 }
 

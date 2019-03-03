@@ -27,7 +27,8 @@ CLI_SRC = src/cli/main.c \
 	src/cli/readpass.c
 GUI_SRC = src/gui/main.c \
 	src/gui/gresources_generated.c \
-	src/gui/window_main.c
+	src/gui/window_main.c \
+	src/gui/work_thread.c
 GUI_RES = src/gui/res/gresources.xml \
 	src/gui/res/window_main.ui
 TEST_SRC = src/test/main.c \

@@ -14,7 +14,7 @@
  * along with ImPack2. If not, see <http://www.gnu.org/licenses/>. */
 
 #include <gtk/gtk.h>
-#include "window_main.h"
+#include "gui.h"
 
 void main_window_close() {
 	

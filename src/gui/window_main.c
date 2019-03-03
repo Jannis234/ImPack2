@@ -253,6 +253,29 @@ void encode_compress_level_checkbox_toggled() {
 	
 }
 
+void encode_custom_filename_toggled() {
+	
+	GtkCheckButton *box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeCustomFilenameCheckbox"));
+	GtkEntry *entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodeCustomFilenameText"));
+	gtk_widget_set_sensitive(GTK_WIDGET(entry), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box)));
+	
+}
+
+void encode_no_filename_toggled() {
+	
+	GtkCheckButton *box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeNoFilenameCheckbox"));
+	GtkCheckButton *box_custom = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeCustomFilenameCheckbox"));
+	GtkEntry *entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodeCustomFilenameText"));
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(box))) {
+		gtk_widget_set_sensitive(GTK_WIDGET(box_custom), false);
+		gtk_widget_set_sensitive(GTK_WIDGET(entry), false);
+	} else {
+		gtk_widget_set_sensitive(GTK_WIDGET(box_custom), true);
+		encode_custom_filename_toggled();
+	}
+	
+}
+
 void encode_compress_type_change() {
 	
 	if (encode_compress_box_enabled) { // Prevent this from running during build_encode_compression_type_box()
@@ -621,7 +644,15 @@ void encode_button_click() {
 		GtkSpinButton *height_number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeHeightNumber"));
 		encode_params.img_height = gtk_spin_button_get_value_as_int(height_number);
 	}
-	encode_params.filename_include = encode_params.input_path; // TODO
+	encode_params.filename_include = encode_params.input_path;
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(adv_box))) {
+		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "EncodeNoFilenameCheckbox")))) {
+			encode_params.filename_include = "out"; // Use a placeholder instead
+		} else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(gtk_builder_get_object(builder, "EncodeCustomFilenameCheckbox")))) {
+			GtkEntry *custom_filename_entry = GTK_ENTRY(gtk_builder_get_object(builder, "EncodeCustomFilenameText"));
+			encode_params.filename_include = (char*) gtk_entry_get_text(custom_filename_entry);
+		}
+	}
 	
 	GtkStack *main_stack = GTK_STACK(gtk_builder_get_object(builder, "MainStack"));
 	GtkStackSwitcher *main_switcher = GTK_STACK_SWITCHER(gtk_builder_get_object(builder, "MainStackSwitcher"));
@@ -787,6 +818,8 @@ void window_main_add_callbacks(GtkBuilder *b) {
 	gtk_builder_add_callback_symbol(b, "encode_grayscale_checkbox_toggle", encode_grayscale_checkbox_toggle);
 	gtk_builder_add_callback_symbol(b, "encode_width_checkbox_toggled", encode_width_checkbox_toggled);
 	gtk_builder_add_callback_symbol(b, "encode_height_checkbox_toggled", encode_height_checkbox_toggled);
+	gtk_builder_add_callback_symbol(b, "encode_no_filename_toggled", encode_no_filename_toggled);
+	gtk_builder_add_callback_symbol(b, "encode_custom_filename_toggled", encode_custom_filename_toggled);
 	gtk_builder_add_callback_symbol(b, "encode_compress_level_checkbox_toggled", encode_compress_level_checkbox_toggled);
 	gtk_builder_add_callback_symbol(b, "encode_compress_type_change", encode_compress_type_change);
 	gtk_builder_add_callback_symbol(b, "encode_open_button_click", encode_open_button_click);

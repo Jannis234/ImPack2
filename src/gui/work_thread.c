@@ -36,6 +36,7 @@ bool encode_thread_run(encode_thread_data_t *params) {
 	GError *error;
 	GThread *encode_thread = g_thread_try_new("", encode_thread_main, params, &error);
 	if (encode_thread == NULL) {
+		g_free(error);
 		return false;
 	}
 	while (encode_thread_running) {
@@ -67,6 +68,7 @@ bool decode_thread_run(decode_thread_data_t *params) {
 	GError *error;
 	GThread *decode_thread = g_thread_try_new("", decode_thread_main, params, &error);
 	if (decode_thread == NULL) {
+		g_free(error);
 		return false;
 	}
 	while (decode_thread_running) {

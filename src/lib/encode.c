@@ -45,6 +45,8 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 				(*pixeldata)[*pixeldata_pos] = *data;
 				data++;
 				len--;
+			} else {
+				(*pixeldata)[*pixeldata_pos] = 0;
 			}
 			(*pixeldata_pos)++;
 		} else { // Grayscale mode

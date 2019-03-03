@@ -35,9 +35,19 @@ typedef struct {
 	impack_error_t res;
 } encode_thread_data_t;
 
+typedef struct {
+	int stage;
+	char *input_path;
+	char *output_path;
+	char *passphrase;
+	impack_decode_state_t state;
+	impack_error_t res;
+} decode_thread_data_t;
+
 void window_main_add_callbacks(GtkBuilder *b);
 void window_main_setup(GtkBuilder *b);
 
 bool encode_thread_run(encode_thread_data_t *params);
+bool decode_thread_run(decode_thread_data_t *params);
 
 #endif

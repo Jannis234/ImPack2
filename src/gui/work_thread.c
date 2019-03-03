@@ -19,6 +19,7 @@
 #include "gui.h"
 
 bool encode_thread_running;
+bool decode_thread_running;
 
 void* encode_thread_main(void *data) {
 	
@@ -41,6 +42,37 @@ bool encode_thread_run(encode_thread_data_t *params) {
 		gtk_main_iteration();
 	}
 	g_thread_unref(encode_thread);
+	return true;
+	
+}
+
+void* decode_thread_main(void *data) {
+	
+	decode_thread_data_t *params = (decode_thread_data_t*) data;
+	if (params->stage == 0) {
+		params->res = impack_decode_stage1(&params->state, params->input_path);
+	} else if (params->stage == 1) {
+		params->res = impack_decode_stage2(&params->state, params->passphrase);
+	} else {
+		params->res = impack_decode_stage3(&params->state, params->output_path);
+	}
+	decode_thread_running = false;
+	return NULL;
+	
+}
+
+bool decode_thread_run(decode_thread_data_t *params) {
+	
+	decode_thread_running = true;
+	GError *error;
+	GThread *decode_thread = g_thread_try_new("", decode_thread_main, params, &error);
+	if (decode_thread == NULL) {
+		return false;
+	}
+	while (decode_thread_running) {
+		gtk_main_iteration();
+	}
+	g_thread_unref(decode_thread);
 	return true;
 	
 }

@@ -20,6 +20,7 @@
 #include <gtk/gtk.h>
 #include "config.h"
 #include "impack.h"
+#include "impack_internal.h"
 #include "gui.h"
 
 GtkBuilder *builder;
@@ -393,7 +394,7 @@ void show_error(char *msg) {
 	
 }
 
-void show_impack_error(impack_error_t error) {
+void show_impack_error(impack_error_t error, bool maybe_passphrase) {
 	
 	char *msg = NULL;
 	switch (error) {
@@ -441,12 +442,18 @@ void show_impack_error(impack_error_t error) {
 			break;
 		case ERROR_INPUT_IMG_INVALID:
 			msg = "The image contains invalid data";
+			if (maybe_passphrase) {
+				msg = "The image contains invalid data\nNote: This may be caused by an incorrect passphrase";
+			}
 			break;
 		case ERROR_INPUT_IMG_VERSION:
 			msg = "The image was created by an incompatible newer version of ImPack2";
 			break;
 		case ERROR_CRC:
 			msg = "The data contained inside the image seems to be corrupted";
+			if (maybe_passphrase) {
+				msg = "The data contained inside the image seems to be corrupted\nNote: This may be caused by an incorrect passphrase";
+			}
 			break;
 		case ERROR_ENCRYPTION_UNAVAILABLE:
 			msg = "The image contains encrypted data, but encryption is unsupported by this build of ImPack2";
@@ -577,10 +584,19 @@ void encode_button_click() {
 	gtk_window_set_deletable(window, false);
 	gtk_stack_set_visible_child(encode_button_stack, GTK_WIDGET(encode_button_spinner));
 	gtk_spinner_start(encode_button_spinner);
+	
 	if (!encode_thread_run(&encode_params)) {
 		show_error("Out of memory");
-		return;
+	} else {
+		if (encode_params.res == ERROR_OK) {
+			GtkMessageDialog *dialog = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Encoding successful"));
+			gtk_dialog_run(GTK_DIALOG(dialog));
+			gtk_widget_destroy(GTK_WIDGET(dialog));
+		} else {
+			show_impack_error(encode_params.res, false);
+		}
 	}
+	
 	free(encode_params.passphrase);
 	GtkLabel *encode_button_label = GTK_LABEL(gtk_builder_get_object(builder, "EncodeButtonLabel"));
 	gtk_widget_set_sensitive(GTK_WIDGET(main_stack), true);
@@ -589,19 +605,127 @@ void encode_button_click() {
 	gtk_stack_set_visible_child(encode_button_stack, GTK_WIDGET(encode_button_label));
 	gtk_spinner_stop(encode_button_spinner);
 	
-	if (encode_params.res == ERROR_OK) {
-		GtkMessageDialog *dialog = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Encoding successful"));
-		gtk_dialog_run(GTK_DIALOG(dialog));
-		gtk_widget_destroy(GTK_WIDGET(dialog));
-	} else {
-		show_impack_error(encode_params.res);
-	}
-	
 }
 
 void decode_button_click() {
 	
+	GtkEntry *entry = GTK_ENTRY(gtk_builder_get_object(builder, "DecodeInputText"));
+	if (gtk_entry_get_text_length(entry) == 0) {
+		show_error("Please select an input file");
+		return;
+	}
 	
+	GtkStack *main_stack = GTK_STACK(gtk_builder_get_object(builder, "MainStack"));
+	GtkStackSwitcher *main_switcher = GTK_STACK_SWITCHER(gtk_builder_get_object(builder, "MainStackSwitcher"));
+	GtkWindow *window = GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow"));
+	GtkStack *decode_button_stack = GTK_STACK(gtk_builder_get_object(builder, "DecodeButtonStack"));
+	GtkSpinner *decode_button_spinner = GTK_SPINNER(gtk_builder_get_object(builder, "DecodeButtonSpinner"));
+	gtk_widget_set_sensitive(GTK_WIDGET(main_stack), false);
+	gtk_widget_set_sensitive(GTK_WIDGET(main_switcher), false);
+	gtk_window_set_deletable(window, false);
+	gtk_stack_set_visible_child(decode_button_stack, GTK_WIDGET(decode_button_spinner));
+	gtk_spinner_start(decode_button_spinner);
+	
+	bool running = true;
+	decode_thread_data_t decode_params;
+	decode_params.stage = 0;
+	decode_params.input_path = (char*) gtk_entry_get_text(entry);
+	if (!decode_thread_run(&decode_params)) {
+		show_error("Out of memory");
+		running = false;
+	} else {
+		if (decode_params.res != ERROR_OK) {
+			show_impack_error(decode_params.res, false);
+			running = false;
+		}
+	}
+	decode_params.stage = 1;
+	decode_params.passphrase = NULL;
+	if (running && decode_params.state.encryption != ENCRYPTION_NONE) {
+		GtkDialog *dialog = GTK_DIALOG(gtk_dialog_new_with_buttons("Enter passphrase", GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_DIALOG_DESTROY_WITH_PARENT, "Cancel", GTK_RESPONSE_CANCEL, "OK", GTK_RESPONSE_ACCEPT, NULL));
+		GtkBox *dialog_box = GTK_BOX(gtk_dialog_get_content_area(dialog));
+		GtkLabel *dialog_label = GTK_LABEL(gtk_label_new("The image contains encrypted data, please enter the passphrase"));
+		gtk_widget_set_margin_start(GTK_WIDGET(dialog_label), 10);
+		gtk_widget_set_margin_end(GTK_WIDGET(dialog_label), 10);
+		gtk_widget_set_margin_top(GTK_WIDGET(dialog_label), 10);
+		gtk_box_pack_start(dialog_box, GTK_WIDGET(dialog_label), false, false, 0);
+		GtkEntry *dialog_entry = GTK_ENTRY(gtk_entry_new());
+		gtk_entry_set_visibility(dialog_entry, false);
+		gtk_widget_set_margin_top(GTK_WIDGET(dialog_entry), 10);
+		gtk_widget_set_margin_bottom(GTK_WIDGET(dialog_entry), 10);
+		gtk_box_pack_start(dialog_box, GTK_WIDGET(dialog_entry), false, false, 0);
+		gtk_widget_show(GTK_WIDGET(dialog_label));
+		gtk_widget_show(GTK_WIDGET(dialog_entry));
+		if (gtk_dialog_run(dialog) == GTK_RESPONSE_ACCEPT) {
+			const gchar *passphrase = gtk_entry_get_text(dialog_entry);
+			decode_params.passphrase = malloc(strlen(passphrase) + 1);
+			if (decode_params.passphrase == NULL) {
+				show_error("Out of memory");
+				free(decode_params.state.pixeldata);
+				running = false;
+			} else {
+				strcpy(decode_params.passphrase, passphrase);
+			}
+		} else {
+			free(decode_params.state.pixeldata);
+			running = false;
+		}
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+	}
+	if (running) {
+		if (!decode_thread_run(&decode_params)) {
+			show_error("Out of memory");
+			running = false;
+		} else {
+			if (decode_params.res != ERROR_OK) {
+				show_impack_error(decode_params.res, true);
+				running = false;
+			}
+		}
+	}
+	if (running) {
+		GtkFileChooserDialog *dialog = GTK_FILE_CHOOSER_DIALOG(gtk_file_chooser_dialog_new("Select output file", GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_FILE_CHOOSER_ACTION_SAVE, "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL));
+		gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), true);
+		gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), false);
+		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), true);
+		gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), decode_params.state.filename);
+		if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+			decode_params.output_path = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		} else {
+#ifdef IMPACK_WITH_CRYPTO
+			if (decode_params.state.encryption != ENCRYPTION_NONE) {
+				impack_secure_erase(decode_params.state.crypt_key, IMPACK_CRYPT_KEY_SIZE);
+			}
+#endif
+			free(decode_params.state.pixeldata);
+			free(decode_params.state.filename);
+			running = false;
+		}
+		gtk_widget_destroy(GTK_WIDGET(dialog));
+	}
+	decode_params.stage = 2;
+	if (running) {
+		if (!decode_thread_run(&decode_params)) {
+			g_free(decode_params.output_path);
+			show_error("Out of memory");
+		} else {
+			g_free(decode_params.output_path);
+			if (decode_params.res != ERROR_OK) {
+				show_impack_error(decode_params.res, true);
+			} else {
+				GtkMessageDialog *dialog = GTK_MESSAGE_DIALOG(gtk_message_dialog_new(GTK_WINDOW(gtk_builder_get_object(builder, "MainWindow")), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Decoding successful"));
+				gtk_dialog_run(GTK_DIALOG(dialog));
+				gtk_widget_destroy(GTK_WIDGET(dialog));
+			}
+		}
+	}
+	
+	GtkLabel *decode_button_label = GTK_LABEL(gtk_builder_get_object(builder, "DecodeButtonLabel"));
+	gtk_widget_set_sensitive(GTK_WIDGET(main_stack), true);
+	gtk_widget_set_sensitive(GTK_WIDGET(main_switcher), true);
+	gtk_window_set_deletable(window, true);
+	gtk_stack_set_visible_child(decode_button_stack, GTK_WIDGET(decode_button_label));
+	gtk_spinner_stop(decode_button_spinner);
 	
 }
 

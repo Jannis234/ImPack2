@@ -13,9 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-#IMPACK_VERSION = 0.2
-IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
-
 include config_system.mak
 
 CFLAGS += $(CCFLAGS) -Wall -std=c99 -Isrc/include
@@ -133,16 +130,12 @@ libimpack.a: $(LIB_SRC:.c=.o)
 	$(AR) cr libimpack.a $(LIB_SRC:.c=.o)
 	$(RANLIB) libimpack.a
 
-ifeq ($(WITH_GTK), 1)
 depend.mak: $(CLI_SRC:.c=.d) $(GUI_SRC:.c=.d) $(LIB_SRC:.c=.d)
 	cat $(CLI_SRC:.c=.d) > depend.mak
+ifeq ($(WITH_GTK), 1)
 	cat $(GUI_SRC:.c=.d) >> depend.mak
-	cat $(LIB_SRC:.c=.d) >> depend.mak
-else
-depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
-	cat $(CLI_SRC:.c=.d) > depend.mak
-	cat $(LIB_SRC:.c=.d) >> depend.mak
 endif
+	cat $(LIB_SRC:.c=.d) >> depend.mak
 
 src/include/config_generated.h: config_build.mak src/gen_config.sh
 	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_LIBTIFF) $(WITH_LIBNSBMP) $(WITH_OPENJPEG2) $(WITH_ZLIB) $(WITH_ZSTD) $(WITH_LZMA) $(WITH_BZIP2) $(WITH_BROTLI) > src/include/config_generated.h

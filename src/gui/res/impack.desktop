@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ImPack2
+Comment=Application to convert files into images and back
+Exec=impack-gtk
+Icon=impack
+Terminal=false
+Categories=GTK;Graphics

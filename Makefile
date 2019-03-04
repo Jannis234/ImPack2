@@ -89,11 +89,15 @@ install-cli: cli
 
 install-man: man
 	mkdir -p $(MANDIR)
-	$(INSTALL) impack.1 $(MANDIR)/man1
+	$(INSTALL) -m 644 impack.1 $(MANDIR)/man1
 
 install-gui: gui
 	mkdir -p $(BINDIR)
 	$(INSTALL) impack-gtk$(EXEEXT) $(BINDIR)
+	mkdir -p $(DESKTOPDIR)
+	$(INSTALL) -m 644 src/gui/res/impack.desktop $(DESKTOPDIR)
+	mkdir -p $(ICONDIR)/hicolor/256x256
+	$(INSTALL) -m 644 src/gui/res/icon.png $(ICONDIR)/hicolor/256x256/impack.png
 
 uninstall:
 	rm -f $(BINDIR)/impack$(EXEEXT)

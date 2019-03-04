@@ -20,6 +20,8 @@ include config_build.mak
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 MANDIR = $(PREFIX)/share/man
+DESKTOPDIR = $(PREFIX)/share/applications
+ICONDIR = $(PREFIX)/share/icons
 
 CC = gcc
 CCLD = $(CC)

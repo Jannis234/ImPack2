@@ -809,6 +809,24 @@ void decode_button_click() {
 	
 }
 
+void about_button_click() {
+	
+	GtkAboutDialog *dialog = GTK_ABOUT_DIALOG(gtk_about_dialog_new());
+	gtk_about_dialog_set_program_name(dialog, "ImPack2");
+	gtk_about_dialog_set_version(dialog, IMPACK_VERSION_STRING);
+	gtk_about_dialog_set_license_type(dialog, GTK_LICENSE_GPL_3_0);
+	GError *error = NULL;
+	GdkPixbuf *icon = gdk_pixbuf_new_from_resource("/impack2/icon.png", &error);
+	if (icon == NULL) {
+		g_free(error); // Ignore
+	} else {
+		gtk_about_dialog_set_logo(dialog, icon);
+	}
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+	
+}
+
 void window_main_add_callbacks(GtkBuilder *b) {
 	
 	gtk_builder_add_callback_symbol(b, "encode_encrypt_checkbox_toggle", encode_encrypt_checkbox_toggle);
@@ -827,6 +845,7 @@ void window_main_add_callbacks(GtkBuilder *b) {
 	gtk_builder_add_callback_symbol(b, "encode_output_button_click", encode_output_button_click);
 	gtk_builder_add_callback_symbol(b, "encode_button_click", encode_button_click);
 	gtk_builder_add_callback_symbol(b, "decode_button_click", decode_button_click);
+	gtk_builder_add_callback_symbol(b, "about_button_click", about_button_click);
 	
 }
 
@@ -834,7 +853,7 @@ void window_main_setup(GtkBuilder *b) {
 	
 	builder = b;
 	GtkWindow *window = GTK_WINDOW(gtk_builder_get_object(b, "MainWindow"));
-	GError *error;
+	GError *error = NULL;
 	GdkPixbuf *icon = gdk_pixbuf_new_from_resource("/impack2/icon.png", &error);
 	if (icon == NULL) {
 		g_free(error); // Ignore

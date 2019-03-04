@@ -204,7 +204,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 				fclose(output_file);
 				return ERROR_MALLOC;
 			}
-			strncpy(input_filename_padded, input_filename, input_filename_length);
+			memcpy(input_filename_padded, input_filename, input_filename_length);
 			memset(input_filename_padded + input_filename_length, 0, padding);
 			input_filename_add = input_filename_padded;
 			input_filename_add_length += padding;

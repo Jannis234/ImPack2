@@ -23,11 +23,12 @@ MANDIR = $(PREFIX)/share/man
 DESKTOPDIR = $(PREFIX)/share/applications
 ICONDIR = $(PREFIX)/share/icons
 
-CC = gcc
+BUILD = 
+CC = $(BUILD)gcc
 CCLD = $(CC)
-AR = ar
-RANLIB = ranlib
-PKG_CONFIG = pkg-config
+AR = $(BUILD)ar
+RANLIB = $(BUILD)ranlib
+PKG_CONFIG = $(BUILD)pkg-config
 HELP2MAN = help2man
 INSTALL = install
 

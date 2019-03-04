@@ -134,7 +134,11 @@ libimpack.a: $(LIB_SRC:.c=.o)
 	$(AR) cr libimpack.a $(LIB_SRC:.c=.o)
 	$(RANLIB) libimpack.a
 
+ifeq ($(WITH_GTK), 1)
 depend.mak: $(CLI_SRC:.c=.d) $(GUI_SRC:.c=.d) $(LIB_SRC:.c=.d)
+else
+depend.mak: $(CLI_SRC:.c=.d) $(LIB_SRC:.c=.d)
+endif
 	cat $(CLI_SRC:.c=.d) > depend.mak
 ifeq ($(WITH_GTK), 1)
 	cat $(GUI_SRC:.c=.d) >> depend.mak

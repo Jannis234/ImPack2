@@ -164,5 +164,9 @@ void impack_print_help() {
 void impack_print_version() {
 	
 	printf("ImPack2 %s\n", IMPACK_VERSION_STRING);
+	printf("\n");
+	printf("This program is free software; you may redistribute it under the terms of\n");
+	printf("the GNU General Public License version 3 or (at your option) a later version.\n");
+	printf("This program comes with absolutely no warranty.\n");
 	
 }

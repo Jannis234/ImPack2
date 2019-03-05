@@ -96,8 +96,8 @@ install-gui: gui
 	$(INSTALL) impack-gtk$(EXEEXT) $(BINDIR)
 	mkdir -p $(DESKTOPDIR)
 	$(INSTALL) -m 644 src/gui/res/impack.desktop $(DESKTOPDIR)
-	mkdir -p $(ICONDIR)/hicolor/256x256
-	$(INSTALL) -m 644 src/gui/res/icon.png $(ICONDIR)/hicolor/256x256/impack.png
+	mkdir -p $(ICONDIR)/hicolor/256x256/apps
+	$(INSTALL) -m 644 src/gui/res/icon.png $(ICONDIR)/hicolor/256x256/apps/impack.png
 
 uninstall:
 	rm -f $(BINDIR)/impack$(EXEEXT)

@@ -128,7 +128,7 @@ testsuite$(EXEEXT): libimpack.a $(TEST_SRC:.c=.o)
 	$(CCLD) -o testsuite$(EXEEXT) $(TEST_SRC:.c=.o) libimpack.a $(LIBS)
 
 impack.1: impack$(EXEEXT)
-	help2man -N ./impack$(EXEEXT) -o impack.1
+	$(HELP2MAN) -N ./impack$(EXEEXT) -o impack.1
 
 libimpack.a: $(LIB_SRC:.c=.o)
 	$(AR) cr libimpack.a $(LIB_SRC:.c=.o)

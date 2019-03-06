@@ -119,13 +119,13 @@ clean:
 	rm -f testout_encode.tmp testout_decode.tmp
 
 impack$(EXEEXT): libimpack.a $(CLI_SRC:.c=.o)
-	$(CCLD) -o impack$(EXEEXT) $(CLI_SRC:.c=.o) libimpack.a $(LIBS)
+	$(CCLD) $(LDFLAGS) -o impack$(EXEEXT) $(CLI_SRC:.c=.o) libimpack.a $(LIBS)
 
 impack-gtk$(EXEEXT): libimpack.a $(GUI_SRC:.c=.o)
-	$(CCLD) -o impack-gtk$(EXEEXT) $(GUI_SRC:.c=.o) libimpack.a $(LIBS) $(GTK_LIBS)
+	$(CCLD) $(LDFLAGS) -o impack-gtk$(EXEEXT) $(GUI_SRC:.c=.o) libimpack.a $(LIBS) $(GTK_LIBS)
 
 testsuite$(EXEEXT): libimpack.a $(TEST_SRC:.c=.o)
-	$(CCLD) -o testsuite$(EXEEXT) $(TEST_SRC:.c=.o) libimpack.a $(LIBS)
+	$(CCLD) $(LDFLAGS) -o testsuite$(EXEEXT) $(TEST_SRC:.c=.o) libimpack.a $(LIBS)
 
 impack.1: impack$(EXEEXT)
 	$(HELP2MAN) -N ./impack$(EXEEXT) -o impack.1
@@ -154,7 +154,7 @@ src/gui/gresources_generated.c: $(GUI_RES)
 %.d: %.c config_build.mak config_system.mak src/include/config_generated.h
 	$(CC) $(CFLAGS) -M -MT $(<:.c=.o) -o $@ $<
 
-%.o: %.c #config_build.mak config_system.mak src/include/config_generated.h
+%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 include depend.mak

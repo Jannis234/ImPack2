@@ -33,8 +33,9 @@ HELP2MAN = help2man
 INSTALL = install
 
 CCFLAGS = -O2 -pipe -ggdb
-LIBS =
-EXEEXT =
+LDFLAGS = 
+LIBS = 
+EXEEXT = 
 
 ifeq ($(WITH_GTK), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags gtk+-3.0)

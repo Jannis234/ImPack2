@@ -35,7 +35,7 @@ typedef struct {
 	BrotliDecoderState *dec;
 } impack_brotli_state_t;
 
-void* impack_brotli_malloc(void *opaque, long unsigned int size) {
+void* impack_brotli_malloc(void *opaque, long long unsigned int size) {
 	
 	return malloc(size);
 	
@@ -70,7 +70,7 @@ bool impack_compress_init_brotli(impack_compress_state_t *state) {
 	strm->avail_out = state->bufsize;
 	
 	if (state->is_compress) {
-		strm->enc = BrotliEncoderCreateInstance(impack_brotli_malloc, impack_brotli_free, NULL);
+		strm->enc = BrotliEncoderCreateInstance((brotli_alloc_func) impack_brotli_malloc, impack_brotli_free, NULL);
 		if (strm->enc == 0) {
 			free(strm);
 			free(state->input_buf);
@@ -82,7 +82,7 @@ bool impack_compress_init_brotli(impack_compress_state_t *state) {
 		}
 		BrotliEncoderSetParameter(strm->enc, BROTLI_PARAM_QUALITY, state->level);
 	} else {
-		strm->dec = BrotliDecoderCreateInstance(impack_brotli_malloc, impack_brotli_free, NULL);
+		strm->dec = BrotliDecoderCreateInstance((brotli_alloc_func) impack_brotli_malloc, impack_brotli_free, NULL);
 		if (strm->dec == 0) {
 			free(strm);
 			free(state->input_buf);

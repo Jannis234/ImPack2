@@ -21,8 +21,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <bzlib.h>
 #include "impack_internal.h"
+#include <bzlib.h>
 
 bool impack_compress_init_bzip2(impack_compress_state_t *state) {
 	

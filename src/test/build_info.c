@@ -72,6 +72,9 @@ void impack_build_info() {
 #ifdef IMPACK_WITH_JP2K
 	printf(" JPEG2000");
 #endif
+#ifdef IMPACK_WITH_FLIF
+	printf(" FLIF");
+#endif
 	printf("\n  Compression types:");
 #ifdef IMPACK_WITH_ZLIB
 	printf(" Deflate");

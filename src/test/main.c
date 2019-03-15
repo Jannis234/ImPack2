@@ -234,6 +234,9 @@ bool test_decode_format(char *msg, char *filename, char *passphrase, bool should
 #ifdef IMPACK_WITH_JP2K
 	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "JPEG2000", ".jp2");
 #endif
+#ifdef IMPACK_WITH_FLIF
+	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "FLIF", ".flif");
+#endif
 	return res;
 	
 }
@@ -288,6 +291,9 @@ bool test_cycle_format(char *msg, impack_encryption_type_t encrypt, char *passph
 #endif
 #ifdef IMPACK_WITH_JP2K
 	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_JP2K, "JPEG2000");
+#endif
+#ifdef IMPACK_WITH_FLIF
+	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_FLIF, "FLIF");
 #endif
 	return res;
 	

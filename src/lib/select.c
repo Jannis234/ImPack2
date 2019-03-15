@@ -81,6 +81,13 @@ impack_img_format_t impack_select_img_format(char *name, bool fileextension) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_FLIF
+	if (namelen == 4) {
+		if (check_case(name, "FLIF", "flif")) {
+			return FORMAT_FLIF;
+		}
+	}
+#endif
 	return FORMAT_AUTO;
 	
 }

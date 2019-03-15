@@ -72,6 +72,10 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags libopenjp2)
 LIBS += $(shell $(PKG_CONFIG) --libs libopenjp2)
 endif
 
+ifeq ($(WITH_FLIF), 1)
+LIBS += -lflif
+endif
+
 ifeq ($(WITH_ZLIB), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags zlib)
 LIBS += $(shell $(PKG_CONFIG) --libs zlib)

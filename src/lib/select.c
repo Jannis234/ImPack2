@@ -104,6 +104,8 @@ impack_img_format_t impack_default_img_format() {
 	return FORMAT_BMP;
 #elif defined(IMPACK_WITH_JP2K)
 	return FORMAT_JP2K;
+#elif defined(IMPACK_WITH_FLIF)
+	return FORMAT_FLIF;
 #else
 #error "No image formats selected in config_build.mak"
 #endif

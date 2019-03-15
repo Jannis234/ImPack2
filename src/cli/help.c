@@ -114,6 +114,9 @@ void impack_print_help() {
 #ifdef IMPACK_WITH_BMP
 	print_format("BMP", &linelen, &is_first, default_format == FORMAT_BMP);
 #endif
+#ifdef IMPACK_WITH_FLIF
+	print_format("FLIF", &linelen, &is_first, default_format == FORMAT_FLIF);
+#endif
 #ifdef IMPACK_WITH_JP2K
 	print_format("JPEG2000", &linelen, &is_first, default_format == FORMAT_JP2K);
 #endif

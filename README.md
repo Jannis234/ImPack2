@@ -21,6 +21,7 @@ Check the files `config_build.mak` and `config_system.mak` for any customizable 
 ImPack2 can make use of the following dependencies (can be toggled on or off in `config_build.mak`)
 * [gtk3](https://www.gtk.org/) - For the ImPack2 GUI
 * [nettle](http://www.lysator.liu.se/~nisse/nettle/) - For encryption
+* [libflif](https://flif.info/) - To read/write FLIF images
 * [libnsbmp](http://www.netsurf-browser.org/projects/libnsbmp/) - To read BMP images
 * [libpng](http://www.libpng.org/) - To read/write PNG images
 * [libtiff](http://libtiff.org/) - To read/write TIFF images

@@ -327,6 +327,9 @@ GtkFileChooserDialog* create_open_file_dialog(bool filter) {
 		gtk_file_filter_add_pattern(img_filter, "*.jp2");
 		gtk_file_filter_add_pattern(img_filter, "*.j2k");
 #endif
+#ifdef IMPACK_WITH_FLIF
+		gtk_file_filter_add_pattern(img_filter, "*.flif");
+#endif
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), img_filter);
 	}
 	GtkFileFilter *all_filter = gtk_file_filter_new();
@@ -375,6 +378,9 @@ void encode_output_button_click() {
 #ifdef IMPACK_WITH_BMP
 	gtk_combo_box_text_append(cbox, "bmp", "BMP");
 #endif
+#ifdef IMPACK_WITH_FLIF
+	gtk_combo_box_text_append(cbox, "flif", "FLIF");
+#endif
 #ifdef IMPACK_WITH_JP2K
 	gtk_combo_box_text_append(cbox, "jp2", "JPEG 2000");
 #endif
@@ -391,6 +397,9 @@ void encode_output_button_click() {
 	switch (impack_default_img_format()) {
 		case FORMAT_BMP:
 			default_format = "bmp";
+			break;
+		case FORMAT_FLIF:
+			default_format = "flif";
 			break;
 		case FORMAT_JP2K:
 			default_format = "jp2";

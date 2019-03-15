@@ -61,6 +61,7 @@ impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint6
 	png_set_rows(write_struct, info_struct, row_pointers);
 	png_write_png(write_struct, info_struct, PNG_TRANSFORM_IDENTITY, NULL);
 	
+	fflush(output_file);
 	png_destroy_write_struct(&write_struct, &info_struct);
 	free(row_pointers);
 	return ERROR_OK;

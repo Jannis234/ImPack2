@@ -343,8 +343,8 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 	pixelbuf_add(&pixeldata, &pixeldata_size, &crc_offset, channels, (uint8_t*) &crc, 8);
 	
 	impack_error_t res = impack_write_img(output_path, output_file, &pixeldata, pixeldata_size, pixeldata_pos, img_width, img_height, format);
-	free(pixeldata);
 	fclose(output_file);
+	free(pixeldata);
 	return res;
 	
 }

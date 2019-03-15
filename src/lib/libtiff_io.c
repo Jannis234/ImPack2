@@ -104,6 +104,7 @@ bool impack_tiff_finish_write(FILE *output_file) {
 		free(impack_tiff_filebuf);
 		return false;
 	}
+	fflush(output_file);
 	free(impack_tiff_filebuf);
 	return true;
 	

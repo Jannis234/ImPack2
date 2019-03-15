@@ -134,6 +134,7 @@ void impack_opj_stream_free(void *userdata) {
 			impack_opj_stream_write_errno = ERROR_OK;
 		}
 	}
+	fflush(state->f);
 	free(state->buf);
 	free(state);
 	

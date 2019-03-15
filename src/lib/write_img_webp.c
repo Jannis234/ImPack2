@@ -38,6 +38,7 @@ impack_error_t impack_write_img_webp(FILE *output_file, uint8_t *pixeldata, uint
 		WebPFree(img);
 		return ERROR_OUTPUT_IO;
 	}
+	fflush(output_file);
 	WebPFree(img);
 	return ERROR_OK;
 	

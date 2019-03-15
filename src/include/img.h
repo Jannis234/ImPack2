@@ -33,6 +33,7 @@ impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint6
 impack_error_t impack_read_img_tiff(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size, bool le);
 impack_error_t impack_read_img_bmp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_flif(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 impack_error_t impack_write_img_webp(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 impack_error_t impack_write_img_tiff(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);

@@ -49,6 +49,7 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/read_img_tiff.c \
 	src/lib/read_img_bmp.c \
 	src/lib/read_img_jp2k.c \
+	src/lib/read_img_flif.c \
 	src/lib/libtiff_io.c \
 	src/lib/openjpeg_io.c \
 	src/lib/secure_erase.c \

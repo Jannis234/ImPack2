@@ -54,8 +54,11 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	int32_t bit_depth, color_type;
 	png_get_IHDR(read_struct, info_struct, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
 	if (bit_depth > 8) {
-		ret = ERROR_INPUT_IMG_INVALID;
-		goto cleanup;
+#if PNG_LIBPNG_VER >= 10504
+		png_set_scale_16(read_struct);
+#else
+		png_set_strip_16(read_struct);
+#endif
 	}
 	if (color_type == PNG_COLOR_TYPE_PALETTE) {
 		png_set_palette_to_rgb(read_struct);

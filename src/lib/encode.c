@@ -24,7 +24,7 @@
 #include "impack_internal.h"
 
 #define BUFSIZE 16384 // 16 KiB
-#define PIXELBUF_STEP 1048576 // 1 MiB
+#define PIXELBUF_STEP 131072 // 128 KiB
 
 bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixeldata_pos, uint8_t channels, uint8_t *data, uint64_t len) {
 	

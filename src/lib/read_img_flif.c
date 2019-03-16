@@ -17,43 +17,24 @@
 
 #ifdef IMPACK_WITH_FLIF
 
-#include <stddef.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <flif.h>
 #include "impack.h"
+#include "impack_internal.h"
 #include "img.h"
-
-#define BUFSTEP 16384 // 16 KiB
 
 impack_error_t impack_read_img_flif(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
-	uint8_t *buf = malloc(BUFSTEP + 4);
-	uint64_t bufsize = BUFSTEP + 4;
-	if (buf == NULL) {
-		return ERROR_MALLOC;
+	uint8_t *buf;
+	uint64_t bufsize;
+	impack_error_t res = impack_loadfile(input_file, &buf, &bufsize, 4);
+	if (res != ERROR_OK) {
+		return res;
 	}
 	uint8_t magic[] = IMPACK_MAGIC_FLIF;
 	memcpy(buf, magic, 4);
-	size_t bytes_read;
-	do {
-		bytes_read = fread(buf + bufsize - BUFSTEP, 1, BUFSTEP, input_file);
-		if (bytes_read == BUFSTEP) {
-			uint8_t *newbuf = realloc(buf, bufsize + BUFSTEP);
-			if (newbuf == NULL) {
-				free(buf);
-				return ERROR_MALLOC;
-			}
-			buf = newbuf;
-			bufsize += BUFSTEP;
-		}
-	} while (bytes_read == BUFSTEP);
-	bufsize = bufsize - BUFSTEP + bytes_read;
-	if (!feof(input_file)) {
-		return ERROR_INPUT_IO;
-	}
 	
 	FLIF_DECODER *decoder = flif_create_decoder();
 	if (decoder == NULL) {

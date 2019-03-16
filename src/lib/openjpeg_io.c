@@ -27,7 +27,7 @@
 #include "impack.h"
 #include "img.h"
 
-#define BUFSTEP 16384 // 16 KiB
+#define BUFSTEP 131072 // 128 KiB
 
 typedef struct {
 	uint8_t *buf;

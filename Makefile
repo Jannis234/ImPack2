@@ -61,7 +61,8 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/compress_lzma.c \
 	src/lib/compress_bzip2.c \
 	src/lib/compress_brotli.c \
-	src/lib/select.c
+	src/lib/select.c \
+	src/lib/loadfile.c
 
 .PHONY: all depend clean check cli man gui install install-cli install-man install-gui uninstall
 

@@ -92,5 +92,7 @@ void impack_compress_free(impack_compress_state_t *state);
 impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
 void impack_compress_write(impack_compress_state_t *state, uint8_t *buf, uint64_t len);
 impack_compression_result_t impack_compress_flush(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout);
+// Load a file into memory, leave some bytes free at the start of the buffer if requested
+impack_error_t impack_loadfile(FILE *f, uint8_t **buf, uint64_t *bufsize, uint64_t skip);
 
 #endif

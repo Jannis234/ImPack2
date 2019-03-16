@@ -53,16 +53,14 @@ bool impack_compress_init_brotli(impack_compress_state_t *state) {
 	if (strm == NULL) {
 		return ERROR_MALLOC;
 	}
+	state->output_buf = NULL;
 	state->input_buf = malloc(state->bufsize);
 	if (state->input_buf == NULL) {
-		free(strm);
-		return false;
+		goto cleanup;
 	}
 	state->output_buf = malloc(state->bufsize);
 	if (state->output_buf == NULL) {
-		free(state->input_buf);
-		free(strm);
-		return false;
+		goto cleanup;
 	}
 	strm->next_in = state->input_buf;
 	strm->next_out = state->output_buf;
@@ -72,10 +70,7 @@ bool impack_compress_init_brotli(impack_compress_state_t *state) {
 	if (state->is_compress) {
 		strm->enc = BrotliEncoderCreateInstance((brotli_alloc_func) impack_brotli_malloc, impack_brotli_free, NULL);
 		if (strm->enc == 0) {
-			free(strm);
-			free(state->input_buf);
-			free(state->output_buf);
-			return false;
+			goto cleanup;
 		}
 		if (state->level == 0) {
 			state->level = BROTLI_DEFAULT_QUALITY;
@@ -84,14 +79,21 @@ bool impack_compress_init_brotli(impack_compress_state_t *state) {
 	} else {
 		strm->dec = BrotliDecoderCreateInstance((brotli_alloc_func) impack_brotli_malloc, impack_brotli_free, NULL);
 		if (strm->dec == 0) {
-			free(strm);
-			free(state->input_buf);
-			free(state->output_buf);
-			return false;
+			goto cleanup;
 		}
 	}
 	state->lib_object = strm;
 	return true;
+	
+cleanup:
+	free(strm);
+	if (state->input_buf != NULL) {
+		free(state->input_buf);
+	}
+	if (state->output_buf != NULL) {
+		free(state->output_buf);
+	}
+	return false;
 	
 }
 

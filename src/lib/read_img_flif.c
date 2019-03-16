@@ -36,36 +36,33 @@ impack_error_t impack_read_img_flif(FILE *input_file, uint8_t **pixeldata, uint6
 	uint8_t magic[] = IMPACK_MAGIC_FLIF;
 	memcpy(buf, magic, 4);
 	
+	impack_error_t ret = ERROR_MALLOC;
+	*pixeldata = NULL;
 	FLIF_DECODER *decoder = flif_create_decoder();
 	if (decoder == NULL) {
-		free(buf);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (flif_decoder_decode_memory(decoder, buf, bufsize) == 0) {
-		free(buf);
-		flif_destroy_decoder(decoder);
-		return ERROR_INPUT_IMG_INVALID;
+		ret = ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	free(buf);
+	buf = NULL;
 	
 	FLIF_IMAGE *img = flif_decoder_get_image(decoder, 0);
 	if (img == NULL) {
-		flif_destroy_decoder(decoder);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	uint32_t width = flif_image_get_width(img);
 	uint32_t height = flif_image_get_height(img);
 	*pixeldata_size = width * height * 3;
 	*pixeldata = malloc(*pixeldata_size);
 	if (*pixeldata == NULL) {
-		flif_destroy_decoder(decoder);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	uint8_t *row = malloc(width * 4);
 	if (row == NULL) {
-		flif_destroy_decoder(decoder);
-		free(*pixeldata);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	
 	for (uint32_t y = 0; y < height; y++) {
@@ -79,6 +76,16 @@ impack_error_t impack_read_img_flif(FILE *input_file, uint8_t **pixeldata, uint6
 	free(row);
 	flif_destroy_decoder(decoder);
 	return ERROR_OK;
+	
+cleanup:
+	if (buf != NULL) {
+		free(buf);
+	}
+	if (*pixeldata != NULL) {
+		free(*pixeldata);
+	}
+	flif_destroy_decoder(decoder);
+	return ret;
 	
 }
 

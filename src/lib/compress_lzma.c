@@ -46,16 +46,11 @@ bool impack_compress_init_lzma(impack_compress_state_t *state) {
 	}
 	state->input_buf = malloc(state->bufsize);
 	if (state->input_buf == NULL) {
-		lzma_end(strm);
-		free(strm);
-		return false;
+		goto cleanup;
 	}
 	state->output_buf = malloc(state->bufsize);
 	if (state->output_buf == NULL) {
-		free(state->input_buf);
-		lzma_end(strm);
-		free(strm);
-		return false;
+		goto cleanup;
 	}
 	strm->next_in = state->input_buf;
 	strm->next_out = state->output_buf;
@@ -63,6 +58,14 @@ bool impack_compress_init_lzma(impack_compress_state_t *state) {
 	strm->avail_out = state->bufsize;
 	state->lib_object = strm;
 	return true;
+	
+cleanup:
+	lzma_end(strm);
+	free(strm);
+	if (state->input_buf != NULL) {
+		free(state->input_buf);
+	}
+	return false;
 	
 }
 

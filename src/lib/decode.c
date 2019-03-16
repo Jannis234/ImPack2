@@ -67,17 +67,17 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 			}
 		}
 	}
-
+	
 	impack_error_t res = impack_read_img(input_file, &state->pixeldata, &state->pixeldata_size);
 	state->pixeldata_pos = 0;
 	fclose(input_file);
 	if (res != ERROR_OK) {
 		return res;
 	}
-
+	
+	impack_error_t ret = ERROR_INPUT_IMG_INVALID;
 	if (state->pixeldata_size < 3) {
-		free(state->pixeldata);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	state->channels = 0;
 	if (state->pixeldata[0] == 255) {
@@ -93,31 +93,26 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 		state->channels = CHANNEL_RED; // Can use any channel on a grayscale image
 	}
 	if (state->channels == 0) {
-		free(state->pixeldata);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	state->pixeldata_pos = 3;
-
+	
 	uint8_t magic_buf[4];
 	if (!pixelbuf_read(state, magic_buf, 4)) {
-		free(state->pixeldata);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	uint8_t magic[] = IMPACK_MAGIC_NUMBER;
 	if (memcmp(magic_buf, magic, 3) != 0) {
-		free(state->pixeldata);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	state->legacy = false;
 	if (magic_buf[3] != magic[3]) {
 		if (magic_buf[3] == 97) { // 'a', could be a legacy file
 			if (!pixelbuf_read(state, magic_buf, 2)) {
-				free(state->pixeldata);
-				return ERROR_INPUT_IMG_INVALID;
+				goto cleanup;
 			}
 			if (magic_buf[0] != 99) { // 'c'
-				free(state->pixeldata);
-				return ERROR_INPUT_IMG_INVALID;
+				goto cleanup;
 			}
 			state->legacy = true;
 			if (magic_buf[1] == 107) { // 'k'
@@ -125,63 +120,56 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 			} else if (magic_buf[1] == 90) { // 'Z'
 				state->compression = COMPRESSION_ZLIB;
 			} else {
-				free(state->pixeldata);
-				return ERROR_INPUT_IMG_INVALID;
+				goto cleanup;
 			}
 		} else {
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 	}
 	
 	if (!state->legacy) {
 		uint8_t flags[3];
 		if (!pixelbuf_read(state, flags, 3)) {
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 		if (flags[0] != 0) { // Version number
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_VERSION;
+			goto cleanup;
 		}
 		state->encryption = flags[1];
 		state->compression = flags[2];
 	} else {
 		uint32_t data_length;
 		if (!pixelbuf_read(state, (uint8_t*) &data_length, 4)) {
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 		if (!pixelbuf_read(state, (uint8_t*) &state->filename_length, 4)) {
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 		state->data_length = impack_endian32_le(data_length);
 		state->filename_length = impack_endian32_le(state->filename_length);
 		if (!pixelbuf_read(state, state->checksum_legacy, 64)) {
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 		uint8_t flag;
 		if (!pixelbuf_read(state, &flag, 1)) {
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 		state->encryption = (flag == 255) ? ENCRYPTION_AES : ENCRYPTION_NONE;
 	}
 	
 #ifdef IMPACK_WITH_CRYPTO
 	if (state->encryption > ENCRYPTION_TWOFISH) {
-		free(state->pixeldata);
-		return ERROR_ENCRYPTION_UNKNOWN;
+		ret = ERROR_ENCRYPTION_UNKNOWN;
+		goto cleanup;
 	}
 #else
 	if (state->encryption > ENCRYPTION_NONE) {
-		free(state->pixeldata);
-		return ERROR_ENCRYPTION_UNAVAILABLE;
+		ret = ERROR_ENCRYPTION_UNAVAILABLE;
+		goto cleanup;
 	}
 #endif
 	
+	ret = ERROR_COMPRESSION_UNSUPPORTED;
 	if (state->compression > COMPRESSION_NONE) {
 #ifdef IMPACK_WITH_COMPRESSION
 		switch (state->compression) {
@@ -189,71 +177,60 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 #ifdef IMPACK_WITH_ZLIB
 				break;
 #else
-				free(state->pixeldata);
-				return ERROR_COMPRESSION_UNSUPPORTED;
+				goto cleanup;
 #endif
 			case COMPRESSION_ZSTD:
 #ifdef IMPACK_WITH_ZSTD
 				break;
 #else
-				free(state->pixeldata);
-				return ERROR_COMPRESSION_UNSUPPORTED;
+				goto cleanup;
 #endif
 			case COMPRESSION_LZMA:
 #ifdef IMPACK_WITH_LZMA
 				break;
 #else
-				free(state->pixeldata);
-				return ERROR_COMPRESSION_UNSUPPORTED;
+				goto cleanup;
 #endif
 			case COMPRESSION_BZIP2:
 #ifdef IMPACK_WITH_BZIP2
 				break;
 #else
-				free(state->pixeldata);
-				return ERROR_COMPRESSION_UNSUPPORTED;
+				goto cleanup;
 #endif
 			case COMPRESSION_BROTLI:
 #ifdef IMPACK_WITH_BROTLI
 				break;
 #else
-				free(state->pixeldata);
-				return ERROR_COMPRESSION_UNSUPPORTED;
+				goto cleanup;
 #endif
 			default:
-				free(state->pixeldata);
-				return ERROR_COMPRESSION_UNKNOWN;
+				ret = ERROR_COMPRESSION_UNKNOWN;
+				goto cleanup;
 		}
 #else
-		free(state->pixeldata);
-		return ERROR_COMPRESSION_UNAVAILABLE;
+		ret = ERROR_COMPRESSION_UNAVAILABLE;
+		goto cleanup;
 #endif
 	}
 	
 	return ERROR_OK;
 	
+cleanup:
+	free(state->pixeldata);
+	return ret;
+	
 }
 
 impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphrase) {
 	
+	impack_error_t ret = ERROR_INPUT_IMG_INVALID;
+	state->filename = NULL;
 	if (!state->legacy) {
 		if (!pixelbuf_read(state, (uint8_t*) &state->data_length, 8)) {
-#ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != ENCRYPTION_NONE) {
-				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-			}
-#endif
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 		if (!pixelbuf_read(state, (uint8_t*) &state->filename_length, 4)) {
-#ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != ENCRYPTION_NONE) {
-				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-			}
-#endif
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 		state->data_length = impack_endian64(state->data_length);
 		state->filename_length = impack_endian32(state->filename_length);
@@ -262,22 +239,10 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	// Quick sanity check to avoid allocating giant buffers
 	uint64_t bytes_remaining = state->pixeldata_size - state->pixeldata_pos;
 	if (state->filename_length > bytes_remaining || state->filename_length == 0) {
-#ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != ENCRYPTION_NONE) {
-			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-		}
-#endif
-		free(state->pixeldata);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	if (state->data_length > bytes_remaining - state->filename_length) {
-#ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != ENCRYPTION_NONE) {
-			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-		}
-#endif
-		free(state->pixeldata);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	
 	uint64_t filename_length;
@@ -287,22 +252,14 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	if (!state->legacy) {
 		uint64_t crc;
 		if (!pixelbuf_read(state, (uint8_t*) &crc, 8)) {
-#ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != ENCRYPTION_NONE) {
-				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-			}
-#endif
-			free(state->pixeldata);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 		state->crc = impack_endian64(crc);
 		filename_length = state->filename_length;
 #ifdef IMPACK_WITH_CRYPTO
 		if (state->encryption != ENCRYPTION_NONE) {
 			if (!pixelbuf_read(state, decrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE)) {
-				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-				free(state->pixeldata);
-				return ERROR_INPUT_IMG_INVALID;
+				goto cleanup;
 			}
 			impack_derive_key(passphrase, state->crypt_key, IMPACK_CRYPT_KEY_SIZE, decrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE);
 			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
@@ -317,15 +274,11 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 #ifdef IMPACK_WITH_CRYPTO
 		if (state->encryption != ENCRYPTION_NONE) {
 			if (!pixelbuf_read(state, state->crypt_iv, IMPACK_CRYPT_BLOCK_SIZE)) {
-				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-				free(state->pixeldata);
-				return ERROR_INPUT_IMG_INVALID;
+				goto cleanup;
 			}
 			uint8_t salt[32];
 			if (!pixelbuf_read(state, salt, 32)) {
-				impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-				free(state->pixeldata);
-				return ERROR_INPUT_IMG_INVALID;
+				goto cleanup;
 			}
 			impack_derive_key_legacy(passphrase, state->crypt_key, IMPACK_CRYPT_KEY_SIZE, salt, 32);
 			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
@@ -335,25 +288,11 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	
 	state->filename = malloc(filename_length);
 	if (state->filename == NULL) {
-#ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != ENCRYPTION_NONE) {
-			impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
-			impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-		}
-#endif
-		free(state->pixeldata);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (!pixelbuf_read(state, (uint8_t*) state->filename, filename_length)) {
-#ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != ENCRYPTION_NONE) {
-			impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
-			impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-		}
-#endif
-		free(state->pixeldata);
-		free(state->filename);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 #ifdef IMPACK_WITH_CRYPTO
 	if (state->encryption != ENCRYPTION_NONE && !state->legacy) {
@@ -365,24 +304,38 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 	
 	for (uint32_t i = 0; i < state->filename_length; i++) {
 		if (!isprint(state->filename[i])) { // Search for non-printable characters in the filename
-#ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != ENCRYPTION_NONE) {
-				impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
-				impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-			}
-#endif
-			free(state->pixeldata);
-			free(state->filename);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 	}
 	
 	return ERROR_OK;
 	
+cleanup:
+	free(state->pixeldata);
+	if (state->filename != NULL) {
+		free(state->filename);
+	}
+#ifdef IMPACK_WITH_CRYPTO
+	if (state->encryption != ENCRYPTION_NONE) {
+		impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
+		impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
+	}
+#endif
+	return ret;
+	
 }
 
 impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_path) {
 	
+	impack_error_t ret = ERROR_INPUT_IMG_INVALID;
+	uint8_t *buf = NULL;
+#ifdef IMPACK_WITH_COMPRESSION
+	impack_compress_state_t decompress_state;
+	decompress_state.bufsize = 0;
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+	impack_crypt_ctx_t decrypt_ctx;
+#endif
 	FILE *output_file;
 	if (strlen(output_path) == 1 && output_path[0] == '-') {
 		output_file = stdout;
@@ -393,14 +346,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 				size_t output_path_length = strlen(output_path);
 				char *newname = malloc(state->filename_length + output_path_length + 2);
 				if (newname == NULL) {
-#ifdef IMPACK_WITH_CRYPTO
-					if (state->encryption != ENCRYPTION_NONE) {
-						impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
-					}
-#endif
-					free(state->pixeldata);
-					free(state->filename);
-					return ERROR_MALLOC;
+					ret = ERROR_MALLOC;
+					goto cleanup;
 				}
 				strcpy(newname, output_path);
 				newname[output_path_length] = '/'; // This should also work on windows
@@ -410,41 +357,29 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 				free(newname);
 			}
 			if (output_file == NULL) {
-#ifdef IMPACK_WITH_CRYPTO
-				if (state->encryption != ENCRYPTION_NONE) {
-					impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
-				}
-#endif
-				free(state->filename);
-				free(state->pixeldata);
 				if (errno == ENOENT) {
-					return ERROR_OUTPUT_NOT_FOUND;
+					ret = ERROR_OUTPUT_NOT_FOUND;
 				} else if (errno == EACCES) {
-					return ERROR_OUTPUT_PERMISSION;
+					ret = ERROR_OUTPUT_PERMISSION;
 				} else if (errno == EISDIR) {
-					return ERROR_OUTPUT_DIRECTORY;
+					ret = ERROR_OUTPUT_DIRECTORY;
 				} else {
-					return ERROR_OUTPUT_IO;
+					ret = ERROR_OUTPUT_IO;
 				}
+				goto cleanup;
 			}
 		}
 	}
 	free(state->filename);
+	state->filename = NULL;
 	
-	uint8_t *buf = malloc(BUFSIZE);
+	buf = malloc(BUFSIZE);
 	if (buf == NULL) {
-#ifdef IMPACK_WITH_CRYPTO
-		if (state->encryption != ENCRYPTION_NONE) {
-			impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
-		}
-#endif
-		free(state->pixeldata);
-		fclose(output_file);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
 	
 #ifdef IMPACK_WITH_CRYPTO
-	impack_crypt_ctx_t decrypt_ctx;
 	if (state->encryption != ENCRYPTION_NONE) {
 		impack_set_decrypt_key(&decrypt_ctx, state->crypt_key, state->encryption);
 		memcpy(decrypt_ctx.iv, state->crypt_iv, IMPACK_CRYPT_BLOCK_SIZE);
@@ -453,21 +388,13 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 #endif
 	
 #ifdef IMPACK_WITH_COMPRESSION
-	impack_compress_state_t decompress_state;
 	if (state->compression != COMPRESSION_NONE) {
 		decompress_state.type = state->compression;
 		decompress_state.is_compress = false;
 		decompress_state.bufsize = BUFSIZE;
 		if (!impack_compress_init(&decompress_state)) {
-#ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != ENCRYPTION_NONE) {
-				impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-			}
-#endif
-			free(state->pixeldata);
-			fclose(output_file);
-			free(buf);
-			return ERROR_MALLOC;
+			ret = ERROR_MALLOC;
+			goto cleanup;
 		}
 	}
 #endif
@@ -491,16 +418,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 				uint64_t lenout;
 				impack_compression_result_t res = impack_compress_read(&decompress_state, buf, &lenout);
 				if (res == COMPRESSION_RES_ERROR) {
-#ifdef IMPACK_WITH_CRYPTO
-					if (state->encryption != ENCRYPTION_NONE) {
-						impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-					}
-#endif
-					impack_compress_free(&decompress_state);
-					free(state->pixeldata);
-					free(buf);
-					fclose(output_file);
-					return ERROR_INPUT_IMG_INVALID;
+					goto cleanup;
 				} else if (res == COMPRESSION_RES_AGAIN) {
 					remaining = BUFSIZE;
 					if (state->data_length < remaining) {
@@ -516,16 +434,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					}
 #endif
 					if (!pixelbuf_read(state, buf, remaining)) {
-#ifdef IMPACK_WITH_CRYPTO
-						if (state->encryption != ENCRYPTION_NONE) {
-							impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-						}
-#endif
-						impack_compress_free(&decompress_state);
-						free(state->pixeldata);
-						free(buf);
-						fclose(output_file);
-						return ERROR_INPUT_IMG_INVALID;
+						goto cleanup;
 					}
 #ifdef IMPACK_WITH_CRYPTO
 					if (state->encryption != ENCRYPTION_NONE) {
@@ -547,16 +456,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 				} else {
 					if (res == COMPRESSION_RES_FINAL) {
 						if (state->data_length != 0) {
-#ifdef IMPACK_WITH_CRYPTO
-							if (state->encryption != ENCRYPTION_NONE) {
-								impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-							}
-#endif
-							impack_compress_free(&decompress_state);
-							free(state->pixeldata);
-							free(buf);
-							fclose(output_file);
-							return ERROR_INPUT_IMG_INVALID;
+							goto cleanup;
 						}
 						loop_running = false;
 					}
@@ -580,15 +480,7 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 			}
 #endif
 			if (!pixelbuf_read(state, buf, remaining)) {
-#ifdef IMPACK_WITH_CRYPTO
-				if (state->encryption != ENCRYPTION_NONE) {
-					impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-				}
-#endif
-				free(state->pixeldata);
-				free(buf);
-				fclose(output_file);
-				return ERROR_INPUT_IMG_INVALID;
+				goto cleanup;
 			}
 #ifdef IMPACK_WITH_CRYPTO
 			if (state->encryption != ENCRYPTION_NONE) {
@@ -619,20 +511,8 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 		}
 #endif
 		if (fwrite(buf, 1, remaining, output_file) != remaining) {
-#ifdef IMPACK_WITH_CRYPTO
-			if (state->encryption != ENCRYPTION_NONE) {
-				impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
-			}
-#endif
-#ifdef IMPACK_WITH_COMPRESSION
-			if (state->compression != COMPRESSION_NONE) {
-				impack_compress_free(&decompress_state);
-			}
-#endif
-			free(state->pixeldata);
-			free(buf);
-			fclose(output_file);
-			return ERROR_OUTPUT_IO;
+			ret = ERROR_OUTPUT_IO;
+			goto cleanup;
 		}
 	}
 
@@ -663,5 +543,29 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 #endif
 	}
 	return ERROR_OK;
+	
+cleanup:
+	free(state->pixeldata);
+	if (state->filename != NULL) {
+		free(state->filename);
+	}
+	if (buf != NULL) {
+		free(buf);
+	}
+	if (output_file != NULL) {
+		fclose(output_file);
+	}
+#ifdef IMPACK_WITH_CRYPTO
+	if (state->encryption != ENCRYPTION_NONE) {
+		impack_secure_erase(state->crypt_key, IMPACK_CRYPT_KEY_SIZE);
+		impack_secure_erase((uint8_t*) &decrypt_ctx, sizeof(impack_crypt_ctx_t));
+	}
+#endif
+#ifdef IMPACK_WITH_COMPRESSION
+	if (decompress_state.bufsize != 0) {
+		impack_compress_free(&decompress_state);
+	}
+#endif
+	return ret;
 	
 }

@@ -48,13 +48,13 @@ impack_error_t impack_write_img_flif(FILE *output_file, uint8_t *pixeldata, uint
 		flif_destroy_encoder(encoder);
 		return ERROR_MALLOC;
 	}
-	flif_destroy_encoder(encoder);
 	
 	if (fwrite(imgdata, 1, imgdata_len, output_file) != imgdata_len) {
 		flif_free_memory(imgdata);
 		return ERROR_OUTPUT_IO;
 	}
 	fflush(output_file);
+	flif_destroy_encoder(encoder);
 	flif_free_memory(imgdata);
 	return ERROR_OK;
 	

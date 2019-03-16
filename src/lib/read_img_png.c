@@ -30,6 +30,8 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	if (read_struct == NULL) {
 		return ERROR_MALLOC;
 	}
+	impack_error_t ret = ERROR_MALLOC;
+	*pixeldata = NULL;
 	png_infop info_struct = png_create_info_struct(read_struct);
 	if (info_struct == NULL) {
 		png_destroy_read_struct(&read_struct, NULL, NULL);
@@ -39,8 +41,8 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	*pixeldata = NULL;
 	uint8_t **row_pointers = NULL;
 	if (setjmp(png_jmpbuf(read_struct))) {
-		png_destroy_read_struct(&read_struct, &info_struct, NULL);
-		return ERROR_INPUT_IO;
+		ret = ERROR_INPUT_IO;
+		goto cleanup;
 	}
 	
 	png_init_io(read_struct, input_file);
@@ -52,8 +54,8 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	int32_t bit_depth, color_type;
 	png_get_IHDR(read_struct, info_struct, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
 	if (bit_depth > 8) {
-		png_destroy_read_struct(&read_struct, &info_struct, NULL);
-		return ERROR_INPUT_IMG_INVALID;
+		ret = ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	if (color_type == PNG_COLOR_TYPE_PALETTE) {
 		png_set_palette_to_rgb(read_struct);
@@ -70,15 +72,12 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	
 	*pixeldata = malloc((uint64_t) width * (uint64_t) height * 3);
 	if (*pixeldata == NULL) {
-		png_destroy_read_struct(&read_struct, &info_struct, NULL);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	*pixeldata_size = (uint64_t) width * (uint64_t) height * 3;
 	row_pointers = malloc(sizeof(uint8_t*) * height);
 	if (row_pointers == NULL) {
-		png_destroy_read_struct(&read_struct, &info_struct, NULL);
-		free(*pixeldata);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	for (uint64_t i = 0; i < height; i++) {
 		row_pointers[i] = (*pixeldata) + (i * width * 3);
@@ -88,6 +87,13 @@ impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64
 	png_destroy_read_struct(&read_struct, &info_struct, NULL);
 	free(row_pointers);
 	return ERROR_OK;
+	
+cleanup:
+	png_destroy_read_struct(&read_struct, &info_struct, NULL);
+	if (*pixeldata != NULL) {
+		free(*pixeldata);
+	}
+	return ret;
 	
 }
 

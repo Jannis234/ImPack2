@@ -38,60 +38,50 @@ impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t **pixeldata, uint6
 		return ERROR_INPUT_IO;
 	}
 	
+	impack_error_t ret = ERROR_INPUT_IMG_INVALID;
 	opj_dparameters_t params;
 	opj_set_default_decoder_parameters(&params);
+	opj_image_t *img = NULL;
 	opj_codec_t *codec = opj_create_decompress(OPJ_CODEC_JP2);
 	if (codec == NULL) {
-		opj_stream_destroy(strm);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (!opj_setup_decoder(codec, &params)) {
-		opj_stream_destroy(strm);
-		opj_destroy_codec(codec);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
-	opj_image_t *img = NULL;
 	if (!opj_read_header(strm, codec, &img)) {
-		opj_stream_destroy(strm);
-		opj_destroy_codec(codec);
-		opj_image_destroy(img);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	if (!opj_decode(codec, strm, img)) {
-		opj_stream_destroy(strm);
-		opj_destroy_codec(codec);
-		opj_image_destroy(img);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	if (!opj_end_decompress(codec, strm)) {
-		opj_stream_destroy(strm);
-		opj_destroy_codec(codec);
-		opj_image_destroy(img);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	opj_stream_destroy(strm);
 	opj_destroy_codec(codec);
+	strm = NULL;
+	codec = NULL;
 	
 	if (img->color_space != OPJ_CLRSPC_SRGB && img->color_space != OPJ_CLRSPC_GRAY) {
-		opj_image_destroy(img);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	if (img->color_space != OPJ_CLRSPC_SRGB && img->numcomps < 3) {
-		opj_image_destroy(img);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	if (img->color_space == OPJ_CLRSPC_SRGB) {
 		if (img->comps[0].w != img->comps[1].w || img->comps[0].w != img->comps[2].w || img->comps[0].h != img->comps[1].h || img->comps[0].h != img->comps[2].h) {
-			opj_image_destroy(img);
-			return ERROR_INPUT_IMG_INVALID;
+			goto cleanup;
 		}
 	}
 	
 	*pixeldata_size = img->comps[0].w * img->comps[0].h * 3;
 	*pixeldata = malloc(*pixeldata_size);
 	if (*pixeldata == NULL) {
-		opj_image_destroy(img);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
 	for (uint64_t i = 0; i < img->comps[0].w * img->comps[0].h; i++) {
 		(*pixeldata)[i * 3] = img->comps[0].data[i];
@@ -100,6 +90,18 @@ impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t **pixeldata, uint6
 	}
 	opj_image_destroy(img);
 	return ERROR_OK;
+	
+cleanup:
+	if (strm != NULL) {
+		opj_stream_destroy(strm);
+	}
+	if (codec != NULL) {
+		opj_destroy_codec(codec);
+	}
+	if (img != NULL) {
+		opj_image_destroy(img);
+	}
+	return ret;
 	
 }
 

@@ -30,16 +30,14 @@ bool impack_compress_init_zlib(impack_compress_state_t *state) {
 	if (strm == NULL) {
 		return false;
 	}
+	state->output_buf = NULL;
 	state->input_buf = malloc(state->bufsize);
 	if (state->input_buf == NULL) {
-		free(strm);
-		return false;
+		goto cleanup;
 	}
 	state->output_buf = malloc(state->bufsize);
 	if (state->output_buf == NULL) {
-		free(state->input_buf);
-		free(strm);
-		return false;
+		goto cleanup;
 	}
 	strm->next_in = state->input_buf;
 	strm->next_out = state->output_buf;
@@ -62,11 +60,18 @@ bool impack_compress_init_zlib(impack_compress_state_t *state) {
 	if (res == Z_OK) {
 		return true;
 	} else {
-		free(strm);
-		free(state->input_buf);
-		free(state->output_buf);
-		return false;
+		goto cleanup;
 	}
+	
+cleanup:
+	free(strm);
+	if (state->input_buf != NULL) {
+		free(state->input_buf);
+	}
+	if (state->output_buf != NULL) {
+		free(state->output_buf);
+	}
+	return false;
 	
 }
 

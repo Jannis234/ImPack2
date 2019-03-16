@@ -60,41 +60,42 @@ impack_error_t impack_write_img_jp2k(FILE *output_file, uint8_t *pixeldata, uint
 	opj_cparameters_t params;
 	opj_set_default_encoder_parameters(&params);
 	params.numresolution = 1;
+	impack_error_t ret = ERROR_OUTPUT_IO;
+	opj_stream_t *strm = NULL;
 	opj_codec_t *codec = opj_create_compress(OPJ_CODEC_JP2);
 	if (codec == NULL) {
-		opj_image_destroy(img);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (!opj_setup_encoder(codec, &params, img)) {
-		opj_image_destroy(img);
-		opj_destroy_codec(codec);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
 	
-	opj_stream_t *strm = impack_create_opj_stream(output_file, false);
-	
+	strm = impack_create_opj_stream(output_file, false);
 	if (!opj_start_compress(codec, img, strm)) {
-		opj_stream_destroy(strm);
-		opj_image_destroy(img);
-		opj_destroy_codec(codec);
-		return ERROR_OUTPUT_IO;
+		goto cleanup;
 	}
 	if (!opj_encode(codec, strm)) {
-		opj_stream_destroy(strm);
-		opj_image_destroy(img);
-		opj_destroy_codec(codec);
-		return ERROR_OUTPUT_IO;
+		goto cleanup;
 	}
 	if (!opj_end_compress(codec, strm)) {
-		opj_stream_destroy(strm);
-		opj_image_destroy(img);
-		opj_destroy_codec(codec);
-		return ERROR_OUTPUT_IO;
+		goto cleanup;
 	}
 	opj_stream_destroy(strm);
 	opj_image_destroy(img);
 	opj_destroy_codec(codec);
 	return impack_opj_stream_write_errno;
+	
+cleanup:
+	if (strm != NULL) {
+		opj_stream_destroy(strm);
+	}
+	opj_image_destroy(img);
+	if (codec != NULL) {
+		opj_destroy_codec(codec);
+	}
+	return ret;
 	
 }
 

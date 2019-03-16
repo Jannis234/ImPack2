@@ -30,28 +30,25 @@ impack_error_t impack_read_img_tiff(FILE *input_file, uint8_t **pixeldata, uint6
 	if (res != ERROR_OK) {
 		return res;
 	}
+	impack_error_t ret = ERROR_MALLOC;
+	uint32_t *rgba = NULL;
 	TIFF *img = TIFFClientOpen("", "rm", NULL, impack_tiff_read, impack_tiff_write, impack_tiff_seek, impack_tiff_close, impack_tiff_size, impack_tiff_map, impack_tiff_unmap);
 	if (img == NULL) {
-		impack_tiff_finish_read();
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	
 	uint32_t width, height;
 	if (TIFFGetField(img, TIFFTAG_IMAGEWIDTH, &width) != 1 || TIFFGetField(img, TIFFTAG_IMAGELENGTH, &height) != 1) {
-		TIFFClose(img);
-		impack_tiff_finish_read();
-		return ERROR_INPUT_IMG_INVALID;
+		ret = ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
-	uint32_t *rgba = malloc(width * height * 4);
+	rgba = malloc(width * height * 4);
 	if (rgba == NULL) {
-		TIFFClose(img);
-		impack_tiff_finish_read();
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (TIFFReadRGBAImageOriented(img, width, height, rgba, ORIENTATION_TOPLEFT, 1) != 1) {
-		TIFFClose(img);
-		impack_tiff_finish_read();
-		return ERROR_INPUT_IMG_INVALID;
+		ret = ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	TIFFClose(img);
 	impack_tiff_finish_read();
@@ -71,6 +68,12 @@ impack_error_t impack_read_img_tiff(FILE *input_file, uint8_t **pixeldata, uint6
 	}
 	free(rgba);
 	return ERROR_OK;
+	
+cleanup:
+	TIFFClose(img);
+	impack_tiff_finish_read();
+	free(rgba);
+	return ret;
 	
 }
 

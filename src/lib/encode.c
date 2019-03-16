@@ -108,29 +108,19 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 			}
 		}
 	}
-
+	
+	impack_error_t ret = ERROR_MALLOC;
 	uint8_t *input_buf = malloc(BUFSIZE);
+	uint8_t *pixeldata = NULL;
+#ifdef IMPACK_WITH_CRYPTO
+	impack_crypt_ctx_t encrypt_ctx;
+#endif
 	if (input_buf == NULL) {
-#ifdef IMPACK_WITH_CRYPTO
-		if (encrypt != ENCRYPTION_NONE) {
-			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-		}
-#endif
-		fclose(input_file);
-		fclose(output_file);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
-	uint8_t *pixeldata = malloc(PIXELBUF_STEP);
+	pixeldata = malloc(PIXELBUF_STEP);
 	if (pixeldata == NULL) {
-#ifdef IMPACK_WITH_CRYPTO
-		if (encrypt != ENCRYPTION_NONE) {
-			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-		}
-#endif
-		free(input_buf);
-		fclose(input_file);
-		fclose(output_file);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	uint64_t pixeldata_size = PIXELBUF_STEP;
 	uint64_t pixeldata_pos = 3;
@@ -163,23 +153,13 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 	}
 	
 #ifdef IMPACK_WITH_CRYPTO
-	impack_crypt_ctx_t encrypt_ctx;
 	if (encrypt) {
 		if (!impack_random(encrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE)) {
-			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-			free(pixeldata);
-			free(input_buf);
-			fclose(input_file);
-			fclose(output_file);
-			return ERROR_RANDOM;
+			ret = ERROR_RANDOM;
+			goto cleanup;
 		}
 		if (!pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, encrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE)) {
-			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
-			free(pixeldata);
-			free(input_buf);
-			fclose(input_file);
-			fclose(output_file);
-			return ERROR_MALLOC;
+			goto cleanup;
 		}
 		uint8_t key[IMPACK_CRYPT_KEY_SIZE];
 		impack_derive_key(passphrase, key, IMPACK_CRYPT_KEY_SIZE, encrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE);
@@ -197,12 +177,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 			uint32_t padding = IMPACK_CRYPT_BLOCK_SIZE - (input_filename_length % IMPACK_CRYPT_BLOCK_SIZE);
 			char *input_filename_padded = malloc(input_filename_length + padding);
 			if (input_filename_padded == NULL) {
-				impack_secure_erase((uint8_t*) &encrypt_ctx, sizeof(impack_crypt_ctx_t));
-				free(pixeldata);
-				free(input_buf);
-				fclose(input_file);
-				fclose(output_file);
-				return ERROR_MALLOC;
+				goto cleanup;
 			}
 			memcpy(input_filename_padded, input_filename, input_filename_length);
 			memset(input_filename_padded + input_filename_length, 0, padding);
@@ -213,19 +188,10 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 	}
 #endif
 	if (!pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, (uint8_t*) input_filename_add, input_filename_add_length)) {
-#ifdef IMPACK_WITH_CRYPTO
-		if (encrypt != ENCRYPTION_NONE) {
-			impack_secure_erase((uint8_t*) &encrypt_ctx, sizeof(impack_crypt_ctx_t));
-		}
-#endif
-		free(pixeldata);
-		free(input_buf);
 		if (input_filename_add != input_filename) {
 			free(input_filename_add);
 		}
-		fclose(input_file);
-		fclose(output_file);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (input_filename_add != input_filename) {
 		free(input_filename_add);
@@ -239,16 +205,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 		compress_state.is_compress = true;
 		compress_state.bufsize = BUFSIZE;
 		if (!impack_compress_init(&compress_state)) {
-#ifdef IMPACK_WITH_CRYPTO
-			if (encrypt != ENCRYPTION_NONE) {
-				impack_secure_erase((uint8_t*) &encrypt_ctx, sizeof(impack_encryption_type_t));
-			}
-#endif
-			free(pixeldata);
-			free(input_buf);
-			fclose(input_file);
-			fclose(output_file);
-			return ERROR_MALLOC;
+			goto cleanup;
 		}
 	}
 	bool file_read_done = false;
@@ -306,16 +263,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 		}
 #endif
 		if (!pixelbuf_add(&pixeldata, &pixeldata_size, &pixeldata_pos, channels, input_buf, bytes_read)) {
-#ifdef IMPACK_WITH_CRYPTO
-			if (encrypt != ENCRYPTION_NONE) {
-				impack_secure_erase((uint8_t*) &encrypt_ctx, sizeof(impack_crypt_ctx_t));
-			}
-#endif
-			free(pixeldata);
-			free(input_buf);
-			fclose(input_file);
-			fclose(output_file);
-			return ERROR_MALLOC;
+			goto cleanup;
 		}
 	} while (bytes_read == BUFSIZE && loop_running);
 	free(input_buf);
@@ -330,10 +278,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 	}
 #endif
 	if (!feof(input_file)) {
-		free(pixeldata);
-		fclose(input_file);
-		fclose(output_file);
-		return ERROR_INPUT_IO;
+		goto cleanup;
 	}
 	fclose(input_file);
 	
@@ -346,5 +291,25 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 	fclose(output_file);
 	free(pixeldata);
 	return res;
+	
+cleanup:
+#ifdef IMPACK_WITH_CRYPTO
+	if (encrypt != ENCRYPTION_NONE) {
+		if (passphrase[0] != 0) {
+			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
+		} else {
+			impack_secure_erase((uint8_t*) &encrypt_ctx, sizeof(impack_crypt_ctx_t));
+		}
+	}
+#endif
+	fclose(input_file);
+	fclose(output_file);
+	if (input_buf != NULL) {
+		free(input_buf);
+	}
+	if (pixeldata != NULL) {
+		free(pixeldata);
+	}
+	return ret;
 	
 }

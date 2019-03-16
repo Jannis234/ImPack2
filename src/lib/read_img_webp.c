@@ -32,49 +32,54 @@ impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint6
 	if (buf == NULL) {
 		return ERROR_MALLOC;
 	}
+	impack_error_t ret = ERROR_INPUT_IMG_INVALID;
+	*pixeldata = NULL;
 	uint8_t magic_buf[] = IMPACK_MAGIC_WEBP;
 	memcpy(buf, magic_buf, 4);
 	if (fread(buf + 4, 1, 8, input_file) != 8) {
-		free(buf);
-		return ERROR_INPUT_IO;
+		ret = ERROR_INPUT_IO;
+		goto cleanup;
 	}
 	
 	uint32_t filesize;
 	memcpy((uint8_t*) &filesize, buf + 4, 4);
 	filesize = impack_endian32_le(filesize);
 	if (filesize > UINT32_MAX - 10) {
-		free(buf);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	uint8_t *newbuf = realloc(buf, filesize + 8);
 	if (newbuf == NULL) {
-		free(buf);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
 	buf = newbuf;
 	
 	if (fread(buf + 12, 1, filesize - 4, input_file) != filesize - 4) {
-		free(buf);
-		return ERROR_INPUT_IO;
+		ret = ERROR_INPUT_IO;
+		goto cleanup;
 	}
 	int32_t width, height;
 	if (!WebPGetInfo(buf, filesize + 8, &width, &height)) {
-		free(buf);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	*pixeldata_size = width * height * 3;
 	*pixeldata = malloc(*pixeldata_size);
 	if (*pixeldata == NULL) {
-		free(buf);
-		return ERROR_MALLOC;
+		ret = ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (WebPDecodeRGBInto(buf, filesize + 8, *pixeldata, *pixeldata_size, width * 3) == NULL) {
-		free(buf);
-		free(*pixeldata);
-		return ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
 	}
 	free(buf);
 	return ERROR_OK;
+	
+cleanup:
+	free(buf);
+	if (*pixeldata != NULL) {
+		free(*pixeldata);
+	}
+	return ret;
 	
 }
 

@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-IMPACK_VERSION = 1.0
-#IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
+#IMPACK_VERSION = 1.0
+IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
 
 # Options to control features that need additional dependencies
 # Change any option to 0 to disable it
@@ -32,6 +32,7 @@ WITH_LIBTIFF = 1
 WITH_LIBNSBMP = 1
 WITH_OPENJPEG2 = 1
 WITH_FLIF = 1
+WITH_JXRLIB = 1
 
 # Compression algorithms
 WITH_ZLIB = 1

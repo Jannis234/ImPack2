@@ -88,6 +88,24 @@ impack_img_format_t impack_select_img_format(char *name, bool fileextension) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_JXR
+	if (!fileextension && namelen == 8) {
+		if (check_case(name, "JPEG-XR", "jpeg-xr")) {
+			return FORMAT_JXR;
+		}
+	}
+	if (fileextension && namelen == 3) {
+		if (check_case(name, "JXR", "jxr")) {
+			return FORMAT_JXR;
+		}
+		if (check_case(name, "HDP", "hdp")) {
+			return FORMAT_JXR;
+		}
+		if (check_case(name, "WDP", "wdp")) {
+			return FORMAT_JXR;
+		}
+	}
+#endif
 	return FORMAT_AUTO;
 	
 }
@@ -106,6 +124,8 @@ impack_img_format_t impack_default_img_format() {
 	return FORMAT_JP2K;
 #elif defined(IMPACK_WITH_FLIF)
 	return FORMAT_FLIF;
+#elif defined(IMPACK_WITH_JXR)
+	return FORMAT_JXR;
 #else
 #error "No image formats selected in config_build.mak"
 #endif

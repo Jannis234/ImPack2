@@ -76,6 +76,11 @@ ifeq ($(WITH_FLIF), 1)
 LIBS += -lflif
 endif
 
+ifeq ($(WITH_JXRLIB), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libjxr)
+LIBS += $(shell $(PKG_CONFIG) --libs libjxr)
+endif
+
 ifeq ($(WITH_ZLIB), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags zlib)
 LIBS += $(shell $(PKG_CONFIG) --libs zlib)

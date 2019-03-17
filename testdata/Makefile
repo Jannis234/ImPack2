@@ -18,7 +18,7 @@
 
 IMGS = $(shell ls *.png)
 
-all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2) $(IMGS:.png=.flif)
+all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2) $(IMGS:.png=.flif) $(IMGS:.png=.jxr)
 
 %.webp: %.png
 	convert $< -define webp:lossless=true $@
@@ -35,3 +35,6 @@ all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2) $
 
 %.flif: %.png
 	flif --overwrite -e $< $@
+
+%.jxr: %.bmp
+	JxrEncApp -q 1 -i $< -o $@

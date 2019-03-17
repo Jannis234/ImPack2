@@ -48,7 +48,7 @@ impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t **pixeldata, uint64
 	if (PKImageDecode_Create_WMP(&decoder) != WMP_errSuccess) {
 		goto cleanup;
 	}
-	if (decoder->Initialize(decoder, strm)) {
+	if (decoder->Initialize(decoder, strm) != WMP_errSuccess) {
 		ret = ERROR_INPUT_IMG_INVALID;
 		CloseWS_Memory(&strm);
 		goto cleanup;
@@ -70,7 +70,8 @@ impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t **pixeldata, uint64
 	if (PKCodecFactory_CreateFormatConverter(&converter) != WMP_errSuccess) {
 		goto cleanup;
 	}
-	if (converter->Initialize(converter, decoder, NULL, GUID_PKPixelFormat24bppRGB)) {
+	if (converter->Initialize(converter, decoder, NULL, GUID_PKPixelFormat24bppRGB) != WMP_errSuccess) {
+		ret = ERROR_INPUT_IMG_INVALID;
 		goto cleanup;
 	}
 	if (converter->Copy(converter, &rect, *pixeldata, width * 3) != WMP_errSuccess) {

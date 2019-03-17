@@ -35,6 +35,7 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 				return false;
 			}
 			*pixeldata = newbuf;
+			memset(*pixeldata + *pixeldata_size, 0, PIXELBUF_STEP);
 			*pixeldata_size += PIXELBUF_STEP;
 		}
 		
@@ -45,8 +46,6 @@ bool pixelbuf_add(uint8_t **pixeldata, uint64_t *pixeldata_size, uint64_t *pixel
 				(*pixeldata)[*pixeldata_pos] = *data;
 				data++;
 				len--;
-			} else {
-				(*pixeldata)[*pixeldata_pos] = 0;
 			}
 			(*pixeldata_pos)++;
 		} else { // Grayscale mode

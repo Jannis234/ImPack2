@@ -114,19 +114,17 @@ impack_error_t impack_write_img_jxr(FILE *output_file, uint8_t *pixeldata, uint6
 	
 	impack_error_t ret = ERROR_MALLOC;
 	PKImageEncode *encoder = NULL;
+	jxr_io_state_t *io_state = NULL;
 	struct WMPStream *strm = malloc(sizeof(struct WMPStream));
 	if (strm == NULL) {
 		goto cleanup;
 	}
-	jxr_io_state_t *io_state = malloc(sizeof(jxr_io_state_t));
+	io_state = malloc(sizeof(jxr_io_state_t));
 	if (io_state == NULL) {
-		free(strm);
 		goto cleanup;
 	}
 	io_state->buf = malloc(BUFSTEP);
 	if (io_state->buf == NULL) {
-		free(strm);
-		free(io_state);
 		goto cleanup;
 	}
 	memset(io_state->buf, 0, BUFSTEP);
@@ -142,9 +140,6 @@ impack_error_t impack_write_img_jxr(FILE *output_file, uint8_t *pixeldata, uint6
 	strm->SetPos = jxr_io_setpos;
 	
 	if (PKImageEncode_Create_WMP(&encoder) != WMP_errSuccess) {
-		free(((jxr_io_state_t*) strm->state.pvObj)->buf);
-		free(strm->state.pvObj);
-		free(strm);
 		goto cleanup;
 	}
 	if (encoder->Initialize(encoder, strm, &encoder->WMP.wmiSCP, sizeof(CWMIStrCodecParam)) != WMP_errSuccess) {
@@ -176,6 +171,16 @@ impack_error_t impack_write_img_jxr(FILE *output_file, uint8_t *pixeldata, uint6
 cleanup:
 	if (encoder != NULL) {
 		encoder->Release(&encoder);
+	} else {
+		if (strm != NULL) {
+			free(strm);
+		}
+		if (io_state != NULL) {
+			if (io_state->buf != NULL) {
+				free(io_state->buf);
+			}
+			free(io_state);
+		}
 	}
 	return ret;
 	

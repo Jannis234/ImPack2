@@ -1,3 +1,10 @@
+Version 1.1:
+	- FLIF image support (using libflif)
+	- JPEG XR image support (using jxrlib)
+	- Support for reading PNG files with 16 bit per channel color
+	- Fix potential use of uninitialized memory while encoding
+	- Code cleanup (less redundant code)
+
 Version 1.0:
 	- GUI using GTK3
 	- CLI: Added missing help for --encryption-type

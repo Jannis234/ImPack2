@@ -303,7 +303,7 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 #endif
 	
 	for (uint32_t i = 0; i < state->filename_length; i++) {
-		if (!isprint(state->filename[i])) { // Search for non-printable characters in the filename
+		if (state->filename[i] == 0) { // Check if the filename is a valid string without NULL bytes
 			goto cleanup;
 		}
 	}

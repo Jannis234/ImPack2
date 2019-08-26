@@ -1,3 +1,7 @@
+Version 1.1.1:
+	- Fix decoding images with included unicode filenames
+	- Testsuite: Report ImPack2's version string
+
 Version 1.1:
 	- FLIF image support (using libflif)
 	- JPEG XR image support (using jxrlib)

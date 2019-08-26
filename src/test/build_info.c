@@ -53,6 +53,7 @@
 void impack_build_info() {
 	
 	printf("Build information:\n");
+	printf("  ImPack2 version string: %s\n", IMPACK_VERSION_STRING);
 	printf("  Crypto: ");
 #ifdef IMPACK_WITH_CRYPTO
 	printf("Yes\n");

@@ -445,7 +445,7 @@ int main(int argc, char **argv) {
 	
 	int res = 0;
 	printf("ImPack2 testsuite\n");
-	printf("=================\n");
+	printf("=================\n\n");
 	impack_build_info();
 	printf("\n");
 	printf("Preparing... ");

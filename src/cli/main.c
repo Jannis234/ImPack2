@@ -38,7 +38,7 @@ int get_passphrase(char **passphrase_out, impack_argparse_t *options, int option
 		}
 		strcpy(*passphrase_out, options[option_passphrase].arg_out);
 	} else if (options[option_passphrase_file].found) {
-		FILE *passfile = fopen(options[option_passphrase_file].arg_out, "rb");
+		FILE *passfile = fopen(options[option_passphrase_file].arg_out, "rb+");
 		if (passfile == NULL) {
 			if (errno == ENOENT) {
 				fprintf(stderr, "Can not read passphrase file: No such file or directory\n");

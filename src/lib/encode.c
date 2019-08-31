@@ -67,7 +67,7 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 	if (strlen(input_path) == 1 && input_path[0] == '-') {
 		input_file = stdin;
 	} else {
-		input_file = fopen(input_path, "rb");
+		input_file = fopen(input_path, "rb+");
 		if (input_file == NULL) {
 #ifdef IMPACK_WITH_CRYPTO
 			if (encrypt != ENCRYPTION_NONE) {

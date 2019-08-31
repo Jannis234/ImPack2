@@ -54,7 +54,7 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 	if (strlen(input_path) == 1 && input_path[0] == '-') {
 		input_file = stdin;
 	} else {
-		input_file = fopen(input_path, "rb");
+		input_file = fopen(input_path, "rb+");
 		if (input_file == NULL) {
 			if (errno == ENOENT) {
 				return ERROR_INPUT_NOT_FOUND;

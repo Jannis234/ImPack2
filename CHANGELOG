@@ -1,3 +1,6 @@
+Version 1.1.2:
+	- Fix a crash when trying to open a directory as the input
+
 Version 1.1.1:
 	- Fix decoding images with included unicode filenames
 	- Testsuite: Report ImPack2's version string

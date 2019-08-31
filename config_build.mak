@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-#IMPACK_VERSION = 1.1.2
-IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
+IMPACK_VERSION = 1.1.3
+#IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
 
 # Options to control features that need additional dependencies
 # Change any option to 0 to disable it

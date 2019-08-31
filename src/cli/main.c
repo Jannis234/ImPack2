@@ -38,7 +38,10 @@ int get_passphrase(char **passphrase_out, impack_argparse_t *options, int option
 		}
 		strcpy(*passphrase_out, options[option_passphrase].arg_out);
 	} else if (options[option_passphrase_file].found) {
-		FILE *passfile = fopen(options[option_passphrase_file].arg_out, "rb+");
+		FILE *passfile = fopen(options[option_passphrase_file].arg_out, "rb+"); // Need to request write access to detect if the file is a directory
+		if (passfile == NULL && errno != EISDIR) { // Not a directory, try without requesting write access (in case we don't have write permissions)
+			passfile = fopen(options[option_passphrase_file].arg_out, "rb");
+		}
 		if (passfile == NULL) {
 			if (errno == ENOENT) {
 				fprintf(stderr, "Can not read passphrase file: No such file or directory\n");

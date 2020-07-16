@@ -1,3 +1,6 @@
+Version 1.2:
+	- JPEG-LS image support (using charls)
+
 Version 1.1.4:
 	- CLI: Fix a mistake in --help
 

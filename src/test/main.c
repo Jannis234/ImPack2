@@ -240,6 +240,9 @@ bool test_decode_format(char *msg, char *filename, char *passphrase, bool should
 #ifdef IMPACK_WITH_JXR
 	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "JPEG-XR", ".jxr");
 #endif
+#ifdef IMPACK_WITH_JPEGLS
+	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "JPEG-LS", ".jpg");
+#endif
 	return res;
 	
 }
@@ -300,6 +303,9 @@ bool test_cycle_format(char *msg, impack_encryption_type_t encrypt, char *passph
 #endif
 #ifdef IMPACK_WITH_JXR
 	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_FLIF, "JPEG-XR");
+#endif
+#ifdef IMPACK_WITH_JPEGLS
+	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_JPEGLS, "JPEG-LS");
 #endif
 	return res;
 	

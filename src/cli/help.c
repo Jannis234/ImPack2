@@ -120,6 +120,9 @@ void impack_print_help() {
 #ifdef IMPACK_WITH_JP2K
 	print_format("JPEG2000", &linelen, &is_first, default_format == FORMAT_JP2K);
 #endif
+#ifdef IMPACK_WITH_JPEGLS
+	print_format("JPEG-LS", &linelen, &is_first, default_format == FORMAT_JPEGLS);
+#endif
 #ifdef IMPACK_WITH_JXR
 	print_format("JPEG-XR", &linelen, &is_first, default_format == FORMAT_JXR);
 #endif

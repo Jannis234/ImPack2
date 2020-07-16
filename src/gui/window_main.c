@@ -335,6 +335,10 @@ GtkFileChooserDialog* create_open_file_dialog(bool filter) {
 		gtk_file_filter_add_pattern(img_filter, "*.hdp");
 		gtk_file_filter_add_pattern(img_filter, "*.wdp");
 #endif
+#ifdef IMPACK_WITH_JPEGLS
+		gtk_file_filter_add_pattern(img_filter, "*.jpg");
+		gtk_file_filter_add_pattern(img_filter, "*.jpeg");
+#endif
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), img_filter);
 	}
 	GtkFileFilter *all_filter = gtk_file_filter_new();
@@ -389,6 +393,9 @@ void encode_output_button_click() {
 #ifdef IMPACK_WITH_JP2K
 	gtk_combo_box_text_append(cbox, "jp2", "JPEG 2000");
 #endif
+#ifdef IMPACK_WITH_JPEGLS
+	gtk_combo_box_text_append(cbox, "jpg", "JPEG-LS");
+#endif
 #ifdef IMPACK_WITH_JXR
 	gtk_combo_box_text_append(cbox, "jxr", "JPEG XR");
 #endif
@@ -411,6 +418,9 @@ void encode_output_button_click() {
 			break;
 		case FORMAT_JP2K:
 			default_format = "jp2";
+			break;
+		case FORMAT_JPEGLS:
+			default_format = "jpg";
 			break;
 		case FORMAT_JXR:
 			default_format = "jxr";

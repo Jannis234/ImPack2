@@ -65,7 +65,7 @@ impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t **pixeldata, uin
 	if (charls_jpegls_decoder_get_interleave_mode(dec, &interleave) != CHARLS_JPEGLS_ERRC_SUCCESS) {
 		goto cleanup;
 	}
-	if (interleave != CHARLS_INTERLEAVE_MODE_NONE) {
+	if (interleave != CHARLS_INTERLEAVE_MODE_NONE && interleave != CHARLS_INTERLEAVE_MODE_SAMPLE) {
 		goto cleanup;
 	}
 	
@@ -85,18 +85,21 @@ impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t **pixeldata, uin
 	free(buf);
 	
 	uint64_t img_size = frame_info.width * frame_info.height;
-	uint8_t *triplet = malloc(img_size * 3);
-	if (triplet == NULL) {
+	if (interleave == CHARLS_INTERLEAVE_MODE_NONE) {
+		uint8_t *triplet = malloc(img_size * 3);
+		if (triplet == NULL) {
+			free(out_buf);
+			return ERROR_MALLOC;
+		}
+		for (uint64_t i = 0; i < img_size; i++) {
+			triplet[i * 3] = out_buf[i];
+			triplet[(i * 3) + 1] = out_buf[i + img_size];
+			triplet[(i * 3) + 2] = out_buf[i + (img_size * 2)];
+		}
 		free(out_buf);
-		return ERROR_MALLOC;
+		out_buf = triplet;
 	}
-	for (uint64_t i = 0; i < img_size; i++) {
-		triplet[i * 3] = out_buf[i];
-		triplet[(i * 3) + 1] = out_buf[i + img_size];
-		triplet[(i * 3) + 2] = out_buf[i + (img_size * 2)];
-	}
-	free(out_buf);
-	*pixeldata = triplet;
+	*pixeldata = out_buf;
 	*pixeldata_size = img_size * 3;
 	return ERROR_OK;
 	

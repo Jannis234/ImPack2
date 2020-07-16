@@ -65,9 +65,6 @@ impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t **pixeldata, uin
 	if (charls_jpegls_decoder_get_interleave_mode(dec, &interleave) != CHARLS_JPEGLS_ERRC_SUCCESS) {
 		goto cleanup;
 	}
-	if (interleave != CHARLS_INTERLEAVE_MODE_NONE && interleave != CHARLS_INTERLEAVE_MODE_SAMPLE) {
-		goto cleanup;
-	}
 	
 	size_t out_size;
 	if (charls_jpegls_decoder_get_destination_size(dec, 0, &out_size) != CHARLS_JPEGLS_ERRC_SUCCESS) {

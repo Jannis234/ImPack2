@@ -32,6 +32,8 @@ impack_error_t impack_write_img_jpegls(FILE *output_file, uint8_t *pixeldata, ui
 	}
 	
 	charls_jpegls_encoder *enc = charls_jpegls_encoder_create();
+	uint8_t *out_buf = NULL;
+	uint8_t *planar = NULL;
 	if (enc == NULL) {
 		return ERROR_MALLOC;
 	}
@@ -42,39 +44,30 @@ impack_error_t impack_write_img_jpegls(FILE *output_file, uint8_t *pixeldata, ui
 	frame_info.width = img_width;
 	frame_info.height = img_height;
 	if (charls_jpegls_encoder_set_frame_info(enc, &frame_info) != CHARLS_JPEGLS_ERRC_SUCCESS) {
-		charls_jpegls_encoder_destroy(enc);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (charls_jpegls_encoder_set_interleave_mode(enc, CHARLS_INTERLEAVE_MODE_NONE) != CHARLS_JPEGLS_ERRC_SUCCESS) {
-		charls_jpegls_encoder_destroy(enc);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (charls_jpegls_encoder_set_near_lossless(enc, 0) != CHARLS_JPEGLS_ERRC_SUCCESS) {
-		charls_jpegls_encoder_destroy(enc);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	size_t out_size;
 	if (charls_jpegls_encoder_get_estimated_destination_size(enc, &out_size) != CHARLS_JPEGLS_ERRC_SUCCESS) {
-		charls_jpegls_encoder_destroy(enc);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
-	uint8_t *out_buf = malloc(out_size);
+	out_buf = malloc(out_size);
 	if (out_buf == NULL) {
-		charls_jpegls_encoder_destroy(enc);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (charls_jpegls_encoder_set_destination_buffer(enc, out_buf, out_size) != CHARLS_JPEGLS_ERRC_SUCCESS) {
-		charls_jpegls_encoder_destroy(enc);
-		free(out_buf);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	
 	uint64_t img_size = img_width * img_height;
-	uint8_t *planar = malloc(img_size * 3);
+	planar = malloc(img_size * 3);
 	if (planar == NULL) {
-		charls_jpegls_encoder_destroy(enc);
-		free(out_buf);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	for (uint64_t i = 0; i < img_size; i++) {
 		planar[i] = pixeldata[i * 3];
@@ -83,16 +76,10 @@ impack_error_t impack_write_img_jpegls(FILE *output_file, uint8_t *pixeldata, ui
 	}
 	
 	if (charls_jpegls_encoder_encode_from_buffer(enc, planar, img_size * 3, 0) != CHARLS_JPEGLS_ERRC_SUCCESS) {
-		charls_jpegls_encoder_destroy(enc);
-		free(out_buf);
-		free(planar);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	if (charls_jpegls_encoder_get_bytes_written(enc, &out_size) != CHARLS_JPEGLS_ERRC_SUCCESS) {
-		charls_jpegls_encoder_destroy(enc);
-		free(out_buf);
-		free(planar);
-		return ERROR_MALLOC;
+		goto cleanup;
 	}
 	
 	charls_jpegls_encoder_destroy(enc);
@@ -103,6 +90,16 @@ impack_error_t impack_write_img_jpegls(FILE *output_file, uint8_t *pixeldata, ui
 	}
 	free(out_buf);
 	return ERROR_OK;
+	
+cleanup:
+	charls_jpegls_encoder_destroy(enc);
+	if (out_buf != NULL) {
+		free(out_buf);
+	}
+	if (planar != NULL) {
+		free(planar);
+	}
+	return ERROR_MALLOC;
 	
 }
 

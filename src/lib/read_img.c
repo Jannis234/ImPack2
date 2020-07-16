@@ -30,6 +30,7 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 	uint8_t magic_jp2k[] = IMPACK_MAGIC_JP2K;
 	uint8_t magic_flif[] = IMPACK_MAGIC_FLIF;
 	uint8_t magic_jxr[] = IMPACK_MAGIC_JXR;
+	uint8_t magic_jpegls[] = IMPACK_MAGIC_JPEGLS;
 	
 	uint8_t buf[4];
 	if (fread(buf, 1, 2, input_file) != 2) {
@@ -43,6 +44,7 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 	bool isjp2k = true;
 	bool isflif = true;
 	bool isjxr = true;
+	bool isjpegls = true;
 	for (int i = 0; i < 2; i++) {
 		ispng &= (buf[i] == magic_png[i]);
 		iswebp &= (buf[i] == magic_webp[i]);
@@ -52,6 +54,7 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 		isjp2k &= (buf[i] == magic_jp2k[i]);
 		isflif &= (buf[i] == magic_flif[i]);
 		isjxr &= (buf[i] == magic_jxr[i]);
+		isjpegls &= (buf[i] == magic_jpegls[i]);
 	}
 	if (isbmp) {
 #ifdef IMPACK_WITH_BMP
@@ -72,6 +75,7 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 		isjp2k &= (buf[i] == magic_jp2k[i + 2]);
 		isflif &= (buf[i] == magic_flif[i + 2]);
 		isjxr &= (buf[i] == magic_jxr[i + 2]);
+		isjpegls &= (buf[i] == magic_jpegls[i + 2]);
 	}
 	if (iswebp) {
 #ifdef IMPACK_WITH_WEBP
@@ -90,6 +94,13 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 	if (isflif) {
 #ifdef IMPACK_WITH_FLIF
 		return impack_read_img_flif(input_file, pixeldata, pixeldata_size);
+#else
+		return ERROR_IMG_FORMAT_UNSUPPORTED;
+#endif
+	}
+	if (isjpegls) {
+#ifdef IMPACK_WITH_JPEGLS
+		return impack_read_img_jpegls(input_file, pixeldata, pixeldata_size);
 #else
 		return ERROR_IMG_FORMAT_UNSUPPORTED;
 #endif

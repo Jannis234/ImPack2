@@ -28,6 +28,7 @@
 #define IMPACK_MAGIC_JP2K { 0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A }
 #define IMPACK_MAGIC_FLIF { 70, 76, 73, 70 }
 #define IMPACK_MAGIC_JXR { 0x49, 0x49, 0xBC, 0x01, 0x20, 0x00, 0x00, 0x00 }
+#define IMPACK_MAGIC_JPEGLS { 0xff, 0xd8, 0xff, 0xf7 }
 
 impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
@@ -36,6 +37,7 @@ impack_error_t impack_read_img_bmp(FILE *input_file, uint8_t **pixeldata, uint64
 impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_flif(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 impack_error_t impack_write_img_webp(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 impack_error_t impack_write_img_tiff(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);

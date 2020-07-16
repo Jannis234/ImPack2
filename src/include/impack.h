@@ -74,7 +74,8 @@ typedef enum {
 	FORMAT_BMP,
 	FORMAT_JP2K,
 	FORMAT_FLIF,
-	FORMAT_JXR
+	FORMAT_JXR,
+	FORMAT_JPEGLS
 } impack_img_format_t;
 
 typedef enum {

@@ -106,6 +106,23 @@ impack_img_format_t impack_select_img_format(char *name, bool fileextension) {
 		}
 	}
 #endif
+#ifdef IMPACK_WITH_JPEGLS
+	if (!fileextension && namelen == 7) {
+		if (check_case(name, "JPEG-LS", "jpeg-ls")) {
+			return FORMAT_JPEGLS;
+		}
+	}
+	if (fileextension && namelen == 4) {
+		if (check_case(name, "JPEG", "jpeg")) {
+			return FORMAT_JPEGLS;
+		}
+	}
+	if (fileextension && namelen == 3) {
+		if (check_case(name, "JPG", "jpg")) {
+			return FORMAT_JPEGLS;
+		}
+	}
+#endif
 	return FORMAT_AUTO;
 	
 }
@@ -124,6 +141,8 @@ impack_img_format_t impack_default_img_format() {
 	return FORMAT_JP2K;
 #elif defined(IMPACK_WITH_FLIF)
 	return FORMAT_FLIF;
+#elif defined(IMPACK_WITH_JPEGLS)
+	return FORMAT_JPEGLS;
 #elif defined(IMPACK_WITH_JXR)
 	return FORMAT_JXR;
 #else

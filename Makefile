@@ -44,6 +44,7 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/write_img_jp2k.c \
 	src/lib/write_img_flif.c \
 	src/lib/write_img_jxr.c \
+	src/lib/write_img_jpegls.c \
 	src/lib/read_img.c \
 	src/lib/read_img_png.c \
 	src/lib/read_img_webp.c \
@@ -151,7 +152,22 @@ endif
 	cat $(LIB_SRC:.c=.d) >> depend.mak
 
 src/include/config_generated.h: config_build.mak src/gen_config.sh
-	sh src/gen_config.sh $(IMPACK_VERSION) $(WITH_NETTLE) $(WITH_LIBPNG) $(WITH_LIBWEBP) $(WITH_LIBTIFF) $(WITH_LIBNSBMP) $(WITH_OPENJPEG2) $(WITH_FLIF) $(WITH_JXRLIB) $(WITH_ZLIB) $(WITH_ZSTD) $(WITH_LZMA) $(WITH_BZIP2) $(WITH_BROTLI) > src/include/config_generated.h
+	sh src/gen_config.sh $(IMPACK_VERSION) \
+		NETTLE $(WITH_NETTLE) \
+		PNG $(WITH_LIBPNG) \
+		WEBP $(WITH_LIBWEBP) \
+		TIFF $(WITH_LIBTIFF) \
+		BMP $(WITH_LIBNSBMP) \
+		JP2K $(WITH_OPENJPEG2) \
+		FLIF $(WITH_FLIF) \
+		JXR $(WITH_JXRLIB) \
+		JPEGLS $(WITH_CHARLS) \
+		ZLIB $(WITH_ZLIB) \
+		ZSTD $(WITH_ZSTD) \
+		LZMA $(WITH_LZMA) \
+		BZIP2 $(WITH_BZIP2) \
+		BROTLI $(WITH_BROTLI) \
+		> src/include/config_generated.h
 
 src/gui/gresources_generated.c: $(GUI_RES)
 	glib-compile-resources src/gui/res/gresources.xml --generate-source --sourcedir=src/gui/res --target=src/gui/gresources_generated.c

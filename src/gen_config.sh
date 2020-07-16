@@ -19,19 +19,13 @@ echo "#ifndef __IMPACK_CONFIG_GENERATED_H__"
 echo "#define __IMPACK_CONFIG_GENERATED_H__"
 echo
 echo "#define IMPACK_VERSION_STRING \"$1\""
-echo "#define IMPACK_CONFIG_NETTLE $2"
-echo "#define IMPACK_CONFIG_PNG $3"
-echo "#define IMPACK_CONFIG_WEBP $4"
-echo "#define IMPACK_CONFIG_TIFF $5"
-echo "#define IMPACK_CONFIG_BMP $6"
-echo "#define IMPACK_CONFIG_JP2K $7"
-echo "#define IMPACK_CONFIG_FLIF $8"
-echo "#define IMPACK_CONFIG_JXR $9"
-shift 9
-echo "#define IMPACK_CONFIG_ZLIB $1"
-echo "#define IMPACK_CONFIG_ZSTD $2"
-echo "#define IMPACK_CONFIG_LZMA $3"
-echo "#define IMPACK_CONFIG_BZIP2 $4"
-echo "#define IMPACK_CONFIG_BROTLI $5"
+echo
+
+shift
+while [ "$1" ]; do
+	echo "#define IMPACK_CONFIG_$1 $2"
+	shift 2
+done
+
 echo
 echo "#endif"

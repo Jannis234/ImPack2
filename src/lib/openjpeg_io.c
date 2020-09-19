@@ -163,8 +163,7 @@ opj_stream_t *impack_create_opj_stream(FILE *f, bool is_input) {
 		return NULL;
 	}
 	if (is_input) {
-		uint8_t magic[] = IMPACK_MAGIC_JP2K;
-		memcpy(state->buf, magic, 12);
+		memcpy(state->buf, impack_magic_jp2k, 12);
 		state->filesize = 12;
 		size_t bytes_read;
 		do {

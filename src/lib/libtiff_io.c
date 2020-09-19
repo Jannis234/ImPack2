@@ -46,11 +46,9 @@ impack_error_t impack_tiff_init_read(FILE *input_file, bool le) {
 	}
 	impack_tiff_filesize = 4;
 	if (le) {
-		uint8_t magic[] = IMPACK_MAGIC_TIFF_LE;
-		memcpy(impack_tiff_filebuf, magic, 4);
+		memcpy(impack_tiff_filebuf, impack_magic_tiff_le, 4);
 	} else {
-		uint8_t magic[] = IMPACK_MAGIC_TIFF_BE;
-		memcpy(impack_tiff_filebuf, magic, 4);
+		memcpy(impack_tiff_filebuf, impack_magic_tiff_be, 4);
 	}
 	
 	size_t bytes_read;

@@ -20,15 +20,15 @@
 #include <stdio.h>
 #include "impack.h"
 
-#define IMPACK_MAGIC_PNG { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }
-#define IMPACK_MAGIC_WEBP { 82, 73, 70, 70 }
-#define IMPACK_MAGIC_TIFF_LE { 73, 73, 42, 0 }
-#define IMPACK_MAGIC_TIFF_BE { 77, 77, 0, 42 }
-#define IMPACK_MAGIC_BMP { 66, 77 }
-#define IMPACK_MAGIC_JP2K { 0x00, 0x00, 0x00, 0x0C, 0x6A, 0x50, 0x20, 0x20, 0x0D, 0x0A, 0x87, 0x0A }
-#define IMPACK_MAGIC_FLIF { 70, 76, 73, 70 }
-#define IMPACK_MAGIC_JXR { 0x49, 0x49, 0xBC, 0x01, 0x20, 0x00, 0x00, 0x00 }
-#define IMPACK_MAGIC_JPEGLS { 0xff, 0xd8, 0xff, 0xf7 }
+extern const uint8_t impack_magic_png[];
+extern const uint8_t impack_magic_webp[];
+extern const uint8_t impack_magic_tiff_le[];
+extern const uint8_t impack_magic_tiff_be[];
+extern const uint8_t impack_magic_bmp[];
+extern const uint8_t impack_magic_jp2k[];
+extern const uint8_t impack_magic_flif[];
+extern const uint8_t impack_magic_jxr[];
+extern const uint8_t impack_magic_jpegls[];
 
 impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);

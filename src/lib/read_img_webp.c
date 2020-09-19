@@ -34,8 +34,7 @@ impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint6
 	}
 	impack_error_t ret = ERROR_INPUT_IMG_INVALID;
 	*pixeldata = NULL;
-	uint8_t magic_buf[] = IMPACK_MAGIC_WEBP;
-	memcpy(buf, magic_buf, 4);
+	memcpy(buf, impack_magic_webp, 4);
 	if (fread(buf + 4, 1, 8, input_file) != 8) {
 		ret = ERROR_INPUT_IO;
 		goto cleanup;

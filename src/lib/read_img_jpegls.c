@@ -38,8 +38,7 @@ impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t **pixeldata, uin
 	if (loadres != ERROR_OK) {
 		return loadres;
 	}
-	uint8_t magic[] = IMPACK_MAGIC_JPEGLS;
-	memcpy(buf, magic, 4);
+	memcpy(buf, impack_magic_jpegls, 4);
 	
 	dec = charls_jpegls_decoder_create();
 	if (dec == NULL) {

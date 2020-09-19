@@ -58,8 +58,7 @@ impack_error_t impack_read_img_bmp(FILE *input_file, uint8_t **pixeldata, uint64
 	if (loadres != ERROR_OK) {
 		return loadres;
 	}
-	uint8_t magic[] = IMPACK_MAGIC_BMP;
-	memcpy(buf, magic, 2);
+	memcpy(buf, impack_magic_bmp, 2);
 	
 	bmp_bitmap_callback_vt callbacks = {
 		impack_bmp_create,

@@ -34,8 +34,7 @@ impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t **pixeldata, uint64
 	if (res != ERROR_OK) {
 		return res;
 	}
-	uint8_t magic[] = IMPACK_MAGIC_JXR;
-	memcpy(buf, magic, 8);
+	memcpy(buf, impack_magic_jxr, 8);
 	
 	impack_error_t ret = ERROR_MALLOC;
 	PKImageDecode *decoder = NULL;

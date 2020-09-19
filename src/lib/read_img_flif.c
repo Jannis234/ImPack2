@@ -33,8 +33,7 @@ impack_error_t impack_read_img_flif(FILE *input_file, uint8_t **pixeldata, uint6
 	if (res != ERROR_OK) {
 		return res;
 	}
-	uint8_t magic[] = IMPACK_MAGIC_FLIF;
-	memcpy(buf, magic, 4);
+	memcpy(buf, impack_magic_flif, 4);
 	
 	impack_error_t ret = ERROR_MALLOC;
 	*pixeldata = NULL;

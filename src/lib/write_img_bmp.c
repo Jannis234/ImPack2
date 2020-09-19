@@ -41,8 +41,7 @@ impack_error_t impack_write_img_bmp(FILE *output_file, uint8_t *pixeldata, uint6
 	}
 	
 	uint8_t header[54];
-	uint8_t magic[] = IMPACK_MAGIC_BMP;
-	memcpy(header, magic, 2);
+	memcpy(header, impack_magic_bmp, 2);
 	uint32_t filesize_endian = impack_endian32_le((uint32_t) filesize);
 	memcpy(header + 2, (uint8_t*) &filesize_endian, 4);
 	memset(header + 6, 0, 4); // "Reserved" space

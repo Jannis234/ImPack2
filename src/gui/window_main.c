@@ -107,7 +107,9 @@ void build_encode_compression_type_box(bool advanced) {
 #endif
 	} else {
 		gtk_combo_box_text_append(box, "normal", "Normal (Fast)");
+#ifdef IMPACK_WITH_LZMA
 		gtk_combo_box_text_append(box, "strong", "Strong (Slow)");
+#endif
 	}
 	encode_compress_box_enabled = true;
 	gtk_combo_box_set_active_id(GTK_COMBO_BOX(box), next_active);

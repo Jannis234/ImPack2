@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include "config.h"
+#include "impack.h"
 
 #ifdef IMPACK_WITH_CRYPTO
 #include <nettle/version.h>
@@ -64,30 +65,13 @@ void impack_build_info() {
 	printf("No\n");
 #endif
 	printf("  Image formats:");
-#ifdef IMPACK_WITH_PNG
-	printf(" PNG");
-#endif
-#ifdef IMPACK_WITH_WEBP
-	printf(" WebP");
-#endif
-#ifdef IMPACK_WITH_TIFF
-	printf(" TIFF");
-#endif
-#ifdef IMPACK_WITH_BMP
-	printf(" BMP");
-#endif
-#ifdef IMPACK_WITH_JP2K
-	printf(" JPEG2000");
-#endif
-#ifdef IMPACK_WITH_FLIF
-	printf(" FLIF");
-#endif
-#ifdef IMPACK_WITH_JXR
-	printf(" JPEG-XR");
-#endif
-#ifdef IMPACK_WITH_JPEGLS
-	printf(" JPEG-LS");
-#endif
+	int current = 0;
+	while (impack_img_formats[current] != NULL) {
+		if (!impack_img_formats[current]->hidden) {
+			printf(" %s", impack_img_formats[current]->name);
+		}
+		current++;
+	}
 	printf("\n  Compression types:");
 #ifdef IMPACK_WITH_ZLIB
 	printf(" Deflate");

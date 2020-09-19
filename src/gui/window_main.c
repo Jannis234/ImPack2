@@ -310,35 +310,21 @@ GtkFileChooserDialog* create_open_file_dialog(bool filter) {
 	if (filter) {
 		GtkFileFilter *img_filter = gtk_file_filter_new();
 		gtk_file_filter_set_name(img_filter, "Images");
-#ifdef IMPACK_WITH_PNG
-		gtk_file_filter_add_pattern(img_filter, "*.png");
-#endif
-#ifdef IMPACK_WITH_WEBP
-		gtk_file_filter_add_pattern(img_filter, "*.webp");
-#endif
-#ifdef IMPACK_WITH_TIFF
-		gtk_file_filter_add_pattern(img_filter, "*.tiff");
-		gtk_file_filter_add_pattern(img_filter, "*.tif");
-#endif
-#ifdef IMPACK_WITH_BMP
-		gtk_file_filter_add_pattern(img_filter, "*.bmp");
-#endif
-#ifdef IMPACK_WITH_JP2K
-		gtk_file_filter_add_pattern(img_filter, "*.jp2");
-		gtk_file_filter_add_pattern(img_filter, "*.j2k");
-#endif
-#ifdef IMPACK_WITH_FLIF
-		gtk_file_filter_add_pattern(img_filter, "*.flif");
-#endif
-#ifdef IMPACK_WITH_JXR
-		gtk_file_filter_add_pattern(img_filter, "*.jxr");
-		gtk_file_filter_add_pattern(img_filter, "*.hdp");
-		gtk_file_filter_add_pattern(img_filter, "*.wdp");
-#endif
-#ifdef IMPACK_WITH_JPEGLS
-		gtk_file_filter_add_pattern(img_filter, "*.jpg");
-		gtk_file_filter_add_pattern(img_filter, "*.jpeg");
-#endif
+		int i = 0;
+		while (impack_img_formats[i] != NULL) {
+			const impack_img_format_desc_t *current = impack_img_formats[i];
+			if (!current->hidden) {
+				gtk_file_filter_add_pattern(img_filter, current->extension);
+				if (current->extension_alt != NULL) {
+					int j = 0;
+					while (current->extension_alt[j] != NULL) {
+						gtk_file_filter_add_pattern(img_filter, current->extension_alt[j]);
+						j++;
+					}
+				}
+			}
+			i++;
+		}
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), img_filter);
 	}
 	GtkFileFilter *all_filter = gtk_file_filter_new();
@@ -384,58 +370,16 @@ void encode_output_button_click() {
 	GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10));
 	GtkLabel *label = GTK_LABEL(gtk_label_new("Image format:"));
 	GtkComboBoxText *cbox = GTK_COMBO_BOX_TEXT(gtk_combo_box_text_new());
-#ifdef IMPACK_WITH_BMP
-	gtk_combo_box_text_append(cbox, "bmp", "BMP");
-#endif
-#ifdef IMPACK_WITH_FLIF
-	gtk_combo_box_text_append(cbox, "flif", "FLIF");
-#endif
-#ifdef IMPACK_WITH_JP2K
-	gtk_combo_box_text_append(cbox, "jp2", "JPEG 2000");
-#endif
-#ifdef IMPACK_WITH_JPEGLS
-	gtk_combo_box_text_append(cbox, "jpg", "JPEG-LS");
-#endif
-#ifdef IMPACK_WITH_JXR
-	gtk_combo_box_text_append(cbox, "jxr", "JPEG XR");
-#endif
-#ifdef IMPACK_WITH_PNG
-	gtk_combo_box_text_append(cbox, "png", "PNG");
-#endif
-#ifdef IMPACK_WITH_TIFF
-	gtk_combo_box_text_append(cbox, "tiff", "TIFF");
-#endif
-#ifdef IMPACK_WITH_WEBP
-	gtk_combo_box_text_append(cbox, "webp", "WebP");
-#endif
+	int current = 0;
 	char *default_format = NULL;
-	switch (impack_default_img_format()) {
-		case FORMAT_BMP:
-			default_format = "bmp";
-			break;
-		case FORMAT_FLIF:
-			default_format = "flif";
-			break;
-		case FORMAT_JP2K:
-			default_format = "jp2";
-			break;
-		case FORMAT_JPEGLS:
-			default_format = "jpg";
-			break;
-		case FORMAT_JXR:
-			default_format = "jxr";
-			break;
-		case FORMAT_PNG:
-			default_format = "png";
-			break;
-		case FORMAT_TIFF:
-			default_format = "tiff";
-			break;
-		case FORMAT_WEBP:
-			default_format = "webp";
-			break;
-		default:
-			abort();
+	while (impack_img_formats[current] != NULL) {
+		if (!impack_img_formats[current]->hidden) {
+			gtk_combo_box_text_append(cbox, impack_img_formats[current]->extension, impack_img_formats[current]->name);
+			if (impack_default_img_format() == impack_img_formats[current]->id) {
+				default_format = impack_img_formats[current]->extension;
+			}
+		}
+		current++;
 	}
 	gtk_combo_box_set_active_id(GTK_COMBO_BOX(cbox), default_format);
 	gtk_box_pack_end(box, GTK_WIDGET(cbox), false, false, 0);

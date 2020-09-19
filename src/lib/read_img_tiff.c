@@ -77,4 +77,16 @@ cleanup:
 	
 }
 
+impack_error_t impack_read_img_tiff_le(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+	
+	return impack_read_img_tiff(input_file, pixeldata, pixeldata_size, true);
+	
+}
+
+impack_error_t impack_read_img_tiff_be(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+	
+	return impack_read_img_tiff(input_file, pixeldata, pixeldata_size, false);
+	
+}
+
 #endif

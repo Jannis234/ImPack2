@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
 #include "impack.h"
 #include "img.h"
 
@@ -82,41 +81,13 @@ impack_error_t impack_write_img(char *output_path, FILE *output_file, uint8_t **
 		}
 	}
 	
-	switch (format) {
-#ifdef IMPACK_WITH_PNG
-		case FORMAT_PNG:
-			return impack_write_img_png(output_file, *pixeldata, pixeldata_size, width, height);
-#endif
-#ifdef IMPACK_WITH_WEBP
-		case FORMAT_WEBP:
-			return impack_write_img_webp(output_file, *pixeldata, pixeldata_size, width, height);
-#endif
-#ifdef IMPACK_WITH_TIFF
-		case FORMAT_TIFF:
-			return impack_write_img_tiff(output_file, *pixeldata, pixeldata_size, width, height);
-#endif
-#ifdef IMPACK_WITH_BMP
-		case FORMAT_BMP:
-			return impack_write_img_bmp(output_file, *pixeldata, pixeldata_size, width, height);
-#endif
-#ifdef IMPACK_WITH_JP2K
-		case FORMAT_JP2K:
-			return impack_write_img_jp2k(output_file, *pixeldata, pixeldata_size, width, height);
-#endif
-#ifdef IMPACK_WITH_FLIF
-		case FORMAT_FLIF:
-			return impack_write_img_flif(output_file, *pixeldata, pixeldata_size, width, height);
-#endif
-#ifdef IMPACK_WITH_JXR
-		case FORMAT_JXR:
-			return impack_write_img_jxr(output_file, *pixeldata, pixeldata_size, width, height);
-#endif
-#ifdef IMPACK_WITH_JPEGLS
-		case FORMAT_JPEGLS:
-			return impack_write_img_jpegls(output_file, *pixeldata, pixeldata_size, width, height);
-#endif
-		default:
-			abort(); // Requested a format that isn't compiled in
+	int current = 0;
+	while (impack_img_formats[current] != NULL) {
+		if (impack_img_formats[current]->id == format) {
+			return impack_img_formats[current]->func_write(output_file, *pixeldata, pixeldata_size, width, height);
+		}
+		current++;
 	}
+	abort(); // Requested a format that isn't compiled in
 	
 }

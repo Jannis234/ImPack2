@@ -32,7 +32,8 @@
 
 impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_tiff(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size, bool le);
+impack_error_t impack_read_img_tiff_le(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_tiff_be(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_bmp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_read_img_flif(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);

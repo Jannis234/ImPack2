@@ -219,30 +219,12 @@ bool test_decode_format(char *msg, char *filename, char *passphrase, bool should
 	
 	bool res = true;
 	strcpy(namebuf, filename);
-#ifdef IMPACK_WITH_PNG
-	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "PNG", ".png");
-#endif
-#ifdef IMPACK_WITH_WEBP
-	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "WebP", ".webp");
-#endif
-#ifdef IMPACK_WITH_TIFF
-	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "TIFF", ".tiff");
-#endif
-#ifdef IMPACK_WITH_BMP
-	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "BMP", ".bmp");
-#endif
-#ifdef IMPACK_WITH_JP2K
-	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "JPEG2000", ".jp2");
-#endif
-#ifdef IMPACK_WITH_FLIF
-	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "FLIF", ".flif");
-#endif
-#ifdef IMPACK_WITH_JXR
-	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "JPEG-XR", ".jxr");
-#endif
-#ifdef IMPACK_WITH_JPEGLS
-	res &= test_decode_format_run(msg, filename, passphrase, shouldfail, "JPEG-LS", ".jpg");
-#endif
+	int i = 0;
+	while (impack_img_formats[i] != NULL) {
+		const impack_img_format_desc_t *current = impack_img_formats[i];
+		res &= test_decode_format_run(msg, filename, passphrase, shouldfail, current->name, current->extension + 1);
+		i++;
+	}
 	return res;
 	
 }
@@ -283,30 +265,12 @@ bool test_cycle_format_run(char *msg, impack_encryption_type_t encrypt, char *pa
 bool test_cycle_format(char *msg, impack_encryption_type_t encrypt, char *passphrase, impack_compression_type_t compress, uint64_t width, uint64_t height, uint8_t channels) {
 	
 	bool res = true;
-#ifdef IMPACK_WITH_PNG
-	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_PNG, "PNG");
-#endif
-#ifdef IMPACK_WITH_WEBP
-	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_WEBP, "WebP");
-#endif
-#ifdef IMPACK_WITH_TIFF
-	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_TIFF, "TIFF");
-#endif
-#ifdef IMPACK_WITH_BMP
-	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_BMP, "BMP");
-#endif
-#ifdef IMPACK_WITH_JP2K
-	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_JP2K, "JPEG2000");
-#endif
-#ifdef IMPACK_WITH_FLIF
-	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_FLIF, "FLIF");
-#endif
-#ifdef IMPACK_WITH_JXR
-	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_FLIF, "JPEG-XR");
-#endif
-#ifdef IMPACK_WITH_JPEGLS
-	res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, FORMAT_JPEGLS, "JPEG-LS");
-#endif
+	int i = 0;
+	while (impack_img_formats[i] != NULL) {
+		const impack_img_format_desc_t *current = impack_img_formats[i];
+		res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, current->id, current->name);
+		i++;
+	}
 	return res;
 	
 }

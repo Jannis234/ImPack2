@@ -19,6 +19,7 @@
 #include "config.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 typedef enum {
 	ERROR_OK, // Success
@@ -77,6 +78,23 @@ typedef enum {
 	FORMAT_JXR,
 	FORMAT_JPEGLS
 } impack_img_format_t;
+
+typedef impack_error_t (*impack_read_img_t)(FILE* input_file, uint8_t** pixeldata, uint64_t* pixeldata_size);
+typedef impack_error_t (*impack_write_img_t)(FILE* output_file, uint8_t* pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
+
+typedef struct {
+	impack_img_format_t id;
+	char *name; // Name displayed in CLI/GUI
+	char *extension; // Default file extension (format "*.ext" used for GTK)
+	const char **extension_alt; // Alternative file extensions for format auto-detection from filename
+	bool hidden; // Exclude from lists in CLI/GUI (used to create alternative entries for the same format)
+	impack_read_img_t func_read;
+	impack_write_img_t func_write;
+	const uint8_t *magic; // Magic number + length for format auto-detection
+	int magic_len;
+} impack_img_format_desc_t;
+
+extern const impack_img_format_desc_t *impack_img_formats[];
 
 typedef enum {
 	CHANNEL_RED = 1,

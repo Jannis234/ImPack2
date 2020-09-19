@@ -19,12 +19,26 @@
 #include "config.h"
 #include "impack.h"
 
-bool check_case(char *s, char *upper, char *lower) {
+char convert_lowercase(char c) {
 	
-	for (size_t i = 0; i < strlen(s); i++) {
-		if (s[i] != upper[i] && s[i] != lower[i]) {
+	if (c >= 'A' && c <= 'Z') {
+		return c + ('a' - 'A');
+	}
+	return c;
+	
+}
+
+bool compare_case(char *s1, char *s2) {
+	
+	if (strlen(s1) != strlen(s2)) {
+		return false;
+	}
+	while (*s1) {
+		if (convert_lowercase(*s1) != convert_lowercase(*s2)) {
 			return false;
 		}
+		s1++;
+		s2++;
 	}
 	return true;
 	
@@ -32,97 +46,29 @@ bool check_case(char *s, char *upper, char *lower) {
 
 impack_img_format_t impack_select_img_format(char *name, bool fileextension) {
 	
-	size_t namelen = strlen(name);
-#ifdef IMPACK_WITH_PNG
-	if (namelen == 3) {
-		if (check_case(name, "PNG", "png")) {
-			return FORMAT_PNG;
+	int i = 0;
+	while (impack_img_formats[i] != NULL) {
+		const impack_img_format_desc_t *current = impack_img_formats[i];
+		if (fileextension) {
+			if (compare_case(name, current->extension + 2)) {
+				return current->id;
+			}
+			if (current->extension_alt != NULL) {
+				int j = 0;
+				while (current->extension_alt[j] != NULL) {
+					if (compare_case(name, ((char*) current->extension_alt[j]) + 2)) {
+						return current->id;
+					}
+					j++;
+				}
+			}
+		} else {
+			if (compare_case(name, current->name)) {
+				return current->id;
+			}
 		}
+		i++;
 	}
-#endif
-#ifdef IMPACK_WITH_WEBP
-	if (namelen == 4) {
-		if (check_case(name, "WEBP", "webp")) {
-			return FORMAT_WEBP;
-		}
-	}
-#endif
-#ifdef IMPACK_WITH_TIFF
-	if (namelen == 4) {
-		if (check_case(name, "TIFF", "tiff")) {
-			return FORMAT_TIFF;
-		}
-	}
-	if (namelen == 3 && fileextension) {
-		if (check_case(name, "TIF", "tif")) {
-			return FORMAT_TIFF;
-		}
-	}
-#endif
-#ifdef IMPACK_WITH_BMP
-	if (namelen == 3) {
-		if (check_case(name, "BMP", "bmp")) {
-			return FORMAT_BMP;
-		}
-	}
-#endif
-#ifdef IMPACK_WITH_JP2K
-	if (fileextension && namelen == 3) {
-		if (check_case(name, "JP2", "jp2")) {
-			return FORMAT_JP2K;
-		}
-		if (check_case(name, "J2K", "j2k")) {
-			return FORMAT_JP2K;
-		}
-	}
-	if (!fileextension && namelen == 8) {
-		if (check_case(name, "JPEG2000", "jpeg2000")) {
-			return FORMAT_JP2K;
-		}
-	}
-#endif
-#ifdef IMPACK_WITH_FLIF
-	if (namelen == 4) {
-		if (check_case(name, "FLIF", "flif")) {
-			return FORMAT_FLIF;
-		}
-	}
-#endif
-#ifdef IMPACK_WITH_JXR
-	if (!fileextension && namelen == 8) {
-		if (check_case(name, "JPEG-XR", "jpeg-xr")) {
-			return FORMAT_JXR;
-		}
-	}
-	if (fileextension && namelen == 3) {
-		if (check_case(name, "JXR", "jxr")) {
-			return FORMAT_JXR;
-		}
-		if (check_case(name, "HDP", "hdp")) {
-			return FORMAT_JXR;
-		}
-		if (check_case(name, "WDP", "wdp")) {
-			return FORMAT_JXR;
-		}
-	}
-#endif
-#ifdef IMPACK_WITH_JPEGLS
-	if (!fileextension && namelen == 7) {
-		if (check_case(name, "JPEG-LS", "jpeg-ls")) {
-			return FORMAT_JPEGLS;
-		}
-	}
-	if (fileextension && namelen == 4) {
-		if (check_case(name, "JPEG", "jpeg")) {
-			return FORMAT_JPEGLS;
-		}
-	}
-	if (fileextension && namelen == 3) {
-		if (check_case(name, "JPG", "jpg")) {
-			return FORMAT_JPEGLS;
-		}
-	}
-#endif
 	return FORMAT_AUTO;
 	
 }
@@ -154,40 +100,29 @@ impack_img_format_t impack_default_img_format() {
 #ifdef IMPACK_WITH_COMPRESSION
 impack_compression_type_t impack_select_compression(char *name) {
 	
-	size_t namelen = strlen(name);
 #ifdef IMPACK_WITH_ZLIB
-	if (namelen == 7) {
-		if (check_case(name, "DEFLATE", "deflate")) {
-			return COMPRESSION_ZLIB;
-		}
+	if (compare_case(name, "deflate")) {
+		return COMPRESSION_ZLIB;
 	}
 #endif
 #ifdef IMPACK_WITH_ZSTD
-	if (namelen == 4) {
-		if (check_case(name, "ZSTD", "zstd")) {
-			return COMPRESSION_ZSTD;
-		}
+	if (compare_case(name, "zstd")) {
+		return COMPRESSION_ZSTD;
 	}
 #endif
 #ifdef IMPACK_WITH_LZMA
-	if (namelen == 5) {
-		if (check_case(name, "LZMA2", "lzma2")) {
-			return COMPRESSION_LZMA;
-		}
+	if (compare_case(name, "lzma2")) {
+		return COMPRESSION_LZMA;
 	}
 #endif
 #ifdef IMPACK_WITH_BZIP2
-	if (namelen == 5) {
-		if (check_case(name, "BZIP2", "bzip2")) {
-			return COMPRESSION_BZIP2;
-		}
+	if (compare_case(name, "bzip2")) {
+		return COMPRESSION_BZIP2;
 	}
 #endif
 #ifdef IMPACK_WITH_BROTLI
-	if (namelen == 6) {
-		if (check_case(name, "BROTLI", "brotli")) {
-			return COMPRESSION_BROTLI;
-		}
+	if (compare_case(name, "brotli")) {
+		return COMPRESSION_BROTLI;
 	}
 #endif
 	return COMPRESSION_NONE;
@@ -215,24 +150,17 @@ impack_compression_type_t impack_default_compression() {
 
 impack_encryption_type_t impack_select_encryption(char *name) {
 	
-	size_t namelen = strlen(name);
-	if (namelen == 3) {
-		if (check_case(name, "AES", "aes")) {
-			return ENCRYPTION_AES;
-		}
+	if (compare_case(name, "aes")) {
+		return ENCRYPTION_AES;
 	}
-	if (namelen == 7) {
-		if (check_case(name, "SERPENT", "serpent")) {
-			return ENCRYPTION_SERPENT;
-		}
-		if (check_case(name, "TWOFISH", "twofish")) {
-			return ENCRYPTION_TWOFISH;
-		}
+	if (compare_case(name, "serpent")) {
+		return ENCRYPTION_SERPENT;
 	}
-	if (namelen == 8) {
-		if (check_case(name, "CAMELLIA", "camellia")) {
-			return ENCRYPTION_CAMELLIA;
-		}
+	if (compare_case(name, "twofish")) {
+		return ENCRYPTION_TWOFISH;
+	}
+	if (compare_case(name, "camellia")) {
+		return ENCRYPTION_CAMELLIA;
 	}
 	return ENCRYPTION_NONE;
 	

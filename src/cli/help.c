@@ -111,30 +111,13 @@ void impack_print_help() {
 	bool is_first = true;
 	impack_img_format_t default_format = impack_default_img_format();
 	printf("  ");
-#ifdef IMPACK_WITH_BMP
-	print_format("BMP", &linelen, &is_first, default_format == FORMAT_BMP);
-#endif
-#ifdef IMPACK_WITH_FLIF
-	print_format("FLIF", &linelen, &is_first, default_format == FORMAT_FLIF);
-#endif
-#ifdef IMPACK_WITH_JP2K
-	print_format("JPEG2000", &linelen, &is_first, default_format == FORMAT_JP2K);
-#endif
-#ifdef IMPACK_WITH_JPEGLS
-	print_format("JPEG-LS", &linelen, &is_first, default_format == FORMAT_JPEGLS);
-#endif
-#ifdef IMPACK_WITH_JXR
-	print_format("JPEG-XR", &linelen, &is_first, default_format == FORMAT_JXR);
-#endif
-#ifdef IMPACK_WITH_PNG
-	print_format("PNG", &linelen, &is_first, default_format == FORMAT_PNG);
-#endif
-#ifdef IMPACK_WITH_TIFF
-	print_format("TIFF", &linelen, &is_first, default_format == FORMAT_TIFF);
-#endif
-#ifdef IMPACK_WITH_WEBP
-	print_format("WebP", &linelen, &is_first, default_format == FORMAT_WEBP);
-#endif
+	int current = 0;
+	while (impack_img_formats[current] != NULL) {
+		if (!impack_img_formats[current]->hidden) {
+			print_format(impack_img_formats[current]->name, &linelen, &is_first, default_format == impack_img_formats[current]->id);
+		}
+		current++;
+	}
 	printf("\n");
 	
 #ifdef IMPACK_WITH_CRYPTO

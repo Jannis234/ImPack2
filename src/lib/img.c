@@ -142,11 +142,11 @@ const impack_img_format_desc_t impack_img_format_jxr = {
 
 #ifdef IMPACK_WITH_JPEGLS
 const uint8_t impack_magic_jpegls[] = { 0xFF, 0xD8, 0xFF, 0xF7 };
-const char *impack_extension_alt_jpegls[] = { "*.jpeg", NULL };
+const char *impack_extension_alt_jpegls[] = { "*.jpg", "*.jpeg", NULL };
 const impack_img_format_desc_t impack_img_format_jpegls = {
 	FORMAT_JPEGLS,
 	"JPEG-LS",
-	"*.jpg",
+	"*.jls",
 	impack_extension_alt_jpegls,
 	false,
 	impack_read_img_jpegls,

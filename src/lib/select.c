@@ -100,31 +100,13 @@ impack_img_format_t impack_default_img_format() {
 #ifdef IMPACK_WITH_COMPRESSION
 impack_compression_type_t impack_select_compression(char *name) {
 	
-#ifdef IMPACK_WITH_ZLIB
-	if (compare_case(name, "deflate")) {
-		return COMPRESSION_ZLIB;
+	int current = 0;
+	while (impack_compression_types[current] != NULL) {
+		if (compare_case(name, impack_compression_types[current]->name)) {
+			return impack_compression_types[current]->id;
+		}
+		current++;
 	}
-#endif
-#ifdef IMPACK_WITH_ZSTD
-	if (compare_case(name, "zstd")) {
-		return COMPRESSION_ZSTD;
-	}
-#endif
-#ifdef IMPACK_WITH_LZMA
-	if (compare_case(name, "lzma2")) {
-		return COMPRESSION_LZMA;
-	}
-#endif
-#ifdef IMPACK_WITH_BZIP2
-	if (compare_case(name, "bzip2")) {
-		return COMPRESSION_BZIP2;
-	}
-#endif
-#ifdef IMPACK_WITH_BROTLI
-	if (compare_case(name, "brotli")) {
-		return COMPRESSION_BROTLI;
-	}
-#endif
 	return COMPRESSION_NONE;
 	
 }

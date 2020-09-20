@@ -20,20 +20,20 @@
 #include "config.h"
 #include "impack.h"
 
-void print_format(char *name, int *linelen, bool *is_first, bool is_default) {
+void print_format(char *name, int *linelen, bool is_first, bool is_default) {
 	
 	size_t space_needed = strlen(name);
-	if (!(*is_first)) {
+	if (!is_first) {
 		space_needed += 2;
 	}
 	if (is_default) {
 		space_needed += 10;
 	}
-	if (!(*is_first)) {
+	if (!is_first) {
 		printf(",");
 	}
 	if (79 - *linelen >= space_needed) {
-		if (!(*is_first)) {
+		if (!is_first) {
 			printf(" ");
 		}
 	} else {
@@ -44,7 +44,6 @@ void print_format(char *name, int *linelen, bool *is_first, bool is_default) {
 	if (is_default) {
 		printf(" (default)");
 	}
-	*is_first = false;
 	*linelen += space_needed;
 	
 }
@@ -108,13 +107,12 @@ void impack_print_help() {
 	
 	printf("Supported image formats:\n");
 	int linelen = 2;
-	bool is_first = true;
 	impack_img_format_t default_format = impack_default_img_format();
 	printf("  ");
 	int current = 0;
 	while (impack_img_formats[current] != NULL) {
 		if (!impack_img_formats[current]->hidden) {
-			print_format(impack_img_formats[current]->name, &linelen, &is_first, default_format == impack_img_formats[current]->id);
+			print_format(impack_img_formats[current]->name, &linelen, current == 0, default_format == impack_img_formats[current]->id);
 		}
 		current++;
 	}
@@ -130,24 +128,13 @@ void impack_print_help() {
 	printf("\n");
 	printf("Supported compression types:\n");
 	linelen = 2;
-	is_first = true;
 	impack_compression_type_t default_compression = impack_default_compression();
 	printf("  ");
-#ifdef IMPACK_WITH_BROTLI
-	print_format("Brotli", &linelen, &is_first, default_compression == COMPRESSION_BROTLI);
-#endif
-#ifdef IMPACK_WITH_BZIP2
-	print_format("Bzip2", &linelen, &is_first, default_compression == COMPRESSION_BZIP2);
-#endif
-#ifdef IMPACK_WITH_ZLIB
-	print_format("Deflate", &linelen, &is_first, default_compression == COMPRESSION_ZLIB);
-#endif
-#ifdef IMPACK_WITH_LZMA
-	print_format("LZMA2", &linelen, &is_first, default_compression == COMPRESSION_LZMA);
-#endif
-#ifdef IMPACK_WITH_ZSTD
-	print_format("Zstd", &linelen, &is_first, default_compression == COMPRESSION_ZSTD);
-#endif
+	current = 0;
+	while (impack_compression_types[current] != NULL) {
+		print_format(impack_compression_types[current]->name, &linelen, current == 0, default_compression == impack_compression_types[current]->id);
+		current++;
+	}
 	printf("\n");
 #endif
 	

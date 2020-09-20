@@ -23,187 +23,167 @@
 #include "impack_internal.h"
 #include "compression.h"
 
-bool impack_compress_init(impack_compress_state_t *state) {
-	
-	switch (state->type) {
 #ifdef IMPACK_WITH_ZLIB
-		case COMPRESSION_ZLIB:
-			return impack_compress_init_zlib(state);
+const impack_compression_desc_t impack_compression_zlib = {
+	COMPRESSION_ZLIB,
+	"Deflate",
+	(impack_compress_func_generic_t) impack_compress_init_zlib,
+	(impack_compress_func_generic_t) impack_compress_free_zlib,
+	(impack_compress_func_generic_t) impack_compress_read_zlib,
+	(impack_compress_func_generic_t) impack_compress_write_zlib,
+	(impack_compress_func_generic_t) impack_compress_flush_zlib,
+	(impack_compress_func_generic_t) impack_compress_level_valid_zlib
+};
 #endif
+
 #ifdef IMPACK_WITH_ZSTD
-		case COMPRESSION_ZSTD:
-			return impack_compress_init_zstd(state);
+const impack_compression_desc_t impack_compression_zstd = {
+	COMPRESSION_ZSTD,
+	"ZSTD",
+	(impack_compress_func_generic_t) impack_compress_init_zstd,
+	(impack_compress_func_generic_t) impack_compress_free_zstd,
+	(impack_compress_func_generic_t) impack_compress_read_zstd,
+	(impack_compress_func_generic_t) impack_compress_write_zstd,
+	(impack_compress_func_generic_t) impack_compress_flush_zstd,
+	(impack_compress_func_generic_t) impack_compress_level_valid_zstd
+};
 #endif
+
 #ifdef IMPACK_WITH_LZMA
-		case COMPRESSION_LZMA:
-			return impack_compress_init_lzma(state);
+const impack_compression_desc_t impack_compression_lzma = {
+	COMPRESSION_LZMA,
+	"LZMA2",
+	(impack_compress_func_generic_t) impack_compress_init_lzma,
+	(impack_compress_func_generic_t) impack_compress_free_lzma,
+	(impack_compress_func_generic_t) impack_compress_read_lzma,
+	(impack_compress_func_generic_t) impack_compress_write_lzma,
+	(impack_compress_func_generic_t) impack_compress_flush_lzma,
+	(impack_compress_func_generic_t) impack_compress_level_valid_lzma
+};
+#endif
+
+#ifdef IMPACK_WITH_BZIP2
+const impack_compression_desc_t impack_compression_bzip2 = {
+	COMPRESSION_BZIP2,
+	"Bzip2",
+	(impack_compress_func_generic_t) impack_compress_init_bzip2,
+	(impack_compress_func_generic_t) impack_compress_free_bzip2,
+	(impack_compress_func_generic_t) impack_compress_read_bzip2,
+	(impack_compress_func_generic_t) impack_compress_write_bzip2,
+	(impack_compress_func_generic_t) impack_compress_flush_bzip2,
+	(impack_compress_func_generic_t) impack_compress_level_valid_bzip2
+};
+#endif
+
+#ifdef IMPACK_WITH_BROTLI
+const impack_compression_desc_t impack_compression_brotli = {
+	COMPRESSION_BROTLI,
+	"Brotli",
+	(impack_compress_func_generic_t) impack_compress_init_brotli,
+	(impack_compress_func_generic_t) impack_compress_free_brotli,
+	(impack_compress_func_generic_t) impack_compress_read_brotli,
+	(impack_compress_func_generic_t) impack_compress_write_brotli,
+	(impack_compress_func_generic_t) impack_compress_flush_brotli,
+	(impack_compress_func_generic_t) impack_compress_level_valid_brotli
+};
+#endif
+
+const impack_compression_desc_t *impack_compression_types[] = {
+#ifdef IMPACK_WITH_BROTLI
+	&impack_compression_brotli,
 #endif
 #ifdef IMPACK_WITH_BZIP2
-		case COMPRESSION_BZIP2:
-			return impack_compress_init_bzip2(state);
+	&impack_compression_bzip2,
 #endif
-#ifdef IMPACK_WITH_BROTLI
-		case COMPRESSION_BROTLI:
-			return impack_compress_init_brotli(state);
+#ifdef IMPACK_WITH_ZLIB
+	&impack_compression_zlib,
 #endif
-		default:
-			abort();
+#ifdef IMPACK_WITH_LZMA
+	&impack_compression_lzma,
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	&impack_compression_zstd,
+#endif
+	NULL
+};
+
+bool impack_compress_init(impack_compress_state_t *state) {
+	
+	int i = 0;
+	while (impack_compression_types[i] != NULL) {
+		if (impack_compression_types[i]->id == state->type) {
+			return ((impack_compress_func_init_t) impack_compression_types[i]->func_init)(state);
+		}
+		i++;
 	}
+	abort();
 	
 }
 
 void impack_compress_free(impack_compress_state_t *state) {
 	
-	switch (state->type) {
-#ifdef IMPACK_WITH_ZLIB
-		case COMPRESSION_ZLIB:
-			impack_compress_free_zlib(state);
+	int i = 0;
+	while (impack_compression_types[i] != NULL) {
+		if (impack_compression_types[i]->id == state->type) {
+			((impack_compress_func_free_t) impack_compression_types[i]->func_free)(state);
 			return;
-#endif
-#ifdef IMPACK_WITH_ZSTD
-		case COMPRESSION_ZSTD:
-			impack_compress_free_zstd(state);
-			return;
-#endif
-#ifdef IMPACK_WITH_LZMA
-		case COMPRESSION_LZMA:
-			impack_compress_free_lzma(state);
-			return;
-#endif
-#ifdef IMPACK_WITH_BZIP2
-		case COMPRESSION_BZIP2:
-			impack_compress_free_bzip2(state);
-			return;
-#endif
-#ifdef IMPACK_WITH_BROTLI
-		case COMPRESSION_BROTLI:
-			impack_compress_free_brotli(state);
-			return;
-#endif
-		default:
-			abort();
+		}
+		i++;
 	}
+	abort();
 	
 }
 
 impack_compression_result_t impack_compress_read(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout) {
 	
-	switch (state->type) {
-#ifdef IMPACK_WITH_ZLIB
-		case COMPRESSION_ZLIB:
-			return impack_compress_read_zlib(state, buf, lenout);
-#endif
-#ifdef IMPACK_WITH_ZSTD
-		case COMPRESSION_ZSTD:
-			return impack_compress_read_zstd(state, buf, lenout);
-#endif
-#ifdef IMPACK_WITH_LZMA
-		case COMPRESSION_LZMA:
-			return impack_compress_read_lzma(state, buf, lenout);
-#endif
-#ifdef IMPACK_WITH_BZIP2
-		case COMPRESSION_BZIP2:
-			return impack_compress_read_bzip2(state, buf, lenout);
-#endif
-#ifdef IMPACK_WITH_BROTLI
-		case COMPRESSION_BROTLI:
-			return impack_compress_read_brotli(state, buf, lenout);
-#endif
-		default:
-			abort();
+	int i = 0;
+	while (impack_compression_types[i] != NULL) {
+		if (impack_compression_types[i]->id == state->type) {
+			return ((impack_compress_func_read_t) impack_compression_types[i]->func_read)(state, buf, lenout);
+		}
+		i++;
 	}
+	abort();
 	
 }
 
 void impack_compress_write(impack_compress_state_t *state, uint8_t *buf, uint64_t len) {
 	
-	switch (state->type) {
-#ifdef IMPACK_WITH_ZLIB
-		case COMPRESSION_ZLIB:
-			impack_compress_write_zlib(state, buf, len);
+	int i = 0;
+	while (impack_compression_types[i] != NULL) {
+		if (impack_compression_types[i]->id == state->type) {
+			((impack_compress_func_write_t) impack_compression_types[i]->func_write)(state, buf, len);
 			return;
-#endif
-#ifdef IMPACK_WITH_ZSTD
-		case COMPRESSION_ZSTD:
-			impack_compress_write_zstd(state, buf, len);
-			return;
-#endif
-#ifdef IMPACK_WITH_LZMA
-		case COMPRESSION_LZMA:
-			impack_compress_write_lzma(state, buf, len);
-			return;
-#endif
-#ifdef IMPACK_WITH_BZIP2
-		case COMPRESSION_BZIP2:
-			impack_compress_write_bzip2(state, buf, len);
-			return;
-#endif
-#ifdef IMPACK_WITH_BROTLI
-		case COMPRESSION_BROTLI:
-			impack_compress_write_brotli(state, buf, len);
-			return;
-#endif
-		default:
-			abort();
+		}
+		i++;
 	}
+	abort();
 	
 }
 
 impack_compression_result_t impack_compress_flush(impack_compress_state_t *state, uint8_t *buf, uint64_t *lenout) {
 	
-	switch (state->type) {
-#ifdef IMPACK_WITH_ZLIB
-		case COMPRESSION_ZLIB:
-			return impack_compress_flush_zlib(state, buf, lenout);
-#endif
-#ifdef IMPACK_WITH_ZSTD
-		case COMPRESSION_ZSTD:
-			return impack_compress_flush_zstd(state, buf, lenout);
-#endif
-#ifdef IMPACK_WITH_LZMA
-		case COMPRESSION_LZMA:
-			return impack_compress_flush_lzma(state, buf, lenout);
-#endif
-#ifdef IMPACK_WITH_BZIP2
-		case COMPRESSION_BZIP2:
-			return impack_compress_flush_bzip2(state, buf, lenout);
-#endif
-#ifdef IMPACK_WITH_BROTLI
-		case COMPRESSION_BROTLI:
-			return impack_compress_flush_brotli(state, buf, lenout);
-#endif
-		default:
-			abort();
+	int i = 0;
+	while (impack_compression_types[i] != NULL) {
+		if (impack_compression_types[i]->id == state->type) {
+			return ((impack_compress_func_flush_t) impack_compression_types[i]->func_flush)(state, buf, lenout);
+		}
+		i++;
 	}
+	abort();
 	
 }
 
 bool impack_compress_level_valid(impack_compression_type_t type, int32_t level) {
 	
-	switch (type) {
-#ifdef IMPACK_WITH_ZLIB
-		case COMPRESSION_ZLIB:
-			return impack_compress_level_valid_zlib(level);
-#endif
-#ifdef IMPACK_WITH_ZSTD
-		case COMPRESSION_ZSTD:
-			return impack_compress_level_valid_zstd(level);
-#endif
-#ifdef IMPACK_WITH_LZMA
-		case COMPRESSION_LZMA:
-			return impack_compress_level_valid_lzma(level);
-#endif
-#ifdef IMPACK_WITH_BZIP2
-		case COMPRESSION_BZIP2:
-			return impack_compress_level_valid_bzip2(level);
-#endif
-#ifdef IMPACK_WITH_BROTLI
-		case COMPRESSION_BROTLI:
-			return impack_compress_level_valid_brotli(level);
-#endif
-		default:
-			abort();
+	int i = 0;
+	while (impack_compression_types[i] != NULL) {
+		if (impack_compression_types[i]->id == type) {
+			return ((impack_compress_func_level_valid_t) impack_compression_types[i]->func_level_valid)(level);
+		}
+		i++;
 	}
+	abort();
 	
 }
 

@@ -72,21 +72,15 @@ void impack_build_info() {
 		}
 		current++;
 	}
+#ifdef IMPACK_WITH_COMPRESSION
 	printf("\n  Compression types:");
-#ifdef IMPACK_WITH_ZLIB
-	printf(" Deflate");
-#endif
-#ifdef IMPACK_WITH_ZSTD
-	printf(" ZSTD");
-#endif
-#ifdef IMPACK_WITH_LZMA
-	printf(" LZMA2");
-#endif
-#ifdef IMPACK_WITH_BZIP2
-	printf(" Bzip2");
-#endif
-#ifdef IMPACK_WITH_BROTLI
-	printf(" Brotli");
+	current = 0;
+	while (impack_compression_types[current] != NULL) {
+		printf(" %s", impack_compression_types[current]->name);
+		current++;
+	}
+#else
+	printf("\n  Compression not supported");
 #endif
 	printf("\n\n");
 	

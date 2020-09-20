@@ -61,6 +61,13 @@ typedef struct {
 	uint64_t bufsize;
 } impack_compress_state_t;
 
+typedef bool (*impack_compress_func_init_t)(impack_compress_state_t* state);
+typedef void (*impack_compress_func_free_t)(impack_compress_state_t* state);
+typedef impack_compression_result_t (*impack_compress_func_read_t)(impack_compress_state_t* state, uint8_t* buf, uint64_t* lenout);
+typedef void (*impack_compress_func_write_t)(impack_compress_state_t* state, uint8_t* buf, uint64_t len);
+typedef impack_compression_result_t (*impack_compress_func_flush_t)(impack_compress_state_t* state, uint8_t* buf, uint64_t* lenout);
+typedef bool (*impack_compress_func_level_valid_t)(int32_t level);
+
 // Get the filename from a path (similar to basename())
 char* impack_filename(char *path);
 // Convert numbers to network byte order, if needed (like htonl()/ntohl())

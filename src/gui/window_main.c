@@ -30,81 +30,52 @@ bool encode_compress_box_enabled;
 
 int enabled_compression_types() {
 	
+#ifdef IMPACK_WITH_COMPRESSION
 	int res = 0;
-#ifdef IMPACK_WITH_ZLIB
-	res++;
-#endif
-#ifdef IMPACK_WITH_ZSTD
-	res++;
-#endif
-#ifdef IMPACK_WITH_LZMA
-	res++;
-#endif
-#ifdef IMPACK_WITH_BROTLI
-	res++;
-#endif
-#ifdef IMPACK_WITH_BZIP2
-	res++;
-#endif
+	while (impack_compression_types[res] != NULL) {
+		res++;
+	}
 	return res;
+#else
+	return 0;
+#endif
 	
 }
 
 void build_encode_compression_type_box(bool advanced) {
 	
+#ifdef IMPACK_WITH_COMPRESSION
 	encode_compress_box_enabled = false;
 	GtkComboBoxText *box = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "EncodeCompressTypeBox"));
 	const gchar *last_active = gtk_combo_box_get_active_id(GTK_COMBO_BOX(box));
 	char *next_active = NULL;
 	if (advanced) {
 		if (strcmp(last_active, "strong") == 0) { // Keep LZMA2 if selected, otherwise select the default
-			next_active = "lzma2";
+			next_active = "LZMA2";
 		}
 	} else {
-		if (strcmp(last_active, "lzma2") == 0) {
+		if (strcmp(last_active, "LZMA2") == 0) {
 			next_active = "strong";
 		} else {
 			next_active = "normal";
 		}
 	}
 	if (next_active == NULL) {
-		switch (impack_default_compression()) {
-			case COMPRESSION_BROTLI:
-				next_active = "brotli";
-				break;
-			case COMPRESSION_BZIP2:
-				next_active = "bzip2";
-				break;
-			case COMPRESSION_LZMA:
-				next_active = "lzma2";
-				break;
-			case COMPRESSION_ZLIB:
-				next_active = "deflate";
-				break;
-			case COMPRESSION_ZSTD:
-				next_active = "zstd";
-				break;
-			default:
-				abort();
+		int current = 0;
+		while (impack_compression_types[current] != NULL) {
+			if (impack_compression_types[current]->id == impack_default_compression()) {
+				next_active = impack_compression_types[current]->name;
+			}
+			current++;
 		}
 	}
 	gtk_combo_box_text_remove_all(box);
 	if (advanced) {
-#ifdef IMPACK_WITH_BROTLI
-		gtk_combo_box_text_append(box, "brotli", "Brotli");
-#endif
-#ifdef IMPACK_WITH_BZIP2
-		gtk_combo_box_text_append(box, "bzip2", "Bzip2");
-#endif
-#ifdef IMPACK_WITH_ZLIB
-		gtk_combo_box_text_append(box, "deflate", "Deflate");
-#endif
-#ifdef IMPACK_WITH_LZMA
-		gtk_combo_box_text_append(box, "lzma2", "LZMA2");
-#endif
-#ifdef IMPACK_WITH_ZSTD
-		gtk_combo_box_text_append(box, "zstd", "ZSTD");
-#endif
+		int current = 0;
+		while (impack_compression_types[current] != NULL) {
+			gtk_combo_box_text_append(box, impack_compression_types[current]->name, impack_compression_types[current]->name);
+			current++;
+		}
 	} else {
 		gtk_combo_box_text_append(box, "normal", "Normal (Fast)");
 #ifdef IMPACK_WITH_LZMA
@@ -113,6 +84,7 @@ void build_encode_compression_type_box(bool advanced) {
 	}
 	encode_compress_box_enabled = true;
 	gtk_combo_box_set_active_id(GTK_COMBO_BOX(box), next_active);
+#endif
 	
 }
 
@@ -280,6 +252,7 @@ void encode_no_filename_toggled() {
 
 void encode_compress_type_change() {
 	
+#ifdef IMPACK_WITH_COMPRESSION
 	if (encode_compress_box_enabled) { // Prevent this from running during build_encode_compression_type_box()
 		GtkSpinButton *number = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "EncodeCompressLevelNumber"));
 		GtkAdjustment *adj = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "EncodeCompressLevelAdjust"));
@@ -301,6 +274,7 @@ void encode_compress_type_change() {
 		gtk_adjustment_set_upper(adj, level);
 		gtk_spin_button_set_value(number, level);
 	}
+#endif
 	
 }
 
@@ -587,9 +561,10 @@ void encode_button_click() {
 			encode_params.encrypt = impack_default_encryption();
 		}
 	}
-	GtkCheckButton *compress_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeCompressCheckbox"));
 	encode_params.compress = COMPRESSION_NONE;
 	encode_params.compress_level = 0;
+#ifdef IMPACK_WITH_COMPRESSION
+	GtkCheckButton *compress_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeCompressCheckbox"));
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(compress_box))) {
 		GtkComboBoxText *compress_type_box = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "EncodeCompressTypeBox"));
 		const gchar *compress_type = gtk_combo_box_get_active_id(GTK_COMBO_BOX(compress_type_box));
@@ -608,6 +583,7 @@ void encode_button_click() {
 			}
 		}
 	}
+#endif
 	GtkCheckButton *width_box = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "EncodeWidthBox"));
 	encode_params.img_width = 0;
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(width_box))) {

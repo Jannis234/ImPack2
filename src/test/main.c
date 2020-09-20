@@ -290,40 +290,36 @@ bool test_cycle() {
 	res &= test_cycle_format("Custom width", false, NULL, COMPRESSION_NONE, 1, 0, allchannels);
 	res &= test_cycle_format("Custom height", false, NULL, COMPRESSION_NONE, 0, 1, allchannels);
 	res &= test_cycle_format("Custom width + height", false, NULL, COMPRESSION_NONE, 50, 50, allchannels);
-#ifdef IMPACK_WITH_ZLIB
-	res &= test_cycle_format("Compressed data, deflate compression", false, NULL, COMPRESSION_ZLIB, 0, 0, allchannels);
-#endif
-#ifdef IMPACK_WITH_ZSTD
-	res &= test_cycle_format("Compressed data, ZSTD compression", false, NULL, COMPRESSION_ZSTD, 0, 0, allchannels);
-#endif
-#ifdef IMPACK_WITH_LZMA
-	res &= test_cycle_format("Compressed data, LZMA2 compression", false, NULL, COMPRESSION_LZMA, 0, 0, allchannels);
-#endif
-#ifdef IMPACK_WITH_BZIP2
-	res &= test_cycle_format("Compressed data, Bzip2 compression", false, NULL, COMPRESSION_BZIP2, 0, 0, allchannels);
-#endif
-#ifdef IMPACK_WITH_BROTLI
-	res &= test_cycle_format("Compressed data, Brotli compression", false, NULL, COMPRESSION_BROTLI, 0, 0, allchannels);
+#ifdef IMPACK_WITH_COMPRESSION
+	int current = 0;
+	int baselen = strlen("Encrypted and compressed data,  compression");
+	int namelen = 0;
+	while (impack_compression_types[current] != NULL) {
+		if (strlen(impack_compression_types[current]->name) > namelen) {
+			namelen = strlen(impack_compression_types[current]->name);
+		}
+		current++;
+	}
+	char namebuf[baselen + namelen + 1];
+	current = 0;
+	while (impack_compression_types[current] != NULL) {
+		sprintf(namebuf, "Compressed data, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, false, NULL, impack_compression_types[current]->id, 0, 0, allchannels);
+		current++;
+	}
 #endif
 #ifdef IMPACK_WITH_CRYPTO
 	res &= test_cycle_format("Encrypted data, AES encryption", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
 	res &= test_cycle_format("Encrypted data, Camellia encryption", ENCRYPTION_CAMELLIA, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
 	res &= test_cycle_format("Encrypted data, Serpent encryption", ENCRYPTION_SERPENT, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
 	res &= test_cycle_format("Encrypted data, Twofish encryption", ENCRYPTION_TWOFISH, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
-#ifdef IMPACK_WITH_ZLIB
-	res &= test_cycle_format("Encrypted and compressed data, deflate compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_ZLIB, 0, 0, allchannels);
-#endif
-#ifdef IMPACK_WITH_ZSTD
-	res &= test_cycle_format("Encrypted and compressed data, ZSTD compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_ZSTD, 0, 0, allchannels);
-#endif
-#ifdef IMPACK_WITH_LZMA
-	res &= test_cycle_format("Encrypted and compressed data, LZMA2 compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_LZMA, 0, 0, allchannels);
-#endif
-#ifdef IMPACK_WITH_BZIP2
-	res &= test_cycle_format("Encrypted and compressed data, Bzip2 compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_BZIP2, 0, 0, allchannels);
-#endif
-#ifdef IMPACK_WITH_BROTLI
-	res &= test_cycle_format("Encrypted and compressed data, Brotli compression", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_BROTLI, 0, 0, allchannels);
+#ifdef IMPACK_WITH_COMPRESSION
+	current = 0;
+	while (impack_compression_types[current] != NULL) {
+		sprintf(namebuf, "Encrypted and compressed data, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, ENCRYPTION_AES, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+		current++;
+	}
 #endif
 #endif
 	return res;

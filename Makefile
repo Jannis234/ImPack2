@@ -113,6 +113,7 @@ uninstall:
 
 check: testsuite$(EXEEXT)
 	./testsuite$(EXEEXT)
+	rm -f testout_encode.tmp testout_decode.tmp
 
 clean:
 	rm -f $(CLI_SRC:.c=.o) $(CLI_SRC:.c=.d)

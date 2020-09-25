@@ -47,29 +47,8 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags nettle)
 LIBS += $(shell $(PKG_CONFIG) --libs nettle)
 endif
 
-ifeq ($(WITH_LIBPNG), 1)
-CFLAGS += $(shell $(PKG_CONFIG) --cflags libpng)
-LIBS += $(shell $(PKG_CONFIG) --libs libpng)
-endif
-
-ifeq ($(WITH_LIBWEBP), 1)
-CFLAGS += $(shell $(PKG_CONFIG) --cflags libwebp)
-LIBS += $(shell $(PKG_CONFIG) --libs libwebp)
-endif
-
-ifeq ($(WITH_LIBTIFF), 1)
-CFLAGS += $(shell $(PKG_CONFIG) --cflags libtiff-4)
-LIBS += $(shell $(PKG_CONFIG) --libs libtiff-4)
-endif
-
-ifeq ($(WITH_LIBNSBMP), 1)
-CFLAGS += $(shell $(PKG_CONFIG) --cflags libnsbmp)
-LIBS += $(shell $(PKG_CONFIG) --libs libnsbmp)
-endif
-
-ifeq ($(WITH_OPENJPEG2), 1)
-CFLAGS += $(shell $(PKG_CONFIG) --cflags libopenjp2)
-LIBS += $(shell $(PKG_CONFIG) --libs libopenjp2)
+ifeq ($(WITH_CHARLS), 1)
+LIBS += -lcharls
 endif
 
 ifeq ($(WITH_FLIF), 1)
@@ -81,8 +60,43 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags libjxr)
 LIBS += $(shell $(PKG_CONFIG) --libs libjxr)
 endif
 
-ifeq ($(WITH_CHARLS), 1)
-LIBS += -lcharls
+ifeq ($(WITH_LIBNSBMP), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libnsbmp)
+LIBS += $(shell $(PKG_CONFIG) --libs libnsbmp)
+endif
+
+ifeq ($(WITH_LIBPNG), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libpng)
+LIBS += $(shell $(PKG_CONFIG) --libs libpng)
+endif
+
+ifeq ($(WITH_LIBTIFF), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libtiff-4)
+LIBS += $(shell $(PKG_CONFIG) --libs libtiff-4)
+endif
+
+ifeq ($(WITH_LIBWEBP), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libwebp)
+LIBS += $(shell $(PKG_CONFIG) --libs libwebp)
+endif
+
+ifeq ($(WITH_OPENJPEG2), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libopenjp2)
+LIBS += $(shell $(PKG_CONFIG) --libs libopenjp2)
+endif
+
+ifeq ($(WITH_BROTLI), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libbrotlidec) $(shell $(PKG_CONFIG) --cflags libbrotlienc)
+LIBS += $(shell $(PKG_CONFIG) --libs libbrotlidec) $(shell $(PKG_CONFIG) --libs libbrotlienc)
+endif
+
+ifeq ($(WITH_BZIP2), 1)
+LIBS += -lbz2
+endif
+
+ifeq ($(WITH_LZMA), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags liblzma)
+LIBS += $(shell $(PKG_CONFIG) --libs liblzma)
 endif
 
 ifeq ($(WITH_ZLIB), 1)
@@ -93,18 +107,4 @@ endif
 ifeq ($(WITH_ZSTD), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags libzstd)
 LIBS += $(shell $(PKG_CONFIG) --libs libzstd)
-endif
-
-ifeq ($(WITH_LZMA), 1)
-CFLAGS += $(shell $(PKG_CONFIG) --cflags liblzma)
-LIBS += $(shell $(PKG_CONFIG) --libs liblzma)
-endif
-
-ifeq ($(WITH_BZIP2), 1)
-LIBS += -lbz2
-endif
-
-ifeq ($(WITH_BROTLI), 1)
-CFLAGS += $(shell $(PKG_CONFIG) --cflags libbrotlidec) $(shell $(PKG_CONFIG) --cflags libbrotlienc)
-LIBS += $(shell $(PKG_CONFIG) --libs libbrotlidec) $(shell $(PKG_CONFIG) --libs libbrotlienc)
 endif

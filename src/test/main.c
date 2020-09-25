@@ -287,8 +287,8 @@ bool test_cycle() {
 	res &= test_cycle_format("Red + blue color channels", false, NULL, COMPRESSION_NONE, 0, 0, CHANNEL_RED | CHANNEL_BLUE);
 	res &= test_cycle_format("Green + blue color channels", false, NULL, COMPRESSION_NONE, 0, 0, CHANNEL_GREEN | CHANNEL_BLUE);
 	res &= test_cycle_format("Grayscale mode", false, NULL, COMPRESSION_NONE, 0, 0, 0);
-	res &= test_cycle_format("Custom width", false, NULL, COMPRESSION_NONE, 1, 0, allchannels);
-	res &= test_cycle_format("Custom height", false, NULL, COMPRESSION_NONE, 0, 1, allchannels);
+	res &= test_cycle_format("Custom width", false, NULL, COMPRESSION_NONE, 2, 0, allchannels);
+	res &= test_cycle_format("Custom height", false, NULL, COMPRESSION_NONE, 0, 2, allchannels);
 	res &= test_cycle_format("Custom width + height", false, NULL, COMPRESSION_NONE, 50, 50, allchannels);
 #ifdef IMPACK_WITH_COMPRESSION
 	int current = 0;

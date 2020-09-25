@@ -76,7 +76,8 @@ typedef enum {
 	FORMAT_JP2K,
 	FORMAT_FLIF,
 	FORMAT_JXR,
-	FORMAT_JPEGLS
+	FORMAT_JPEGLS,
+	FORMAT_HEIF
 } impack_img_format_t;
 
 typedef impack_error_t (*impack_read_img_func_t)(FILE* input_file, uint8_t** pixeldata, uint64_t* pixeldata_size);

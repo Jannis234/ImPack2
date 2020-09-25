@@ -40,6 +40,9 @@
 #ifdef IMPACK_WITH_JPEGLS
 #include <charls/charls.h>
 #endif
+#ifdef IMPACK_WITH_HEIF
+#include <libheif/heif.h>
+#endif
 #ifdef IMPACK_WITH_ZLIB
 #include <zlib.h>
 #endif
@@ -121,6 +124,9 @@ void impack_build_info() {
 	int32_t charls_version[3];
 	charls_get_version_number(&charls_version[0], &charls_version[1], &charls_version[2]);
 	printf("  charls: %d.%d.%d / %d.%d.%d\n", CHARLS_VERSION_MAJOR, CHARLS_VERSION_MINOR, CHARLS_VERSION_PATCH, charls_version[0], charls_version[1], charls_version[2]);
+#endif
+#ifdef IMPACK_WITH_HEIF
+	printf("  libheif %s / %s\n", LIBHEIF_VERSION, heif_get_version());
 #endif
 #ifdef IMPACK_WITH_ZLIB
 	printf("  zlib: %s / %s\n", ZLIB_VERSION, zlibVersion());

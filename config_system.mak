@@ -60,6 +60,11 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags libjxr)
 LIBS += $(shell $(PKG_CONFIG) --libs libjxr)
 endif
 
+ifeq ($(WITH_LIBHEIF), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libheif)
+LIBS += $(shell $(PKG_CONFIG) --libs libheif)
+endif
+
 ifeq ($(WITH_LIBNSBMP), 1)
 CFLAGS += $(shell $(PKG_CONFIG) --cflags libnsbmp)
 LIBS += $(shell $(PKG_CONFIG) --libs libnsbmp)

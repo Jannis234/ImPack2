@@ -156,12 +156,31 @@ const impack_img_format_desc_t impack_img_format_jpegls = {
 };
 #endif
 
+#ifdef IMPACK_WITH_HEIF
+const uint8_t impack_magic_heif[] = { 0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63 };
+const char *impack_extension_alt_heif[] = { "*.heif", NULL };
+const impack_img_format_desc_t impack_img_format_heif = {
+	FORMAT_HEIF,
+	"HEIF",
+	"*.heic",
+	impack_extension_alt_heif,
+	false,
+	impack_read_img_heif,
+	impack_write_img_heif,
+	impack_magic_heif,
+	12
+};
+#endif
+
 const impack_img_format_desc_t *impack_img_formats[] = {
 #ifdef IMPACK_WITH_BMP
 	&impack_img_format_bmp,
 #endif
 #ifdef IMPACK_WITH_FLIF
 	&impack_img_format_flif,
+#endif
+#ifdef IMPACK_WITH_HEIF
+	&impack_img_format_heif,
 #endif
 #ifdef IMPACK_WITH_JPEGLS
 	&impack_img_format_jpegls,

@@ -45,6 +45,7 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/write_img_flif.c \
 	src/lib/write_img_jxr.c \
 	src/lib/write_img_jpegls.c \
+	src/lib/write_img_heif.c \
 	src/lib/read_img.c \
 	src/lib/read_img_png.c \
 	src/lib/read_img_webp.c \
@@ -54,6 +55,7 @@ LIB_SRC = src/lib/encode.c \
 	src/lib/read_img_flif.c \
 	src/lib/read_img_jxr.c \
 	src/lib/read_img_jpegls.c \
+	src/lib/read_img_heif.c \
 	src/lib/libtiff_io.c \
 	src/lib/openjpeg_io.c \
 	src/lib/secure_erase.c \
@@ -165,6 +167,7 @@ src/include/config_generated.h: config_build.mak src/gen_config.sh
 		FLIF $(WITH_FLIF) \
 		JXR $(WITH_JXRLIB) \
 		JPEGLS $(WITH_CHARLS) \
+		HEIF $(WITH_LIBHEIF) \
 		ZLIB $(WITH_ZLIB) \
 		ZSTD $(WITH_ZSTD) \
 		LZMA $(WITH_LZMA) \

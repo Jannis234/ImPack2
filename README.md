@@ -24,6 +24,7 @@ ImPack2 can make use of the following dependencies (can be toggled on or off in 
 * [charls](https://github.com/team-charls/charls) - To read/write JPEG-LS images
 * [jxrlib](https://archive.codeplex.com/?p=jxrlib) - To read/write JPEG XR images
 * [libflif](https://flif.info/) - To read/write FLIF images
+* [libheif](https://github.com/strukturag/libheif) - To read/write HEIF image (version 1.9.0 or later highly recommended)
 * [libnsbmp](http://www.netsurf-browser.org/projects/libnsbmp/) - To read BMP images
 * [libpng](http://www.libpng.org/) - To read/write PNG images
 * [libtiff](http://libtiff.org/) - To read/write TIFF images

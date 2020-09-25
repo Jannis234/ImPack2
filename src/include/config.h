@@ -26,7 +26,15 @@
 #define IMPACK_WITH_CRYPTO
 #endif
 
-#if (IMPACK_CONFIG_PNG != 1) && (IMPACK_CONFIG_WEBP != 1) && (IMPACK_CONFIG_TIFF != 1) && (IMPACK_CONFIG_BMP != 1) && (IMPACK_CONFIG_JP2K != 1) && (IMPACK_CONFIG_FLIF != 1) && (IMPACK_CONFIG_JXR != 1) && (IMPACK_CONFIG_JPEGLS != 1)
+#if (IMPACK_CONFIG_PNG != 1) \
+	&& (IMPACK_CONFIG_WEBP != 1) \
+	&& (IMPACK_CONFIG_TIFF != 1) \
+	&& (IMPACK_CONFIG_BMP != 1) \
+	&& (IMPACK_CONFIG_JP2K != 1) \
+	&& (IMPACK_CONFIG_FLIF != 1) \
+	&& (IMPACK_CONFIG_JXR != 1) \
+	&& (IMPACK_CONFIG_JPEGLS != 1) \
+	&& (IMPACK_CONFIG_HEIF != 1)
 #error "No image formats selected in config_build.mak"
 #endif
 
@@ -62,7 +70,15 @@
 #define IMPACK_WITH_JPEGLS
 #endif
 
-#if (IMPACK_CONFIG_ZLIB == 1) || (IMPACK_CONFIG_ZSTD == 1) || (IMPACK_CONFIG_LZMA == 1) || (IMPACK_CONFIG_BZIP2 == 1) || (IMPACK_CONFIG_BROTLI == 1)
+#if (IMPACK_CONFIG_HEIF == 1)
+#define IMPACK_WITH_HEIF
+#endif
+
+#if (IMPACK_CONFIG_ZLIB == 1) \
+	|| (IMPACK_CONFIG_ZSTD == 1) \
+	|| (IMPACK_CONFIG_LZMA == 1) \
+	|| (IMPACK_CONFIG_BZIP2 == 1) \
+	|| (IMPACK_CONFIG_BROTLI == 1)
 #define IMPACK_WITH_COMPRESSION
 #endif
 

@@ -81,6 +81,8 @@ impack_img_format_t impack_default_img_format() {
 	return FORMAT_WEBP;
 #elif defined(IMPACK_WITH_TIFF)
 	return FORMAT_TIFF;
+#elif defined(IMPACK_WITH_HEIF)
+	return FORMAT_HEIF;
 #elif defined(IMPACK_WITH_BMP)
 	return FORMAT_BMP;
 #elif defined(IMPACK_WITH_JP2K)

@@ -50,6 +50,9 @@ impack_error_t impack_write_img_heif(FILE *output_file, uint8_t *pixeldata, uint
 	if (img_width > INT32_MAX || img_height > INT32_MAX) {
 		return ERROR_IMG_SIZE;
 	}
+	if (img_width == 1 || img_height == 1) { // This seems to cause libheif to produce invalid output
+		return ERROR_IMG_SIZE;
+	}
 	
 	struct heif_context *ctx = NULL;
 	struct heif_encoder *enc = NULL;

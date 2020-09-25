@@ -18,7 +18,7 @@
 
 IMGS = $(shell ls *.png)
 
-all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2) $(IMGS:.png=.flif) $(IMGS:.png=.jxr) $(IMGS:.png=.jls)
+all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2) $(IMGS:.png=.flif) $(IMGS:.png=.jxr) $(IMGS:.png=.jls) $(IMGS:.png=.heic)
 
 %.webp: %.png
 	convert $< -define webp:lossless=true $@
@@ -41,3 +41,6 @@ all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2) $
 
 %.jls: %.png
 	ffmpeg -i $< -c:v jpegls $@
+
+%.heic: %.png
+	heif-enc $< -o $@ -L -p chroma=444 --matrix_coefficients=0

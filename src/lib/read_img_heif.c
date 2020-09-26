@@ -36,8 +36,9 @@ impack_error_t impack_read_img_heif(FILE *input_file, uint8_t *magic, uint8_t **
 	impack_error_t ret = ERROR_MALLOC;
 	
 	uint64_t bufsize;
-	if (impack_loadfile(input_file, &buf, &bufsize, 12)) {
-		return ERROR_INPUT_IO;
+	impack_error_t loadres = impack_loadfile(input_file, &buf, &bufsize, 12);
+	if (loadres != ERROR_OK) {
+		return loadres;
 	}
 	memcpy(buf, magic, 12);
 	

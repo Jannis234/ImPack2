@@ -1,3 +1,11 @@
+Version 1.3:
+	- HEIF/HEIC image support (using libheif)
+	- AVIF image support (using libavif)
+	- Change the default file extension for JPEG-LS to .jls
+	- GUI: Hide the option for "strong" compression in simple mode if LZMA2
+	       support is not compiled in
+	- Code redesigns to improve future maintainability
+
 Version 1.2:
 	- JPEG-LS image support (using charls)
 

@@ -182,6 +182,22 @@ const impack_img_format_desc_t impack_img_format_heif = {
 };
 #endif
 
+#ifdef IMPACK_WITH_AVIF
+const uint8_t impack_magic_avif[] = { 0x66, 0x74, 0x79, 0x70, 0x61, 0x76, 0x69, 0x66 };
+const impack_img_format_desc_t impack_img_format_avif = {
+	FORMAT_AVIF,
+	"AVIF",
+	"*.avif",
+	NULL,
+	false,
+	impack_read_img_avif,
+	impack_write_img_avif,
+	impack_magic_avif,
+	8,
+	4
+};
+#endif
+
 const impack_img_format_desc_t *impack_img_formats[] = {
 #ifdef IMPACK_WITH_BMP
 	&impack_img_format_bmp,
@@ -210,6 +226,9 @@ const impack_img_format_desc_t *impack_img_formats[] = {
 #endif
 #ifdef IMPACK_WITH_WEBP
 	&impack_img_format_webp,
+#endif
+#ifdef IMPACK_WITH_AVIF
+	&impack_img_format_avif,
 #endif
 	NULL
 };

@@ -45,7 +45,7 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 			return ERROR_INPUT_IO;
 		}
 		for (int j = 0; j < format_count; j++) {
-			if (i < impack_img_formats[j]->magic_len && i >= impack_img_formats[j]->magic_offset) {
+			if (i < impack_img_formats[j]->magic_len + impack_img_formats[j]->magic_offset && i >= impack_img_formats[j]->magic_offset) {
 				magic_match[j] &= (impack_img_formats[j]->magic[i - impack_img_formats[j]->magic_offset] == magic_buf[i]);
 			}
 			if (i == impack_img_formats[j]->magic_len + impack_img_formats[j]->magic_offset - 1) {

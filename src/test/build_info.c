@@ -43,6 +43,9 @@
 #ifdef IMPACK_WITH_HEIF
 #include <libheif/heif.h>
 #endif
+#ifdef IMPACK_WITH_AVIF
+#include <avif/avif.h>
+#endif
 #ifdef IMPACK_WITH_ZLIB
 #include <zlib.h>
 #endif
@@ -127,6 +130,9 @@ void impack_build_info() {
 #endif
 #ifdef IMPACK_WITH_HEIF
 	printf("  libheif %s / %s\n", LIBHEIF_VERSION, heif_get_version());
+#endif
+#ifdef IMPACK_WITH_AVIF
+	printf("  libavif %d.%d.%d / %s\n", AVIF_VERSION_MAJOR, AVIF_VERSION_MINOR, AVIF_VERSION_PATCH, avifVersion());
 #endif
 #ifdef IMPACK_WITH_ZLIB
 	printf("  zlib: %s / %s\n", ZLIB_VERSION, zlibVersion());

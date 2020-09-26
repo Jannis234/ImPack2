@@ -73,9 +73,7 @@ void impack_build_info() {
 	printf("  Image formats:");
 	int current = 0;
 	while (impack_img_formats[current] != NULL) {
-		if (!impack_img_formats[current]->hidden) {
-			printf(" %s", impack_img_formats[current]->name);
-		}
+		printf(" %s", impack_img_formats[current]->name);
 		current++;
 	}
 #ifdef IMPACK_WITH_COMPRESSION

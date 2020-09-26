@@ -289,14 +289,12 @@ GtkFileChooserDialog* create_open_file_dialog(bool filter) {
 		int i = 0;
 		while (impack_img_formats[i] != NULL) {
 			const impack_img_format_desc_t *current = impack_img_formats[i];
-			if (!current->hidden) {
-				gtk_file_filter_add_pattern(img_filter, current->extension);
-				if (current->extension_alt != NULL) {
-					int j = 0;
-					while (current->extension_alt[j] != NULL) {
-						gtk_file_filter_add_pattern(img_filter, current->extension_alt[j]);
-						j++;
-					}
+			gtk_file_filter_add_pattern(img_filter, current->extension);
+			if (current->extension_alt != NULL) {
+				int j = 0;
+				while (current->extension_alt[j] != NULL) {
+					gtk_file_filter_add_pattern(img_filter, current->extension_alt[j]);
+					j++;
 				}
 			}
 			i++;
@@ -349,11 +347,9 @@ void encode_output_button_click() {
 	int current = 0;
 	char *default_format = NULL;
 	while (impack_img_formats[current] != NULL) {
-		if (!impack_img_formats[current]->hidden) {
-			gtk_combo_box_text_append(cbox, impack_img_formats[current]->extension, impack_img_formats[current]->name);
-			if (impack_default_img_format() == impack_img_formats[current]->id) {
-				default_format = impack_img_formats[current]->extension;
-			}
+		gtk_combo_box_text_append(cbox, impack_img_formats[current]->extension, impack_img_formats[current]->name);
+		if (impack_default_img_format() == impack_img_formats[current]->id) {
+			default_format = impack_img_formats[current]->extension;
 		}
 		current++;
 	}

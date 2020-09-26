@@ -111,9 +111,7 @@ void impack_print_help() {
 	printf("  ");
 	int current = 0;
 	while (impack_img_formats[current] != NULL) {
-		if (!impack_img_formats[current]->hidden) {
-			print_format(impack_img_formats[current]->name, &linelen, current == 0, default_format == impack_img_formats[current]->id);
-		}
+		print_format(impack_img_formats[current]->name, &linelen, current == 0, default_format == impack_img_formats[current]->id);
 		current++;
 	}
 	printf("\n");

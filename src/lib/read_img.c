@@ -45,12 +45,17 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 			return ERROR_INPUT_IO;
 		}
 		for (int j = 0; j < format_count; j++) {
-			if (i < impack_img_formats[j]->magic_len + impack_img_formats[j]->magic_offset && i >= impack_img_formats[j]->magic_offset) {
-				magic_match[j] &= (impack_img_formats[j]->magic[i - impack_img_formats[j]->magic_offset] == magic_buf[i]);
+			const impack_img_format_desc_t *current = impack_img_formats[j];
+			bool match_current = false;
+			if (i < current->magic_len + current->magic_offset && i >= current->magic_offset) {
+				for (int k = 0; k < current->magic_count; k++) {
+					match_current |= (current->magic[(i - current->magic_offset) + (k * current->magic_len)] == magic_buf[i]);
+				}
+				magic_match[j] &= match_current;
 			}
-			if (i == impack_img_formats[j]->magic_len + impack_img_formats[j]->magic_offset - 1) {
+			if (i == current->magic_len + current->magic_offset - 1) {
 				if (magic_match[j]) {
-					impack_error_t res = impack_img_formats[j]->func_read(input_file, magic_buf, pixeldata, pixeldata_size);
+					impack_error_t res = current->func_read(input_file, magic_buf, pixeldata, pixeldata_size);
 					free(magic_buf);
 					return res;
 				}

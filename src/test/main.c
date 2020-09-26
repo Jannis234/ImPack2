@@ -222,9 +222,7 @@ bool test_decode_format(char *msg, char *filename, char *passphrase, bool should
 	int i = 0;
 	while (impack_img_formats[i] != NULL) {
 		const impack_img_format_desc_t *current = impack_img_formats[i];
-		if (!current->hidden) {
-			res &= test_decode_format_run(msg, filename, passphrase, shouldfail, current->name, current->extension + 1);
-		}
+		res &= test_decode_format_run(msg, filename, passphrase, shouldfail, current->name, current->extension + 1);
 		i++;
 	}
 	return res;
@@ -270,9 +268,7 @@ bool test_cycle_format(char *msg, impack_encryption_type_t encrypt, char *passph
 	int i = 0;
 	while (impack_img_formats[i] != NULL) {
 		const impack_img_format_desc_t *current = impack_img_formats[i];
-		if (!current->hidden) {
-			res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, current->id, current->name);
-		}
+		res &= test_cycle_format_run(msg, encrypt, passphrase, compress, width, height, channels, current->id, current->name);
 		i++;
 	}
 	return res;

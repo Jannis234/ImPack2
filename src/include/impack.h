@@ -88,12 +88,12 @@ typedef struct {
 	char *name; // Name displayed in CLI/GUI
 	char *extension; // Default file extension (format "*.ext" used for GTK)
 	const char **extension_alt; // Alternative file extensions for format auto-detection from filename
-	bool hidden; // Exclude from lists in CLI/GUI (used to create alternative entries for the same format)
 	impack_read_img_func_t func_read;
 	impack_write_img_func_t func_write;
 	const uint8_t *magic; // Magic number + length for format auto-detection
 	int magic_len;
 	int magic_offset;
+	int magic_count; // Allows for multiple alternative magic numbers (appended together in one array)
 } impack_img_format_desc_t;
 
 typedef void (*impack_compress_func_generic_t)(void); // These functions use types from impack_internal.h as their arguments/results, so we use a generic type here

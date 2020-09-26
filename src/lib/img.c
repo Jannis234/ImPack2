@@ -27,12 +27,10 @@ const impack_img_format_desc_t impack_img_format_png = {
 	"PNG",
 	"*.png",
 	NULL,
-	false,
 	impack_read_img_png,
 	impack_write_img_png,
 	impack_magic_png,
-	8,
-	0
+	8, 0, 1
 };
 #endif
 
@@ -43,42 +41,28 @@ const impack_img_format_desc_t impack_img_format_webp = {
 	"WebP",
 	"*.webp",
 	NULL,
-	false,
 	impack_read_img_webp,
 	impack_write_img_webp,
 	impack_magic_webp,
-	4,
-	0
+	4, 0, 1
 };
 #endif
 
 #ifdef IMPACK_WITH_TIFF
-const uint8_t impack_magic_tiff_le[] = { 73, 73, 42, 0 };
-const uint8_t impack_magic_tiff_be[] = { 77, 77, 0, 42 };
-const char *impack_extension_alt_tiff[] = { "*.tif", NULL };
-const impack_img_format_desc_t impack_img_format_tiff_le = {
-	FORMAT_TIFF,
-	"TIFF",
-	"*.tiff",
-	impack_extension_alt_tiff,
-	false,
-	impack_read_img_tiff,
-	impack_write_img_tiff,
-	impack_magic_tiff_le,
-	4,
-	0
+const uint8_t impack_magic_tiff[] = {
+	73, 73, 42, 0,
+	77, 77, 0, 42
 };
-const impack_img_format_desc_t impack_img_format_tiff_be = {
+const char *impack_extension_alt_tiff[] = { "*.tif", NULL };
+const impack_img_format_desc_t impack_img_format_tiff = {
 	FORMAT_TIFF,
 	"TIFF",
 	"*.tiff",
 	impack_extension_alt_tiff,
-	true,
 	impack_read_img_tiff,
 	impack_write_img_tiff,
-	impack_magic_tiff_be,
-	4,
-	0
+	impack_magic_tiff,
+	4, 0, 2
 };
 #endif
 
@@ -89,12 +73,10 @@ const impack_img_format_desc_t impack_img_format_bmp = {
 	"BMP",
 	"*.bmp",
 	NULL,
-	false,
 	impack_read_img_bmp,
 	impack_write_img_bmp,
 	impack_magic_bmp,
-	2,
-	0
+	2, 0, 1
 };
 #endif
 
@@ -106,12 +88,10 @@ const impack_img_format_desc_t impack_img_format_jp2k = {
 	"JPEG2000",
 	"*.jp2",
 	impack_extension_alt_jp2k,
-	false,
 	impack_read_img_jp2k,
 	impack_write_img_jp2k,
 	impack_magic_jp2k,
-	12,
-	0
+	12, 0, 1
 };
 #endif
 
@@ -122,12 +102,10 @@ const impack_img_format_desc_t impack_img_format_flif = {
 	"FLIF",
 	"*.flif",
 	NULL,
-	false,
 	impack_read_img_flif,
 	impack_write_img_flif,
 	impack_magic_flif,
-	4,
-	0
+	4, 0, 1
 };
 #endif
 
@@ -139,12 +117,10 @@ const impack_img_format_desc_t impack_img_format_jxr = {
 	"JPEG-XR",
 	"*.jxr",
 	impack_extension_alt_jxr,
-	false,
 	impack_read_img_jxr,
 	impack_write_img_jxr,
 	impack_magic_jxr,
-	8,
-	0
+	8, 0, 1
 };
 #endif
 
@@ -156,12 +132,10 @@ const impack_img_format_desc_t impack_img_format_jpegls = {
 	"JPEG-LS",
 	"*.jls",
 	impack_extension_alt_jpegls,
-	false,
 	impack_read_img_jpegls,
 	impack_write_img_jpegls,
 	impack_magic_jpegls,
-	4,
-	0
+	4, 0, 1
 };
 #endif
 
@@ -173,12 +147,10 @@ const impack_img_format_desc_t impack_img_format_heif = {
 	"HEIF",
 	"*.heic",
 	impack_extension_alt_heif,
-	false,
 	impack_read_img_heif,
 	impack_write_img_heif,
 	impack_magic_heif,
-	8,
-	4
+	8, 4, 1
 };
 #endif
 
@@ -189,16 +161,17 @@ const impack_img_format_desc_t impack_img_format_avif = {
 	"AVIF",
 	"*.avif",
 	NULL,
-	false,
 	impack_read_img_avif,
 	impack_write_img_avif,
 	impack_magic_avif,
-	8,
-	4
+	8, 4, 1
 };
 #endif
 
 const impack_img_format_desc_t *impack_img_formats[] = {
+#ifdef IMPACK_WITH_AVIF
+	&impack_img_format_avif,
+#endif
 #ifdef IMPACK_WITH_BMP
 	&impack_img_format_bmp,
 #endif
@@ -221,14 +194,10 @@ const impack_img_format_desc_t *impack_img_formats[] = {
 	&impack_img_format_png,
 #endif
 #ifdef IMPACK_WITH_TIFF
-	&impack_img_format_tiff_le,
-	&impack_img_format_tiff_be,
+	&impack_img_format_tiff,
 #endif
 #ifdef IMPACK_WITH_WEBP
 	&impack_img_format_webp,
-#endif
-#ifdef IMPACK_WITH_AVIF
-	&impack_img_format_avif,
 #endif
 	NULL
 };

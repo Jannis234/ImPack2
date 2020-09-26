@@ -13,12 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-# Makefile to generate all supported formats from PNG using ImageMagick
-# You don't need to run this
+# Makefile to generate all supported formats from PNG using various tools
+# These files are already commited into the git repository
+# You likely don't need to run this
 
 IMGS = $(shell ls *.png)
 
-all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2) $(IMGS:.png=.flif) $(IMGS:.png=.jxr) $(IMGS:.png=.jls) $(IMGS:.png=.heic)
+all: $(IMGS:.png=.webp) \
+	$(IMGS:.png=.tiff) \
+	$(IMGS:.png=.bmp) \
+	$(IMGS:.png=.jp2) \
+	$(IMGS:.png=.flif) \
+	$(IMGS:.png=.jxr) \
+	$(IMGS:.png=.jls) \
+	$(IMGS:.png=.heic) \
+	$(IMGS:.png=.avif)
 
 %.webp: %.png
 	convert $< -define webp:lossless=true $@
@@ -44,3 +53,6 @@ all: $(IMGS:.png=.webp) $(IMGS:.png=.tiff) $(IMGS:.png=.bmp) $(IMGS:.png=.jp2) $
 
 %.heic: %.png
 	heif-enc $< -o $@ -L -p chroma=444 --matrix_coefficients=0
+
+%.avif: %.png
+	avifenc -l $< -o $@

@@ -43,6 +43,7 @@ impack_error_t impack_loadfile(FILE *f, uint8_t **buf, uint64_t *bufsize, uint64
 	} while (bytes_read == BUFSTEP);
 	*bufsize = *bufsize - BUFSTEP + bytes_read;
 	if (!feof(f)) {
+		free(buf);
 		return ERROR_INPUT_IO;
 	}
 	return ERROR_OK;

@@ -25,6 +25,8 @@
 #include "impack_internal.h"
 #include "img.h"
 
+extern const uint8_t impack_magic_bmp[];
+
 // libnsbmp only does reading, but writing BMP is simple enough
 impack_error_t impack_write_img_bmp(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height) {
 	

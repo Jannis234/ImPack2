@@ -26,7 +26,7 @@
 #include "impack_internal.h"
 #include "img.h"
 
-impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
 	uint8_t *buf;
 	uint64_t bufsize;
@@ -34,7 +34,7 @@ impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t **pixeldata, uint64
 	if (res != ERROR_OK) {
 		return res;
 	}
-	memcpy(buf, impack_magic_jxr, 8);
+	memcpy(buf, magic, 8);
 	
 	impack_error_t ret = ERROR_MALLOC;
 	PKImageDecode *decoder = NULL;

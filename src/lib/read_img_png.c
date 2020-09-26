@@ -24,7 +24,7 @@
 #include <png.h>
 #include "impack.h"
 
-impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+impack_error_t impack_read_img_png(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
 	png_structp read_struct = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (read_struct == NULL) {

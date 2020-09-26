@@ -29,6 +29,8 @@
 
 #define BUFSTEP 131072 // 128 KiB
 
+extern const uint8_t impack_magic_jp2k[];
+
 typedef struct {
 	uint8_t *buf;
 	uint64_t bufsize;

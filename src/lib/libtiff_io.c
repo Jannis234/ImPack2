@@ -35,7 +35,7 @@ uint64_t impack_tiff_filesize;
 uint64_t impack_tiff_fileoff;
 bool impack_tiff_writing;
 
-impack_error_t impack_tiff_init_read(FILE *input_file, bool le) {
+impack_error_t impack_tiff_init_read(FILE *input_file, uint8_t *magic) {
 	
 	TIFFSetErrorHandler(NULL);
 	
@@ -45,11 +45,7 @@ impack_error_t impack_tiff_init_read(FILE *input_file, bool le) {
 		return ERROR_MALLOC;
 	}
 	impack_tiff_filesize = 4;
-	if (le) {
-		memcpy(impack_tiff_filebuf, impack_magic_tiff_le, 4);
-	} else {
-		memcpy(impack_tiff_filebuf, impack_magic_tiff_be, 4);
-	}
+	memcpy(impack_tiff_filebuf, magic, 4);
 	
 	size_t bytes_read;
 	do {

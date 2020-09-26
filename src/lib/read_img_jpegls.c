@@ -26,7 +26,7 @@
 #include "impack_internal.h"
 #include "img.h"
 
-impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
 	impack_error_t err = ERROR_INPUT_IMG_INVALID;
 	charls_jpegls_decoder *dec = NULL;
@@ -38,7 +38,7 @@ impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t **pixeldata, uin
 	if (loadres != ERROR_OK) {
 		return loadres;
 	}
-	memcpy(buf, impack_magic_jpegls, 4);
+	memcpy(buf, magic, 4);
 	
 	dec = charls_jpegls_decoder_create();
 	if (dec == NULL) {

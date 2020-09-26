@@ -80,7 +80,7 @@ typedef enum {
 	FORMAT_HEIF
 } impack_img_format_t;
 
-typedef impack_error_t (*impack_read_img_func_t)(FILE* input_file, uint8_t** pixeldata, uint64_t* pixeldata_size);
+typedef impack_error_t (*impack_read_img_func_t)(FILE* input_file, uint8_t *magic, uint8_t** pixeldata, uint64_t* pixeldata_size);
 typedef impack_error_t (*impack_write_img_func_t)(FILE* output_file, uint8_t* pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 typedef struct {
 	impack_img_format_t id;
@@ -92,6 +92,7 @@ typedef struct {
 	impack_write_img_func_t func_write;
 	const uint8_t *magic; // Magic number + length for format auto-detection
 	int magic_len;
+	int magic_offset;
 } impack_img_format_desc_t;
 
 typedef void (*impack_compress_func_generic_t)(void); // These functions use types from impack_internal.h as their arguments/results, so we use a generic type here

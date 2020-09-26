@@ -27,7 +27,7 @@
 #include "img.h"
 #include "openjpeg_io.h"
 
-impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
 	opj_stream_t *strm = impack_create_opj_stream(input_file, true);
 	if (strm == NULL) {

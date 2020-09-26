@@ -24,9 +24,9 @@
 #include "libtiff_io.h"
 #include <tiffio.h>
 
-impack_error_t impack_read_img_tiff(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size, bool le) {
+impack_error_t impack_read_img_tiff(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
-	impack_error_t res = impack_tiff_init_read(input_file, le);
+	impack_error_t res = impack_tiff_init_read(input_file, magic);
 	if (res != ERROR_OK) {
 		return res;
 	}
@@ -74,18 +74,6 @@ cleanup:
 	impack_tiff_finish_read();
 	free(rgba);
 	return ret;
-	
-}
-
-impack_error_t impack_read_img_tiff_le(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
-	
-	return impack_read_img_tiff(input_file, pixeldata, pixeldata_size, true);
-	
-}
-
-impack_error_t impack_read_img_tiff_be(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
-	
-	return impack_read_img_tiff(input_file, pixeldata, pixeldata_size, false);
 	
 }
 

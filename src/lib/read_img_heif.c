@@ -27,7 +27,7 @@
 #include "impack_internal.h"
 #include "img.h"
 
-impack_error_t impack_read_img_heif(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+impack_error_t impack_read_img_heif(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
 	struct heif_context *ctx = NULL;
 	struct heif_image_handle *handle = NULL;
@@ -39,7 +39,7 @@ impack_error_t impack_read_img_heif(FILE *input_file, uint8_t **pixeldata, uint6
 	if (impack_loadfile(input_file, &buf, &bufsize, 12)) {
 		return ERROR_INPUT_IO;
 	}
-	memcpy(buf, impack_magic_heif, 12);
+	memcpy(buf, magic, 12);
 	
 	ctx = heif_context_alloc();
 	if (ctx == NULL) {

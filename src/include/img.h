@@ -20,27 +20,15 @@
 #include <stdio.h>
 #include "impack.h"
 
-extern const uint8_t impack_magic_png[];
-extern const uint8_t impack_magic_webp[];
-extern const uint8_t impack_magic_tiff_le[];
-extern const uint8_t impack_magic_tiff_be[];
-extern const uint8_t impack_magic_bmp[];
-extern const uint8_t impack_magic_jp2k[];
-extern const uint8_t impack_magic_flif[];
-extern const uint8_t impack_magic_jxr[];
-extern const uint8_t impack_magic_jpegls[];
-extern const uint8_t impack_magic_heif[];
-
-impack_error_t impack_read_img_png(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_tiff_le(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_tiff_be(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_bmp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_flif(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
-impack_error_t impack_read_img_heif(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_png(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_webp(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_tiff(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_bmp(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_jp2k(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_flif(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_jxr(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_jpegls(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
+impack_error_t impack_read_img_heif(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size);
 impack_error_t impack_write_img_png(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 impack_error_t impack_write_img_webp(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);
 impack_error_t impack_write_img_tiff(FILE *output_file, uint8_t *pixeldata, uint64_t pixeldata_size, uint64_t img_width, uint64_t img_height);

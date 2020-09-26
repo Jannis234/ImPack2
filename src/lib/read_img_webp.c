@@ -26,7 +26,7 @@
 #include "impack_internal.h"
 #include "img.h"
 
-impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint64_t *pixeldata_size) {
+impack_error_t impack_read_img_webp(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
 	uint8_t *buf = malloc(12);
 	if (buf == NULL) {
@@ -34,7 +34,7 @@ impack_error_t impack_read_img_webp(FILE *input_file, uint8_t **pixeldata, uint6
 	}
 	impack_error_t ret = ERROR_INPUT_IMG_INVALID;
 	*pixeldata = NULL;
-	memcpy(buf, impack_magic_webp, 4);
+	memcpy(buf, magic, 4);
 	if (fread(buf + 4, 1, 8, input_file) != 8) {
 		ret = ERROR_INPUT_IO;
 		goto cleanup;

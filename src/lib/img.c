@@ -31,7 +31,8 @@ const impack_img_format_desc_t impack_img_format_png = {
 	impack_read_img_png,
 	impack_write_img_png,
 	impack_magic_png,
-	8
+	8,
+	0
 };
 #endif
 
@@ -46,7 +47,8 @@ const impack_img_format_desc_t impack_img_format_webp = {
 	impack_read_img_webp,
 	impack_write_img_webp,
 	impack_magic_webp,
-	4
+	4,
+	0
 };
 #endif
 
@@ -60,10 +62,11 @@ const impack_img_format_desc_t impack_img_format_tiff_le = {
 	"*.tiff",
 	impack_extension_alt_tiff,
 	false,
-	impack_read_img_tiff_le,
+	impack_read_img_tiff,
 	impack_write_img_tiff,
 	impack_magic_tiff_le,
-	4
+	4,
+	0
 };
 const impack_img_format_desc_t impack_img_format_tiff_be = {
 	FORMAT_TIFF,
@@ -71,10 +74,11 @@ const impack_img_format_desc_t impack_img_format_tiff_be = {
 	"*.tiff",
 	impack_extension_alt_tiff,
 	true,
-	impack_read_img_tiff_be,
+	impack_read_img_tiff,
 	impack_write_img_tiff,
 	impack_magic_tiff_be,
-	4
+	4,
+	0
 };
 #endif
 
@@ -89,7 +93,8 @@ const impack_img_format_desc_t impack_img_format_bmp = {
 	impack_read_img_bmp,
 	impack_write_img_bmp,
 	impack_magic_bmp,
-	2
+	2,
+	0
 };
 #endif
 
@@ -105,7 +110,8 @@ const impack_img_format_desc_t impack_img_format_jp2k = {
 	impack_read_img_jp2k,
 	impack_write_img_jp2k,
 	impack_magic_jp2k,
-	12
+	12,
+	0
 };
 #endif
 
@@ -120,7 +126,8 @@ const impack_img_format_desc_t impack_img_format_flif = {
 	impack_read_img_flif,
 	impack_write_img_flif,
 	impack_magic_flif,
-	4
+	4,
+	0
 };
 #endif
 
@@ -136,7 +143,8 @@ const impack_img_format_desc_t impack_img_format_jxr = {
 	impack_read_img_jxr,
 	impack_write_img_jxr,
 	impack_magic_jxr,
-	8
+	8,
+	0
 };
 #endif
 
@@ -152,12 +160,13 @@ const impack_img_format_desc_t impack_img_format_jpegls = {
 	impack_read_img_jpegls,
 	impack_write_img_jpegls,
 	impack_magic_jpegls,
-	4
+	4,
+	0
 };
 #endif
 
 #ifdef IMPACK_WITH_HEIF
-const uint8_t impack_magic_heif[] = { 0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63 };
+const uint8_t impack_magic_heif[] = { 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63 };
 const char *impack_extension_alt_heif[] = { "*.heif", NULL };
 const impack_img_format_desc_t impack_img_format_heif = {
 	FORMAT_HEIF,
@@ -168,7 +177,8 @@ const impack_img_format_desc_t impack_img_format_heif = {
 	impack_read_img_heif,
 	impack_write_img_heif,
 	impack_magic_heif,
-	12
+	8,
+	4
 };
 #endif
 

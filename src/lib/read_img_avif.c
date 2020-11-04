@@ -28,6 +28,10 @@
 #include "impack_internal.h"
 #include "img.h"
 
+#if (AVIF_VERSION < 802)
+#define LIBAVIF_COMPAT_081
+#endif
+
 impack_error_t impack_read_img_avif(FILE *input_file, uint8_t *magic, uint8_t **pixeldata, uint64_t *pixeldata_size) {
 	
 	avifDecoder *dec = NULL;
@@ -40,15 +44,27 @@ impack_error_t impack_read_img_avif(FILE *input_file, uint8_t *magic, uint8_t **
 		return loadres;
 	}
 	memcpy(buf, magic, 12);
+#ifdef LIBAVIF_COMPAT_081
 	avifROData in;
 	in.data = buf;
 	in.size = bufsize;
+#endif
 	
 	dec = avifDecoderCreate();
 	if (dec == NULL) {
 		goto cleanup;
 	}
+#ifndef LIBAVIF_COMPAT_081
+	if (avifDecoderSetIOMemory(dec, buf, bufsize) != AVIF_RESULT_OK) {
+		ret = ERROR_INPUT_IMG_INVALID;
+		goto cleanup;
+	}
+#endif
+#ifdef LIBAVIF_COMPAT_081
 	if (avifDecoderParse(dec, &in) != AVIF_RESULT_OK) {
+#else
+	if (avifDecoderParse(dec) != AVIF_RESULT_OK) {
+#endif
 		ret = ERROR_INPUT_IMG_INVALID;
 		goto cleanup;
 	}

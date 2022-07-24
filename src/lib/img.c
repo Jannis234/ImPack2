@@ -168,6 +168,20 @@ const impack_img_format_desc_t impack_img_format_avif = {
 };
 #endif
 
+#ifdef IMPACK_WITH_JXL
+const uint8_t impack_magic_jxl[] = { 0xFF, 0x0A };
+const impack_img_format_desc_t impack_img_format_jxl = {
+	FORMAT_JXL,
+	"JPEG-XL",
+	"*.jxl",
+	NULL,
+	impack_read_img_jxl,
+	impack_write_img_jxl,
+	impack_magic_jxl,
+	2, 0, 1
+};
+#endif
+
 const impack_img_format_desc_t *impack_img_formats[] = {
 #ifdef IMPACK_WITH_AVIF
 	&impack_img_format_avif,
@@ -183,6 +197,9 @@ const impack_img_format_desc_t *impack_img_formats[] = {
 #endif
 #ifdef IMPACK_WITH_JPEGLS
 	&impack_img_format_jpegls,
+#endif
+#ifdef IMPACK_WITH_JXL
+	&impack_img_format_jxl,
 #endif
 #ifdef IMPACK_WITH_JXR
 	&impack_img_format_jxr,

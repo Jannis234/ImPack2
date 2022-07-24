@@ -35,7 +35,8 @@
 	&& (IMPACK_CONFIG_JXR != 1) \
 	&& (IMPACK_CONFIG_JPEGLS != 1) \
 	&& (IMPACK_CONFIG_HEIF != 1) \
-	&& (IMPACK_CONFIG_AVIF != 1)
+	&& (IMPACK_CONFIG_AVIF != 1) \
+	&& (IMPACK_CONFIG_JXL != 1)
 #error "No image formats selected in config_build.mak"
 #endif
 
@@ -77,6 +78,10 @@
 
 #if (IMPACK_CONFIG_AVIF == 1)
 #define IMPACK_WITH_AVIF
+#endif
+
+#if (IMPACK_CONFIG_JXL == 1)
+#define IMPACK_WITH_JXL
 #endif
 
 #if (IMPACK_CONFIG_ZLIB == 1) \

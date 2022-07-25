@@ -46,6 +46,10 @@
 #ifdef IMPACK_WITH_AVIF
 #include <avif/avif.h>
 #endif
+#ifdef IMPACK_WITH_JXL
+#include <jxl/encode.h>
+#include <jxl/decode.h>
+#endif
 #ifdef IMPACK_WITH_ZLIB
 #include <zlib.h>
 #endif
@@ -131,6 +135,10 @@ void impack_build_info() {
 #endif
 #ifdef IMPACK_WITH_AVIF
 	printf("  libavif %d.%d.%d / %s\n", AVIF_VERSION_MAJOR, AVIF_VERSION_MINOR, AVIF_VERSION_PATCH, avifVersion());
+#endif
+#ifdef IMPACK_WITH_JXL
+	printf("  libjxl decode / %u\n", JxlDecoderVersion());
+	printf("  libjxl encode / %u\n", JxlEncoderVersion());
 #endif
 #ifdef IMPACK_WITH_ZLIB
 	printf("  zlib: %s / %s\n", ZLIB_VERSION, zlibVersion());

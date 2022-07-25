@@ -27,7 +27,8 @@ all: $(IMGS:.png=.webp) \
 	$(IMGS:.png=.jxr) \
 	$(IMGS:.png=.jls) \
 	$(IMGS:.png=.heic) \
-	$(IMGS:.png=.avif)
+	$(IMGS:.png=.avif) \
+	$(IMGS:.png=.jxl)
 
 %.webp: %.png
 	convert $< -define webp:lossless=true $@
@@ -56,3 +57,6 @@ all: $(IMGS:.png=.webp) \
 
 %.avif: %.png
 	avifenc -l $< -o $@
+
+%.jxl: %.png
+	cjxl -d 0 $< $@

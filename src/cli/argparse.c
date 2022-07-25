@@ -47,7 +47,7 @@ bool impack_argparse(impack_argparse_t *options, size_t options_count, char **ar
 				fprintf(stderr, "Unknown argument: %s\n", argv[i]);
 				return false;
 			}
-		} else if (strlen(argv[i]) > 1 && argv[i][0] == '-') {
+		} else if (strlen(argv[i]) == 2 && argv[i][0] == '-') {
 			for (int j = 1; j < strlen(argv[i]); j++) {
 				bool valid = false;
 				for (int k = 0; k < options_count; k++) {

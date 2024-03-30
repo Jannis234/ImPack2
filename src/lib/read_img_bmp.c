@@ -38,12 +38,6 @@ unsigned char* impack_bmp_get_buffer(void *bitmap) {
 	
 }
 
-size_t impack_bmp_get_bpp(void *bitmap) {
-	
-	return 4;
-	
-}
-
 void impack_bmp_destroy(void *bitmap) {
 	
 	free(bitmap);
@@ -63,8 +57,7 @@ impack_error_t impack_read_img_bmp(FILE *input_file, uint8_t *magic, uint8_t **p
 	bmp_bitmap_callback_vt callbacks = {
 		impack_bmp_create,
 		impack_bmp_destroy,
-		impack_bmp_get_buffer,
-		impack_bmp_get_bpp
+		impack_bmp_get_buffer
 	};
 	bmp_image img;
 	bmp_create(&img, &callbacks);

@@ -36,7 +36,6 @@ impack_error_t impack_write_img_jp2k(FILE *output_file, uint8_t *pixeldata, uint
 	memset(cmptparam, 0, sizeof(opj_image_cmptparm_t) * 3);
 	for (int i = 0; i < 3; i++) {
 		cmptparam[i].prec = 8;
-		cmptparam[i].bpp = 8;
 		cmptparam[i].sgnd = 0;
 		cmptparam[i].dx = 1;
 		cmptparam[i].dy = 1;

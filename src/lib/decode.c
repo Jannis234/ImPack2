@@ -161,10 +161,16 @@ impack_error_t impack_decode_stage1(impack_decode_state_t *state, char *input_pa
 	}
 	
 #ifdef IMPACK_WITH_CRYPTO
-	if (state->encryption > ENCRYPTION_TWOFISH) {
+	if (state->encryption > ENCRYPTION_TWOFISH_ARGON2) {
 		ret = ERROR_ENCRYPTION_UNKNOWN;
 		goto cleanup;
 	}
+#ifndef IMPACK_WITH_ARGON2
+	if (state->encryption >= ENCRYPTION_AES_ARGON2 && state->encryption <= ENCRYPTION_TWOFISH_ARGON2) {
+		ret = ERROR_ENCRYPTION_UNSUPPORTED;
+		goto cleanup;
+	}
+#endif
 #else
 	if (state->encryption > ENCRYPTION_NONE) {
 		ret = ERROR_ENCRYPTION_UNAVAILABLE;
@@ -264,7 +270,10 @@ impack_error_t impack_decode_stage2(impack_decode_state_t *state, char *passphra
 			if (!pixelbuf_read(state, decrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE)) {
 				goto cleanup;
 			}
-			impack_derive_key(passphrase, state->crypt_key, IMPACK_CRYPT_KEY_SIZE, decrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE);
+			if (!impack_derive_key(passphrase, state->crypt_key, IMPACK_CRYPT_KEY_SIZE, decrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE, state->encryption)) {
+				ret = ERROR_MALLOC;
+				goto cleanup;
+			}
 			impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 			impack_set_decrypt_key(&decrypt_ctx, state->crypt_key, state->encryption);
 			if (filename_length % IMPACK_CRYPT_BLOCK_SIZE != 0) {

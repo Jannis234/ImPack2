@@ -150,6 +150,9 @@ int main(int argc, char **argv) {
 		{ "encryption-type", 0, true, false, NULL },
 		{ "passphrase", 'p', true, false, NULL },
 		{ "passphrase-file", 0, true, false, NULL },
+#ifdef IMPACK_WITH_ARGON2
+		{ "pbkdf2", 0, false, false, NULL },
+#endif
 #endif
 #ifdef IMPACK_WITH_COMPRESSION
 		{ "compress", 'z', false, false, NULL },
@@ -187,6 +190,9 @@ int main(int argc, char **argv) {
 #ifdef IMPACK_WITH_CRYPTO
 	int option_encrypt = impack_find_option(options, options_count, false, "c");
 	int option_encryption_type = impack_find_option(options, options_count, true, "encryption-type");
+#ifdef IMPACK_WITH_ARGON2
+	int option_pbkdf2 = impack_find_option(options, options_count, true, "pbkdf2");
+#endif
 #endif
 #ifdef IMPACK_WITH_COMPRESSION
 	int option_compress = impack_find_option(options, options_count, false, "z");
@@ -216,6 +222,12 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Can not request encryption when decoding\n");
 			return RETURN_USER_ERROR;
 		}
+#ifdef IMPACK_WITH_ARGON2
+		if (options[option_pbkdf2].found) {
+			fprintf(stderr, "Can not request encryption when decoding\n");
+			return RETURN_USER_ERROR;
+		}
+#endif
 #endif
 #ifdef IMPACK_WITH_COMPRESSION
 		if (options[option_compress].found || options[option_compression_type].found || options[option_compression_level].found) {
@@ -259,6 +271,12 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Can not select the encryption type when encryption is disabled\n");
 		return RETURN_USER_ERROR;
 	}
+#ifdef IMPACK_WITH_ARGON2
+	if (!options[option_encrypt].found && options[option_pbkdf2].found) {
+		fprintf(stderr, "Can not select the encryption type when encryption is disabled\n");
+		return RETURN_USER_ERROR;
+	}
+#endif
 #endif
 #ifdef IMPACK_WITH_COMPRESSION
 	if (!options[option_compress].found) {
@@ -347,9 +365,14 @@ int main(int argc, char **argv) {
 		char *passphrase = NULL;
 #ifdef IMPACK_WITH_CRYPTO
 		if (options[option_encrypt].found) {
-			encrypt = impack_default_encryption();
+#ifdef IMPACK_WITH_ARGON2
+			bool want_pbkdf2 = options[option_pbkdf2].found;
+#else
+			bool want_pbkdf2 = true;
+#endif
+			encrypt = impack_default_encryption(want_pbkdf2);
 			if (options[option_encryption_type].found) {
-				encrypt = impack_select_encryption(options[option_encryption_type].arg_out);
+				encrypt = impack_select_encryption(options[option_encryption_type].arg_out, want_pbkdf2);
 				if (encrypt == ENCRYPTION_NONE) {
 					fprintf(stderr, "Unknown encryption type\n");
 					return RETURN_USER_ERROR;

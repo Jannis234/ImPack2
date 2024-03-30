@@ -85,8 +85,8 @@ impack_error_t impack_read_img(FILE *input_file, uint8_t **pixeldata, uint64_t *
 bool impack_random(uint8_t *dst, size_t count);
 // Zero-out an area of memory, without the compiler optimizing it out
 void impack_secure_erase(uint8_t *buf, size_t len);
-// Derive a key from a passphrase using PBKDF2
-void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
+// Derive a key from a passphrase
+bool impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize, impack_encryption_type_t type);
 void impack_derive_key_legacy(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize);
 #ifdef IMPACK_WITH_CRYPTO
 void impack_set_encrypt_key(impack_crypt_ctx_t *ctx, uint8_t *key, impack_encryption_type_t type);

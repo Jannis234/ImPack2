@@ -163,6 +163,7 @@ endif
 src/include/config_generated.h: config_build.mak src/gen_config.sh
 	sh src/gen_config.sh $(IMPACK_VERSION) \
 		NETTLE $(WITH_NETTLE) \
+		ARGON2 $(WITH_ARGON2) \
 		PNG $(WITH_LIBPNG) \
 		WEBP $(WITH_LIBWEBP) \
 		TIFF $(WITH_LIBTIFF) \

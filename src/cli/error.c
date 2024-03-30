@@ -77,6 +77,9 @@ int impack_print_error(impack_error_t error) {
 		case ERROR_ENCRYPTION_UNAVAILABLE:
 			fprintf(stderr, "The image contains encrypted data, but encryption is unsupported by this build of ImPack2\n");
 			return RETURN_DATA_ERROR;
+		case ERROR_ENCRYPTION_UNSUPPORTED:
+			fprintf(stderr, "The image was encrypted with an algorithm that is unsupported by this build of ImPack2\n");
+			return RETURN_DATA_ERROR;
 		case ERROR_ENCRYPTION_UNKNOWN:
 			fprintf(stderr, "The image was created by an incompatible newer version of ImPack2\n");
 			return RETURN_DATA_ERROR;

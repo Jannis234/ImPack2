@@ -41,6 +41,7 @@ typedef enum {
 	ERROR_CRC, // CRC mismatch after decoding
 	ERROR_RANDOM, // Can't get random data for encryption
 	ERROR_ENCRYPTION_UNAVAILABLE, // Image encrypted, but encryption not compiled in
+	ERROR_ENCRYPTION_UNSUPPORTED, // Equired encryption algorithm not compiled in
 	ERROR_ENCRYPTION_UNKNOWN, // Unknown encryption algorithm
 	ERROR_COMPRESSION_UNAVAILABLE, // Compression not compiled in at all
 	ERROR_COMPRESSION_UNSUPPORTED, // Required compression algorithm not compiled in
@@ -52,10 +53,14 @@ typedef enum {
 
 typedef enum {
 	ENCRYPTION_NONE = 0,
-	ENCRYPTION_AES = 1,
+	ENCRYPTION_AES = 1, // Original variants, PBKDF2
 	ENCRYPTION_CAMELLIA = 2,
 	ENCRYPTION_SERPENT = 3,
-	ENCRYPTION_TWOFISH = 4
+	ENCRYPTION_TWOFISH = 4,
+	ENCRYPTION_AES_ARGON2 = 5,
+	ENCRYPTION_CAMELLIA_ARGON2 = 6,
+	ENCRYPTION_SERPENT_ARGON2 = 7,
+	ENCRYPTION_TWOFISH_ARGON2 = 8
 } impack_encryption_type_t;
 
 typedef enum {
@@ -148,8 +153,8 @@ impack_img_format_t impack_select_img_format(char *name, bool fileextension);
 impack_img_format_t impack_default_img_format();
 impack_compression_type_t impack_select_compression(char *name);
 impack_compression_type_t impack_default_compression();
-impack_encryption_type_t impack_select_encryption(char *name);
-impack_encryption_type_t impack_default_encryption();
+impack_encryption_type_t impack_select_encryption(char *name, bool force_pbkdf2);
+impack_encryption_type_t impack_default_encryption(bool force_pbkdf2);
 
 bool impack_compress_level_valid(impack_compression_type_t type, int32_t level);
 

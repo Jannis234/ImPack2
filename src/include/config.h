@@ -26,6 +26,13 @@
 #define IMPACK_WITH_CRYPTO
 #endif
 
+#if (IMPACK_CONFIG_ARGON2 == 1)
+#define IMPACK_WITH_ARGON2
+#ifndef IMPACK_WITH_CRYPTO
+#warning "Enabling Argon2 support while encryption/nettle support is disabled has no effect!"
+#endif
+#endif
+
 #if (IMPACK_CONFIG_PNG != 1) \
 	&& (IMPACK_CONFIG_WEBP != 1) \
 	&& (IMPACK_CONFIG_TIFF != 1) \

@@ -78,6 +78,10 @@ void impack_print_help() {
 	printf("                       scripting)\n");
 	printf("                       This will only read the first line from that file\n");
 	printf("  --encryption-type:   Select the encryption algorithm that will be used\n");
+#ifdef IMPACK_WITH_ARGON2
+	printf("  --pbkdf2:            Use the older PBKDF2 algorithm for key derivation\n");
+	printf("                       instead of Argon2\n");
+#endif
 	printf("\n");
 #endif
 #ifdef IMPACK_WITH_COMPRESSION

@@ -47,6 +47,11 @@ CFLAGS += $(shell $(PKG_CONFIG) --cflags nettle)
 LIBS += $(shell $(PKG_CONFIG) --libs nettle)
 endif
 
+ifeq ($(WITH_ARGON2), 1)
+CFLAGS += $(shell $(PKG_CONFIG) --cflags libargon2)
+LIBS += $(shell $(PKG_CONFIG) --libs libargon2)
+endif
+
 ifeq ($(WITH_CHARLS), 1)
 LIBS += -lcharls
 endif

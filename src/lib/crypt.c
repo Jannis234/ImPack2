@@ -15,12 +15,18 @@
 
 #include "config.h"
 
+#define IMPACK_WITH_CRYPTO
+#define IMPACK_WITH_ARGON2
+
 #ifdef IMPACK_WITH_CRYPTO
 
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef IMPACK_WITH_ARGON2
+#include <argon2.h>
+#endif
 #include <nettle/aes.h>
 #include <nettle/camellia.h>
 #include <nettle/cbc.h>
@@ -31,13 +37,40 @@
 #include "impack.h"
 #include "impack_internal.h"
 
+#define ARGON2_ITERATIONS 10
+#define ARGON2_MEMORY (1 << 17) // 128 MiB
+#define ARGON2_PARALLEL 1
 #define PBKDF2_ITERATIONS 100000
 
-void impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize) {
+bool impack_derive_key(char *passphrase, uint8_t *keyout, size_t keysize, uint8_t *salt, size_t saltsize, impack_encryption_type_t type) {
 	
-	struct hmac_sha512_ctx ctx;
-	hmac_sha512_set_key(&ctx, strlen(passphrase), (uint8_t*) passphrase);
-	PBKDF2(&ctx, hmac_sha512_update, hmac_sha512_digest, SHA512_DIGEST_SIZE, PBKDF2_ITERATIONS, saltsize, salt, keysize, keyout);
+	if (type >= ENCRYPTION_AES_ARGON2 && type <= ENCRYPTION_TWOFISH_ARGON2) {
+#ifdef IMPACK_WITH_ARGON2
+		argon2_context ctx = {
+			keyout, keysize,
+			(uint8_t*) passphrase, strlen(passphrase),
+			salt, saltsize,
+			NULL, 0, // Secret
+			NULL, 0, // AD
+			ARGON2_ITERATIONS, ARGON2_MEMORY, ARGON2_PARALLEL, ARGON2_PARALLEL,
+			ARGON2_VERSION_13,
+			NULL, NULL, // Custom memory allocator
+			ARGON2_DEFAULT_FLAGS
+		};
+		
+		if (argon2id_ctx(&ctx) != ARGON2_OK) {
+			return false;
+		}
+#else
+		abort(); // This should not get called when argon2 support isn't compiled in
+#endif
+	} else {
+		struct hmac_sha512_ctx ctx;
+		hmac_sha512_set_key(&ctx, strlen(passphrase), (uint8_t*) passphrase);
+		PBKDF2(&ctx, hmac_sha512_update, hmac_sha512_digest, SHA512_DIGEST_SIZE, PBKDF2_ITERATIONS, saltsize, salt, keysize, keyout);
+	}
+	
+	return true;
 	
 }
 
@@ -53,15 +86,19 @@ void impack_set_encrypt_key(impack_crypt_ctx_t *ctx, uint8_t *key, impack_encryp
 	
 	switch (type) {
 		case ENCRYPTION_AES:
+		case ENCRYPTION_AES_ARGON2:
 			aes256_set_encrypt_key(&ctx->aes, key);
 			break;
 		case ENCRYPTION_CAMELLIA:
+		case ENCRYPTION_CAMELLIA_ARGON2:
 			camellia256_set_encrypt_key(&ctx->camellia, key);
 			break;
 		case ENCRYPTION_SERPENT:
+		case ENCRYPTION_SERPENT_ARGON2:
 			serpent_set_key(&ctx->serpent, IMPACK_CRYPT_KEY_SIZE, key);
 			break;
 		case ENCRYPTION_TWOFISH:
+		case ENCRYPTION_TWOFISH_ARGON2:
 			twofish_set_key(&ctx->twofish, IMPACK_CRYPT_KEY_SIZE, key);
 			break;
 		default:
@@ -74,15 +111,19 @@ void impack_set_decrypt_key(impack_crypt_ctx_t *ctx, uint8_t *key, impack_encryp
 	
 	switch (type) {
 		case ENCRYPTION_AES:
+		case ENCRYPTION_AES_ARGON2:
 			aes256_set_decrypt_key(&ctx->aes, key);
 			break;
 		case ENCRYPTION_CAMELLIA:
+		case ENCRYPTION_CAMELLIA_ARGON2:
 			camellia256_set_decrypt_key(&ctx->camellia, key);
 			break;
 		case ENCRYPTION_SERPENT:
+		case ENCRYPTION_SERPENT_ARGON2:
 			serpent_set_key(&ctx->serpent, IMPACK_CRYPT_KEY_SIZE, key);
 			break;
 		case ENCRYPTION_TWOFISH:
+		case ENCRYPTION_TWOFISH_ARGON2:
 			twofish_set_key(&ctx->twofish, IMPACK_CRYPT_KEY_SIZE, key);
 			break;
 		default:
@@ -97,18 +138,22 @@ void impack_encrypt(impack_crypt_ctx_t *ctx, uint8_t *data, uint64_t length, imp
 	nettle_cipher_func *f;
 	switch (type) {
 		case ENCRYPTION_AES:
+		case ENCRYPTION_AES_ARGON2:
 			nettle_ctx = &ctx->aes;
 			f = (nettle_cipher_func*) aes256_encrypt;
 			break;
 		case ENCRYPTION_CAMELLIA:
+		case ENCRYPTION_CAMELLIA_ARGON2:
 			nettle_ctx = &ctx->camellia;
 			f = (nettle_cipher_func*) camellia256_crypt;
 			break;
 		case ENCRYPTION_SERPENT:
+		case ENCRYPTION_SERPENT_ARGON2:
 			nettle_ctx = &ctx->serpent;
 			f = (nettle_cipher_func*) serpent_encrypt;
 			break;
 		case ENCRYPTION_TWOFISH:
+		case ENCRYPTION_TWOFISH_ARGON2:
 			nettle_ctx = &ctx->twofish;
 			f = (nettle_cipher_func*) twofish_encrypt;
 			break;
@@ -125,18 +170,22 @@ void impack_decrypt(impack_crypt_ctx_t *ctx, uint8_t *data, uint64_t length, imp
 	nettle_cipher_func *f;
 	switch (type) {
 		case ENCRYPTION_AES:
+		case ENCRYPTION_AES_ARGON2:
 			nettle_ctx = &ctx->aes;
 			f = (nettle_cipher_func*) aes256_decrypt;
 			break;
 		case ENCRYPTION_CAMELLIA:
+		case ENCRYPTION_CAMELLIA_ARGON2:
 			nettle_ctx = &ctx->camellia;
 			f = (nettle_cipher_func*) camellia256_crypt;
 			break;
 		case ENCRYPTION_SERPENT:
+		case ENCRYPTION_SERPENT_ARGON2:
 			nettle_ctx = &ctx->serpent;
 			f = (nettle_cipher_func*) serpent_decrypt;
 			break;
 		case ENCRYPTION_TWOFISH:
+		case ENCRYPTION_TWOFISH_ARGON2:
 			nettle_ctx = &ctx->twofish;
 			f = (nettle_cipher_func*) twofish_decrypt;
 			break;

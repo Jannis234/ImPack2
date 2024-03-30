@@ -23,6 +23,8 @@ WITH_GTK = 1
 
 # Encryption support
 WITH_NETTLE = 1
+# Argon2 passphrase hashing support, highly recommended
+WITH_ARGON2 = 1
 
 # Image formats, at least one must be enabled
 # Default output format, you likely want to enable this

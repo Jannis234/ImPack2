@@ -136,26 +136,50 @@ impack_compression_type_t impack_default_compression() {
 }
 #endif
 
-impack_encryption_type_t impack_select_encryption(char *name) {
+impack_encryption_type_t impack_select_encryption(char *name, bool force_pbkdf2) {
 	
 	if (compare_case(name, "aes")) {
-		return ENCRYPTION_AES;
+		if (force_pbkdf2) {
+			return ENCRYPTION_AES;
+		} else {
+			return ENCRYPTION_AES_ARGON2;
+		}
 	}
 	if (compare_case(name, "serpent")) {
-		return ENCRYPTION_SERPENT;
+		if (force_pbkdf2) {
+			return ENCRYPTION_SERPENT;
+		} else {
+			return ENCRYPTION_SERPENT_ARGON2;
+		}
 	}
 	if (compare_case(name, "twofish")) {
-		return ENCRYPTION_TWOFISH;
+		if (force_pbkdf2) {
+			return ENCRYPTION_TWOFISH;
+		} else {
+			return ENCRYPTION_TWOFISH_ARGON2;
+		}
 	}
 	if (compare_case(name, "camellia")) {
-		return ENCRYPTION_CAMELLIA;
+		if (force_pbkdf2) {
+			return ENCRYPTION_CAMELLIA;
+		} else {
+			return ENCRYPTION_CAMELLIA_ARGON2;
+		}
 	}
 	return ENCRYPTION_NONE;
 	
 }
 
-impack_encryption_type_t impack_default_encryption() {
+impack_encryption_type_t impack_default_encryption(bool force_pbkdf2) {
 	
+#ifdef IMPACK_WITH_ARGON2
+	if (force_pbkdf2) {
+		return ENCRYPTION_AES;
+	} else {
+		return ENCRYPTION_AES_ARGON2;
+	}
+#else
 	return ENCRYPTION_AES;
+#endif
 	
 }

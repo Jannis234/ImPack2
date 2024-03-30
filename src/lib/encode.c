@@ -164,7 +164,9 @@ impack_error_t impack_encode(char *input_path, char *output_path, impack_encrypt
 			goto cleanup;
 		}
 		uint8_t key[IMPACK_CRYPT_KEY_SIZE];
-		impack_derive_key(passphrase, key, IMPACK_CRYPT_KEY_SIZE, encrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE);
+		if (!impack_derive_key(passphrase, key, IMPACK_CRYPT_KEY_SIZE, encrypt_ctx.iv, IMPACK_CRYPT_BLOCK_SIZE, encrypt)) {
+			goto cleanup;
+		}
 		impack_set_encrypt_key(&encrypt_ctx, key, encrypt);
 		impack_secure_erase((uint8_t*) passphrase, strlen(passphrase));
 		impack_secure_erase(key, IMPACK_CRYPT_KEY_SIZE);

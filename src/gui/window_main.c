@@ -466,6 +466,9 @@ void show_impack_error(impack_error_t error, bool maybe_passphrase) {
 		case ERROR_ENCRYPTION_UNAVAILABLE:
 			msg = "The image contains encrypted data, but encryption is unsupported by this build of ImPack2";
 			break;
+		case ERROR_ENCRYPTION_UNSUPPORTED:
+			msg = "The image was encrypted with an algorithm that is unsupported by this build of ImPack2";
+			break;
 		case ERROR_ENCRYPTION_UNKNOWN:
 			msg = "The image was created by an incompatible newer version of ImPack2";
 			break;
@@ -552,9 +555,14 @@ void encode_button_click() {
 		}
 		strcpy(encode_params.passphrase, passphrase);
 		if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(adv_box))) {
-			encode_params.encrypt = impack_select_encryption((char*) gtk_combo_box_get_active_id(GTK_COMBO_BOX(encrypt_type_box)));
+#ifdef IMPACK_WITH_ARGON2
+			bool want_pbkdf2 = false;
+#else
+			bool want_pbkdf2 = true;
+#endif
+			encode_params.encrypt = impack_select_encryption((char*) gtk_combo_box_get_active_id(GTK_COMBO_BOX(encrypt_type_box)), want_pbkdf2);
 		} else {
-			encode_params.encrypt = impack_default_encryption();
+			encode_params.encrypt = impack_default_encryption(false);
 		}
 	}
 	encode_params.compress = COMPRESSION_NONE;

@@ -13,34 +13,39 @@
 # You should have received a copy of the GNU General Public License
 # along with ImPack2. If not, see <http://www.gnu.org/licenses/>.
 
-#IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
-IMPACK_VERSION = 1.4
+IMPACK_VERSION = git-$(shell git rev-parse --short HEAD)
 
 # Options to control features that need additional dependencies
 # Change any option to 0 to disable it
 
-# Enable or disable building the GUI
+# Build the GUI
 WITH_GTK = 1
 
-# Required to create and unpack an image with encrypted data
+# Encryption support
 WITH_NETTLE = 1
 
 # Image formats, at least one must be enabled
+# Default output format, you likely want to enable this
+WITH_LIBPNG = 1
+# Other, less common formats
 WITH_CHARLS = 1
-WITH_FLIF = 1
-WITH_JXRLIB = 1
 WITH_LIBAVIF = 1
 WITH_LIBHEIF = 1
 WITH_LIBJXL = 1
 WITH_LIBNSBMP = 1
-WITH_LIBPNG = 1
 WITH_LIBTIFF = 1
 WITH_LIBWEBP = 1
 WITH_OPENJPEG2 = 1
+# Deprecated, unmaintained formats and libraries; recommended to leave these off
+WITH_FLIF = 0
+WITH_JXRLIB = 0
 
-# Compression algorithms
+# Compression support
+# Default algorithm, recommended to enable this
+WITH_ZSTD = 1
+# When enabled, appears in the GUI as "strong" compression
+WITH_LZMA = 1
+# Other alternatives
 WITH_BROTLI = 1
 WITH_BZIP2 = 1
-WITH_LZMA = 1
 WITH_ZLIB = 1
-WITH_ZSTD = 1

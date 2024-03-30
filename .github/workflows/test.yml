@@ -1,0 +1,33 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools and dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential help2man
+          apt-get install -y --no-install-recommends nettle-dev libpng-dev libcharls-dev libavif-dev libheif-dev libtiff-dev libwebp-dev libopenjp2-7-dev libjxr-dev libzstd-dev liblzma-dev libbrotli-dev libbz2-dev zlib1g-dev libgtk-3-dev
+      - name: Build
+        # Disable nsbmp since it's not available in ubuntu
+        # libjxl is not yet available in ubuntu-latest
+        # Also test with jxrlib since it's available
+        run: |
+          cd ${{github.workspace}}
+          make WITH_LIBNSBMP=0 WITH_LIBJXL=0 WITH_JXRLIB=1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: impack-debug
+          path: |
+            ${{github.workspace}}/impack
+            ${{github.workspace}}/impack-gtk
+      - name: Run testsuite
+        run: |
+          cd ${{github.workspace}}
+          make WITH_LIBNSBMP=0 WITH_LIBJXL=0 WITH_JXRLIB=1 check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: impack-testsuite-debug
+          path: ${{github.workspace}}/testsuite

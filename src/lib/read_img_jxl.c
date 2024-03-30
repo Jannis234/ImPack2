@@ -112,7 +112,7 @@ impack_error_t impack_read_img_jxl(FILE *input_file, uint8_t *magic, uint8_t **p
 		size_t remaining = JxlDecoderReleaseInput(dec);
 		if (remaining > 0) {
 			if (remaining != bufpos) { // If the decoder consumed data, move the remaining bytes to the beginning of the buffer
-				memmove(buf, buf + bufsize - remaining, remaining);
+				memmove(buf, buf + bufpos - remaining, remaining);
 			}
 			bufpos = remaining;
 		} else {

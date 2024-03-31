@@ -21,11 +21,12 @@ Check the files `config_build.mak` and `config_system.mak` for any customizable 
 ImPack2 can make use of the following dependencies (can be toggled on or off in `config_build.mak`)
 * [gtk3](https://www.gtk.org/) - For the ImPack2 GUI
 * [nettle](http://www.lysator.liu.se/~nisse/nettle/) - For encryption
+* [argon2](https://github.com/P-H-C/phc-winner-argon2) - For password hashing during encryption
 * [charls](https://github.com/team-charls/charls) - To read/write JPEG-LS images
-* [jxrlib](https://archive.codeplex.com/?p=jxrlib) - To read/write JPEG XR images
+* [jxrlib](https://github.com/4creators/jxrlib) - To read/write JPEG XR images
 * [libavif](https://github.com/AOMediaCodec/libavif) - To read/write AVIF images
 * [libflif](https://flif.info/) - To read/write FLIF images
-* [libheif](https://github.com/strukturag/libheif) - To read/write HEIF images (version 1.9.0 or later highly recommended)
+* [libheif](https://github.com/strukturag/libheif) - To read/write HEIF images
 * [libjxl](https://github.com/libjxl/libjxl) - To read/write JPEG-XL images
 * [libnsbmp](http://www.netsurf-browser.org/projects/libnsbmp/) - To read BMP images
 * [libpng](http://www.libpng.org/) - To read/write PNG images
@@ -37,6 +38,10 @@ ImPack2 can make use of the following dependencies (can be toggled on or off in 
 * [liblzma](https://tukaani.org/xz/) - For LZMA2 compression
 * [zlib](https://zlib.net/) - For deflate compression
 * [zstd](https://facebook.github.io/zstd/) - For Zstandard compression
+
+If unsure, it is recommended to enable at least libpng to support a commonly used image format.
+For compression, at least zstd and liblzma are recommended as zstd is the default choice when enabling compression and LZMA2 is suggested by the GUI for maximum compression.
+For encryption, nettle is required and argon2 is highly recommended for higher security.
 
 ## Usage examples
 

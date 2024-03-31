@@ -15,9 +15,6 @@
 
 #include "config.h"
 
-#define IMPACK_WITH_CRYPTO
-#define IMPACK_WITH_ARGON2
-
 #ifdef IMPACK_WITH_CRYPTO
 
 #include <stddef.h>

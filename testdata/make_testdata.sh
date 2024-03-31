@@ -164,10 +164,10 @@ for i in *.png; do
 	echo_and_run $CONVERT $i -define webp:lossless=true ${i%png}webp
 	echo_and_run $CONVERT $i ${i%png}tiff
 	echo_and_run $CONVERT $i ${i%png}jp2
-	echo_and_run $CONVERT $i ${i%png}bmp3 # Force the old-style BMP format
+	echo_and_run $CONVERT $i -type TrueColor ${i%png}bmp3 # Don't write indexed BMPs
 	echo_and_run mv ${i%png}bmp3 ${i%png}bmp
 	echo_and_run flif --overwrite -e $i ${i%png}flif
-	echo_and_run JxrEncApp -q 1 -i $i -o ${i%png}jxr
+	echo_and_run JxrEncApp -q 1 -i ${i%png}bmp -o ${i%png}jxr
 	echo_and_run ffmpeg -loglevel -8 -y -i $i -c:v jpegls ${i%png}jls
 	echo_and_run heif-enc $i -o ${i%png}heic -L -p chroma=444 --matrix_coefficients=0
 	echo_and_run avifenc -l $i -o ${i%png}avif

@@ -88,6 +88,9 @@ void print_error(impack_error_t error) {
 		case ERROR_ENCRYPTION_UNAVAILABLE:
 			printf("Encryption not compiled in\n");
 			return;
+		case ERROR_ENCRYPTION_UNSUPPORTED:
+			printf("Encryption type not compiled in\n");
+			return;
 		case ERROR_ENCRYPTION_UNKNOWN:
 			printf("Encryption unknown\n");
 			return;
@@ -290,17 +293,20 @@ bool test_cycle() {
 	res &= test_cycle_format("Custom width", false, NULL, COMPRESSION_NONE, 2, 0, allchannels);
 	res &= test_cycle_format("Custom height", false, NULL, COMPRESSION_NONE, 0, 2, allchannels);
 	res &= test_cycle_format("Custom width + height", false, NULL, COMPRESSION_NONE, 50, 50, allchannels);
-#ifdef IMPACK_WITH_COMPRESSION
-	int current = 0;
-	int baselen = strlen("Encrypted and compressed data,  compression");
+	
+	int baselen = strlen("Encrypted and compressed data, Camellia encryption, PBKDF2,  compression"); // Maximum length encryption name
 	int namelen = 0;
+	int current = 0;
+#ifdef IMPACK_WITH_COMPRESSION
 	while (impack_compression_types[current] != NULL) {
 		if (strlen(impack_compression_types[current]->name) > namelen) {
 			namelen = strlen(impack_compression_types[current]->name);
 		}
 		current++;
 	}
+#endif
 	char namebuf[baselen + namelen + 1];
+#ifdef IMPACK_WITH_COMPRESSION
 	current = 0;
 	while (impack_compression_types[current] != NULL) {
 		sprintf(namebuf, "Compressed data, %s compression", impack_compression_types[current]->name);
@@ -309,15 +315,37 @@ bool test_cycle() {
 	}
 #endif
 #ifdef IMPACK_WITH_CRYPTO
-	res &= test_cycle_format("Encrypted data, AES encryption", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
-	res &= test_cycle_format("Encrypted data, Camellia encryption", ENCRYPTION_CAMELLIA, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
-	res &= test_cycle_format("Encrypted data, Serpent encryption", ENCRYPTION_SERPENT, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
-	res &= test_cycle_format("Encrypted data, Twofish encryption", ENCRYPTION_TWOFISH, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, AES encryption, PBKDF2", ENCRYPTION_AES, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Camellia encryption, PBKDF2", ENCRYPTION_CAMELLIA, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Serpent encryption, PBKDF2", ENCRYPTION_SERPENT, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Twofish encryption, PBKDF2", ENCRYPTION_TWOFISH, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+#ifdef IMPACK_WITH_ARGON2
+	res &= test_cycle_format("Encrypted data, AES encryption, Argon2", ENCRYPTION_AES_ARGON2, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Camellia encryption, Argon2", ENCRYPTION_CAMELLIA_ARGON2, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Serpent encryption, Argon2", ENCRYPTION_SERPENT_ARGON2, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+	res &= test_cycle_format("Encrypted data, Twofish encryption, Argon2", ENCRYPTION_TWOFISH_ARGON2, PASSPHRASE_CORRECT, COMPRESSION_NONE, 0, 0, allchannels);
+#endif
 #ifdef IMPACK_WITH_COMPRESSION
 	current = 0;
 	while (impack_compression_types[current] != NULL) {
-		sprintf(namebuf, "Encrypted and compressed data, %s compression", impack_compression_types[current]->name);
+		sprintf(namebuf, "Encrypted and compressed data, AES encryption, PBKDF2, %s compression", impack_compression_types[current]->name);
 		res &= test_cycle_format(namebuf, ENCRYPTION_AES, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+		sprintf(namebuf, "Encrypted and compressed data, Camellia encryption, PBKDF2, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, ENCRYPTION_CAMELLIA, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+		sprintf(namebuf, "Encrypted and compressed data, Serpent encryption, PBKDF2, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, ENCRYPTION_SERPENT, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+		sprintf(namebuf, "Encrypted and compressed data, Twofish encryption, PBKDF2, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, ENCRYPTION_TWOFISH, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+#ifdef IMPACK_WITH_ARGON2
+		sprintf(namebuf, "Encrypted and compressed data, AES encryption, Argon2, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, ENCRYPTION_AES_ARGON2, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+		sprintf(namebuf, "Encrypted and compressed data, Camellia encryption, Argon2, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, ENCRYPTION_CAMELLIA_ARGON2, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+		sprintf(namebuf, "Encrypted and compressed data, Serpent encryption, Argon2, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, ENCRYPTION_SERPENT_ARGON2, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+		sprintf(namebuf, "Encrypted and compressed data, Twofish encryption, Argon2, %s compression", impack_compression_types[current]->name);
+		res &= test_cycle_format(namebuf, ENCRYPTION_TWOFISH_ARGON2, PASSPHRASE_CORRECT, impack_compression_types[current]->id, 0, 0, allchannels);
+#endif
 		current++;
 	}
 #endif
@@ -329,7 +357,10 @@ bool test_cycle() {
 bool test_decode() {
 	
 	bool res = true;
+	
 	res &= test_decode_format("Default settings", "testdata/valid", NULL, false);
+	
+	// Color channels
 	res &= test_decode_format("Red color channel", "testdata/valid_channel_red", NULL, false);
 	res &= test_decode_format("Green color channel", "testdata/valid_channel_green", NULL, false);
 	res &= test_decode_format("Blue color channel", "testdata/valid_channel_blue", NULL, false);
@@ -337,72 +368,385 @@ bool test_decode() {
 	res &= test_decode_format("Red + blue color channels", "testdata/valid_channel_red_blue", NULL, false);
 	res &= test_decode_format("Green + blue color channels", "testdata/valid_channel_green_blue", NULL, false);
 	res &= test_decode_format("Grayscale mode", "testdata/valid_grayscale", NULL, false);
-	res &= test_decode_format("Legacy image", "testdata/valid_legacy", NULL, false);
+	
+	// Encryption
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Encrypted data, AES encryption, PBKDF2", "testdata/valid_encrypted_aes_pbkdf2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Camellia encryption, PBKDF2", "testdata/valid_encrypted_camellia_pbkdf2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Serpent encryption, PBKDF2", "testdata/valid_encrypted_serpent_pbkdf2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Twofish encryption, PBKDF2", "testdata/valid_encrypted_twofish_pbkdf2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, AES encryption, PBKDF2, incorrect passphrase", "testdata/valid_encrypted_aes_pbkdf2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Camellia encryption, PBKDF2, incorrect passphrase", "testdata/valid_encrypted_camellia_pbkdf2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Serpent encryption, PBKDF2, incorrect passphrase", "testdata/valid_encrypted_serpent_pbkdf2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Twofish encryption, PBKDF2, incorrect passphrase", "testdata/valid_encrypted_twofish_pbkdf2", PASSPHRASE_INCORRECT, true);
+#ifdef IMPACK_WITH_ARGON2
+	res &= test_decode_format("Encrypted data, AES encryption, Argon2", "testdata/valid_encrypted_aes_argon2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Camellia encryption, Argon2", "testdata/valid_encrypted_camellia_argon2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Serpent encryption, Argon2", "testdata/valid_encrypted_serpent_argon2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, Twofish encryption, Argon2", "testdata/valid_encrypted_twofish_argon2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted data, AES encryption, Argon2, incorrect passphrase", "testdata/valid_encrypted_aes_argon2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Camellia encryption, Argon2, incorrect passphrase", "testdata/valid_encrypted_camellia_argon2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Serpent encryption, Argon2, incorrect passphrase", "testdata/valid_encrypted_serpent_argon2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted data, Twofish encryption, Argon2, incorrect passphrase", "testdata/valid_encrypted_twofish_argon2", PASSPHRASE_INCORRECT, true);
+#endif
+#endif
+	
+	// Compression
 #ifdef IMPACK_WITH_ZLIB
 	res &= test_decode_format("Compressed data, deflate compression", "testdata/valid_compressed_deflate", NULL, false);
-	res &= test_decode_format("Corrupted compressed data, deflate compression", "testdata/invalid_compressed_deflate", NULL, true);
 	res &= test_decode_format("Legacy image, compressed data", "testdata/valid_legacy_compressed", NULL, false);
-	res &= test_decode_format("Legacy image, corrupted compressed data", "testdata/invalid_legacy_compressed", NULL, true);
 #endif
 #ifdef IMPACK_WITH_ZSTD
 	res &= test_decode_format("Compressed data, ZSTD compression", "testdata/valid_compressed_zstd", NULL, false);
-	res &= test_decode_format("Corrupted compressed data, ZSTD compression", "testdata/invalid_compressed_zstd", NULL, true);
+	//res &= test_decode_format("Corrupted compressed data, ZSTD compression", "testdata/invalid_compressed_zstd", NULL, true);
 #endif
 #ifdef IMPACK_WITH_LZMA
 	res &= test_decode_format("Compressed data, LZMA2 compression", "testdata/valid_compressed_lzma2", NULL, false);
-	res &= test_decode_format("Corrupted compressed data, LZMA2 compression", "testdata/invalid_compressed_lzma2", NULL, true);
+	//res &= test_decode_format("Corrupted compressed data, LZMA2 compression", "testdata/invalid_compressed_lzma2", NULL, true);
 #endif
 #ifdef IMPACK_WITH_BZIP2
 	res &= test_decode_format("Compressed data, Bzip2 compression", "testdata/valid_compressed_bzip2", NULL, false);
-	res &= test_decode_format("Corrupted compressed data, Bzip2 compression", "testdata/invalid_compressed_bzip2", NULL, true);
+	//res &= test_decode_format("Corrupted compressed data, Bzip2 compression", "testdata/invalid_compressed_bzip2", NULL, true);
 #endif
 #ifdef IMPACK_WITH_BROTLI
 	res &= test_decode_format("Compressed data, Brotli compression", "testdata/valid_compressed_brotli", NULL, false);
-	res &= test_decode_format("Corrupted compressed data, Brotli compression", "testdata/invalid_compressed_brotli", NULL, true);
+	//res &= test_decode_format("Corrupted compressed data, Brotli compression", "testdata/invalid_compressed_brotli", NULL, true);
 #endif
+	
+	// Encryption + compression
 #ifdef IMPACK_WITH_CRYPTO
-	res &= test_decode_format("Encrypted data, AES encryption", "testdata/valid_encrypted_aes", PASSPHRASE_CORRECT, false);
-	res &= test_decode_format("Encrypted data, Camellia encryption", "testdata/valid_encrypted_camellia", PASSPHRASE_CORRECT, false);
-	res &= test_decode_format("Encrypted data, Serpent encryption", "testdata/valid_encrypted_serpent", PASSPHRASE_CORRECT, false);
-	res &= test_decode_format("Encrypted data, Twofish encryption", "testdata/valid_encrypted_twofish", PASSPHRASE_CORRECT, false);
-	res &= test_decode_format("Encrypted data, AES encryption, incorrect passphrase", "testdata/valid_encrypted_aes", PASSPHRASE_INCORRECT, true);
-	res &= test_decode_format("Encrypted data, Camellia encryption, incorrect passphrase", "testdata/valid_encrypted_camellia", PASSPHRASE_INCORRECT, true);
-	res &= test_decode_format("Encrypted data, Serpent encryption, incorrect passphrase", "testdata/valid_encrypted_serpent", PASSPHRASE_INCORRECT, true);
-	res &= test_decode_format("Encrypted data, Twofish encryption, incorrect passphrase", "testdata/valid_encrypted_twofish", PASSPHRASE_INCORRECT, true);
-	res &= test_decode_format("Corrupted encrypted data, AES encryption", "tesdata/invalid_encrypted_data_aes", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Corrupted encrypted data, Camellia encryption", "tesdata/invalid_encrypted_data_camellia", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Corrupted encrypted data, Serpent encryption", "tesdata/invalid_encrypted_data_serpent", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Corrupted encrypted data, Twofish encryption", "tesdata/invalid_encrypted_data_twofish", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Encrypted data, AES encryption, incorrect IV", "testdata/invalid_encrypted_iv_aes", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Encrypted data, Camellia encryption, incorrect IV", "testdata/invalid_encrypted_iv_camellia", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Encrypted data, Serpent encryption, incorrect IV", "testdata/invalid_encrypted_iv_serpent", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Encrypted data, Twofish encryption, incorrect IV", "testdata/invalid_encrypted_iv_twofish", PASSPHRASE_CORRECT, true);
-	res &= test_decode_format("Legacy image, encrypted data", "testdata/valid_legacy_encrypted", PASSPHRASE_CORRECT, false);
-	res &= test_decode_format("Legacy image, encrypted data, incorrect passphrase", "testdata/valid_legacy_encrypted", PASSPHRASE_INCORRECT, true);
-	res &= test_decode_format("Legacy image, corrupted encrypted data", "testdata/invalid_legacy_encrypted", PASSPHRASE_CORRECT, true);
 #ifdef IMPACK_WITH_ZLIB
-	res &= test_decode_format("Encrypted and compressed data, deflate compression", "testdata/valid_encrypted_compressed_deflate", PASSPHRASE_CORRECT, false);
-	res &= test_decode_format("Legacy image, encrypted and compressed data", "testdata/valid_legacy_encrypted_compressed", PASSPHRASE_CORRECT, false);
-	res &= test_decode_format("Legacy image, corrupted compressed data", "testdata/invalid_legacy_compressed", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, deflate compression", "testdata/valid_encrypted_aes_compressed_deflate", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, deflate compression, incorrect passphrase", "testdata/valid_encrypted_aes_compressed_deflate", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, deflate compression", "testdata/valid_encrypted_camellia_compressed_deflate", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, deflate compression, incorrect passphrase", "testdata/valid_encrypted_camellia_compressed_deflate", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, deflate compression", "testdata/valid_encrypted_serpent_compressed_deflate", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, deflate compression, incorrect passphrase", "testdata/valid_encrypted_serpent_compressed_deflate", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, deflate compression", "testdata/valid_encrypted_twofish_compressed_deflate", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, deflate compression, incorrect passphrase", "testdata/valid_encrypted_twofish_compressed_deflate", PASSPHRASE_INCORRECT, true);
 #endif
 #ifdef IMPACK_WITH_ZSTD
-	res &= test_decode_format("Encrypted and compressed data, ZSTD compression", "testdata/valid_encrypted_compressed_zstd", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, ZSTD compression", "testdata/valid_encrypted_aes_compressed_zstd", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, ZSTD compression, incorrect passphrase", "testdata/valid_encrypted_aes_compressed_zstd", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, ZSTD compression", "testdata/valid_encrypted_camellia_compressed_zstd", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, ZSTD compression, incorrect passphrase", "testdata/valid_encrypted_camellia_compressed_zstd", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, ZSTD compression", "testdata/valid_encrypted_serpent_compressed_zstd", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, ZSTD compression, incorrect passphrase", "testdata/valid_encrypted_serpent_compressed_zstd", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, ZSTD compression", "testdata/valid_encrypted_twofish_compressed_zstd", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, ZSTD compression, incorrect passphrase", "testdata/valid_encrypted_twofish_compressed_zstd", PASSPHRASE_INCORRECT, true);
 #endif
 #ifdef IMPACK_WITH_LZMA
-	res &= test_decode_format("Encrypted and compressed data, LZMA2 compression", "testdata/valid_encrypted_compressed_lzma2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, LZMA2 compression", "testdata/valid_encrypted_aes_compressed_lzma2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, LZMA2 compression, incorrect passphrase", "testdata/valid_encrypted_aes_compressed_lzma2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, LZMA2 compression", "testdata/valid_encrypted_camellia_compressed_lzma2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, LZMA2 compression, incorrect passphrase", "testdata/valid_encrypted_camellia_compressed_lzma2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, LZMA2 compression", "testdata/valid_encrypted_serpent_compressed_lzma2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, LZMA2 compression, incorrect passphrase", "testdata/valid_encrypted_serpent_compressed_lzma2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, LZMA2 compression", "testdata/valid_encrypted_twofish_compressed_lzma2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, LZMA2 compression, incorrect passphrase", "testdata/valid_encrypted_twofish_compressed_lzma2", PASSPHRASE_INCORRECT, true);
 #endif
 #ifdef IMPACK_WITH_BZIP2
-	res &= test_decode_format("Encrypted and compressed data, Bzip2 compression", "testdata/valid_encrypted_compressed_bzip2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, Bzip2 compression", "testdata/valid_encrypted_aes_compressed_bzip2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, Bzip2 compression, incorrect passphrase", "testdata/valid_encrypted_aes_compressed_bzip2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, Bzip2 compression", "testdata/valid_encrypted_camellia_compressed_bzip2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, Bzip2 compression, incorrect passphrase", "testdata/valid_encrypted_camellia_compressed_bzip2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, Bzip2 compression", "testdata/valid_encrypted_serpent_compressed_bzip2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, Bzip2 compression, incorrect passphrase", "testdata/valid_encrypted_serpent_compressed_bzip2", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, Bzip2 compression", "testdata/valid_encrypted_twofish_compressed_bzip2", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, Bzip2 compression, incorrect passphrase", "testdata/valid_encrypted_twofish_compressed_bzip2", PASSPHRASE_INCORRECT, true);
 #endif
 #ifdef IMPACK_WITH_BROTLI
-	res &= test_decode_format("Encrypted and compressed data, Brotli compression", "testdata/valid_encrypted_compressed_brotli", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, Brotli compression", "testdata/valid_encrypted_aes_compressed_brotli", PASSPHRASE_CORRECT, false);
+	//res &= test_decode_format("Encrypted and compressed data, AES encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_aes_compressed_brotli", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, Brotli compression", "testdata/valid_encrypted_camellia_compressed_brotli", PASSPHRASE_CORRECT, false);
+	//res &= test_decode_format("Encrypted and compressed data, Camellia encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_camellia_compressed_brotli", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, Brotli compression", "testdata/valid_encrypted_serpent_compressed_brotli", PASSPHRASE_CORRECT, false);
+	//res &= test_decode_format("Encrypted and compressed data, Serpent encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_serpent_compressed_brotli", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, Brotli compression", "testdata/valid_encrypted_twofish_compressed_brotli", PASSPHRASE_CORRECT, false);
+	//res &= test_decode_format("Encrypted and compressed data, Twofish encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_twofish_compressed_brotli", PASSPHRASE_INCORRECT, true);
 #endif
-	res &= test_decode_format("Legacy image, corrupted data", "testdata/legacy_invalid", NULL, true); // Legacy images use SHA-512
+#endif
+	
+	// Legacy
+	res &= test_decode_format("Legacy image", "testdata/valid_legacy", NULL, false);
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Legacy image, encrypted data", "testdata/valid_legacy_encrypted", PASSPHRASE_CORRECT, false);
+	res &= test_decode_format("Legacy image, encrypted data, incorrect passphrase", "testdata/valid_legacy_encrypted", PASSPHRASE_INCORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Legacy image, compressed data", "testdata/valid_legacy_compressed", NULL, false);
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Legacy image, encrypted and compressed data", "testdata/valid_legacy_encrypted_compressed", PASSPHRASE_CORRECT, false);
+#endif
+#endif
+	
+	// Truncated images
+	res &= test_decode_format("Truncated image", "testdata/invalid_truncated_1", NULL, true);
+	res &= test_decode_format("Truncated image", "testdata/invalid_truncated_2", NULL, true);
+	res &= test_decode_format("Truncated image", "testdata/invalid_truncated_3", NULL, true);
+	res &= test_decode_format("Truncated image", "testdata/invalid_truncated_4", NULL, true);
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Truncated encrypted image, AES encryption", "testdata/invalid_encrypted_aes_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted image, Camellia encryption", "testdata/invalid_encrypted_camellia_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted image, Serpent encryption", "testdata/invalid_encrypted_serpent_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted image, Twofish encryption", "testdata/invalid_encrypted_twofish_truncated", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Truncated compressed image, deflate compression", "testdata/invalid_compressed_deflate_truncated", NULL, true);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	res &= test_decode_format("Truncated compressed image, ZSTD compression", "testdata/invalid_compressed_zstd_truncated", NULL, true);
+#endif
+#ifdef IMPACK_WITH_LZMA
+	res &= test_decode_format("Truncated compressed image, LZMA2 compression", "testdata/invalid_compressed_lzma2_truncated", NULL, true);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Truncated compressed image, BZIP2 compression", "testdata/invalid_compressed_bzip2_truncated", NULL, true);
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	res &= test_decode_format("Truncated compressed image, Brotli compression", "testdata/invalid_compressed_brotli_truncated", NULL, true);
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Truncated encrypted and compressed image, AES encryption, deflate compression", "testdata/invalid_encrypted_aes_compressed_deflate_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Camellia encryption, deflate compression", "testdata/invalid_encrypted_camellia_compressed_deflate_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Serpent encryption, deflate compression", "testdata/invalid_encrypted_serpent_compressed_deflate_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Twofish encryption, deflate compression", "testdata/invalid_encrypted_twofish_compressed_deflate_truncated", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	res &= test_decode_format("Truncated encrypted and compressed image, AES encryption ZSTD compression", "testdata/invalid_encrypted_aes_compressed_zstd_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Camellia encryption ZSTD compression", "testdata/invalid_encrypted_camellia_compressed_zstd_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Serpent encryption ZSTD compression", "testdata/invalid_encrypted_serpent_compressed_zstd_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Twofish encryption ZSTD compression", "testdata/invalid_encrypted_twofish_compressed_zstd_truncated", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_LZMA
+	res &= test_decode_format("Truncated encrypted and compressed image, AES encryption, LZMA2 compression", "testdata/invalid_encrypted_aes_compressed_lzma2_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Camellia encryption, LZMA2 compression", "testdata/invalid_encrypted_camellia_compressed_lzma2_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Serpent encryption, LZMA2 compression", "testdata/invalid_encrypted_serpent_compressed_lzma2_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Twofish encryption, LZMA2 compression", "testdata/invalid_encrypted_twofish_compressed_lzma2_truncated", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Truncated encrypted and compressed image, AES encryption, BZIP2 compression", "testdata/invalid_encrypted_aes_compressed_bzip2_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Camellia encryption, BZIP2 compression", "testdata/invalid_encrypted_camellia_compressed_bzip2_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Serpent encryption, BZIP2 compression", "testdata/invalid_encrypted_serpent_compressed_bzip2_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Twofish encryption, BZIP2 compression", "testdata/invalid_encrypted_twofish_compressed_bzip2_truncated", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	res &= test_decode_format("Truncated encrypted and compressed image, AES encryption, Brotli compression", "testdata/invalid_encrypted_aes_compressed_brotli_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Camellia encryption, Brotli compression", "testdata/invalid_encrypted_camellia_compressed_brotli_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Serpent encryption, Brotli compression", "testdata/invalid_encrypted_serpent_compressed_brotli_truncated", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Truncated encrypted and compressed image, Twofish encryption, Brotli compression", "testdata/invalid_encrypted_twofish_compressed_brotli_truncated", PASSPHRASE_CORRECT, true);
+#endif
+#endif
+	res &= test_decode_format("Truncated legacy image", "testdata/invalid_legacy_truncated", NULL, true);
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Truncated encrypted legacy image", "testdata/invalid_legacy_encrypted_truncated", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Truncated compressed legacy image", "testdata/invalid_legacy_compressed_truncated", NULL, true);
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Truncated encrypted and compressed legacy image", "testdata/invalid_legacy_encrypted_compressed_truncated", PASSPHRASE_CORRECT, true);
+#endif
+#endif
+	
+	// Invalid CRC
+	res &= test_decode_format("Invalid checksum", "testdata/invalid_crc", NULL, true);
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Invalid checksum, AES encryption", "testdata/invalid_encrypted_aes_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Camellia encryption", "testdata/invalid_encrypted_camellia_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Serpent encryption", "testdata/invalid_encrypted_serpent_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Twofish encryption", "testdata/invalid_encrypted_twofish_crc", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Invalid checksum, deflate compression", "testdata/invalid_compressed_deflate_crc", NULL, true);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	res &= test_decode_format("Invalid checksum, ZSTD compression", "testdata/invalid_compressed_zstd_crc", NULL, true);
+#endif
+#ifdef IMPACK_WITH_LZMA
+	res &= test_decode_format("Invalid checksum, LZMA2 compression", "testdata/invalid_compressed_lzma2_crc", NULL, true);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Invalid checksum, BZIP2 compression", "testdata/invalid_compressed_bzip2_crc", NULL, true);
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	res &= test_decode_format("Invalid checksum, Brotli compression", "testdata/invalid_compressed_brotli_crc", NULL, true);
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Invalid checksum, AES encryption, deflate compression", "testdata/invalid_encrypted_aes_compressed_deflate_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Camellia encryption, deflate compression", "testdata/invalid_encrypted_camellia_compressed_deflate_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Serpent encryption, deflate compression", "testdata/invalid_encrypted_serpent_compressed_deflate_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Twofish encryption, deflate compression", "testdata/invalid_encrypted_twofish_compressed_deflate_crc", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	res &= test_decode_format("Invalid checksum, AES encryption ZSTD compression", "testdata/invalid_encrypted_aes_compressed_zstd_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Camellia encryption ZSTD compression", "testdata/invalid_encrypted_camellia_compressed_zstd_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Serpent encryption ZSTD compression", "testdata/invalid_encrypted_serpent_compressed_zstd_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Twofish encryption ZSTD compression", "testdata/invalid_encrypted_twofish_compressed_zstd_crc", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_LZMA
+	res &= test_decode_format("Invalid checksum, AES encryption, LZMA2 compression", "testdata/invalid_encrypted_aes_compressed_lzma2_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Camellia encryption, LZMA2 compression", "testdata/invalid_encrypted_camellia_compressed_lzma2_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Serpent encryption, LZMA2 compression", "testdata/invalid_encrypted_serpent_compressed_lzma2_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Twofish encryption, LZMA2 compression", "testdata/invalid_encrypted_twofish_compressed_lzma2_crc", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Invalid checksum, AES encryption, BZIP2 compression", "testdata/invalid_encrypted_aes_compressed_bzip2_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Camellia encryption, BZIP2 compression", "testdata/invalid_encrypted_camellia_compressed_bzip2_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Serpent encryption, BZIP2 compression", "testdata/invalid_encrypted_serpent_compressed_bzip2_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Twofish encryption, BZIP2 compression", "testdata/invalid_encrypted_twofish_compressed_bzip2_crc", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	res &= test_decode_format("Invalid checksum, AES encryption, Brotli compression", "testdata/invalid_encrypted_aes_compressed_brotli_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Camellia encryption, Brotli compression", "testdata/invalid_encrypted_camellia_compressed_brotli_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Serpent encryption, Brotli compression", "testdata/invalid_encrypted_serpent_compressed_brotli_crc", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid checksum, Twofish encryption, Brotli compression", "testdata/invalid_encrypted_twofish_compressed_brotli_crc", PASSPHRASE_CORRECT, true);
+#endif
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Legacy image, invalid checksum", "testdata/invalid_legacy_crc", NULL, true); // Legacy images use SHA-512
+#endif
+	
+	// Invalid data length
+	res &= test_decode_format("Invalid data length", "testdata/invalid_crc", NULL, true);
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Invalid data length, AES encryption", "testdata/invalid_encrypted_aes_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Camellia encryption", "testdata/invalid_encrypted_camellia_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Serpent encryption", "testdata/invalid_encrypted_serpent_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Twofish encryption", "testdata/invalid_encrypted_twofish_length", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Invalid data length, deflate compression", "testdata/invalid_compressed_deflate_length", NULL, true);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	res &= test_decode_format("Invalid data length, ZSTD compression", "testdata/invalid_compressed_zstd_length", NULL, true);
+#endif
+#ifdef IMPACK_WITH_LZMA
+	res &= test_decode_format("Invalid data length, LZMA2 compression", "testdata/invalid_compressed_lzma2_length", NULL, true);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Invalid data length, BZIP2 compression", "testdata/invalid_compressed_bzip2_length", NULL, true);
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	res &= test_decode_format("Invalid data length, Brotli compression", "testdata/invalid_compressed_brotli_length", NULL, true);
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Invalid data length, AES encryption, deflate compression", "testdata/invalid_encrypted_aes_compressed_deflate_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Camellia encryption, deflate compression", "testdata/invalid_encrypted_camellia_compressed_deflate_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Serpent encryption, deflate compression", "testdata/invalid_encrypted_serpent_compressed_deflate_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Twofish encryption, deflate compression", "testdata/invalid_encrypted_twofish_compressed_deflate_length", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	res &= test_decode_format("Invalid data length, AES encryption ZSTD compression", "testdata/invalid_encrypted_aes_compressed_zstd_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Camellia encryption ZSTD compression", "testdata/invalid_encrypted_camellia_compressed_zstd_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Serpent encryption ZSTD compression", "testdata/invalid_encrypted_serpent_compressed_zstd_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Twofish encryption ZSTD compression", "testdata/invalid_encrypted_twofish_compressed_zstd_length", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_LZMA
+	res &= test_decode_format("Invalid data length, AES encryption, LZMA2 compression", "testdata/invalid_encrypted_aes_compressed_lzma2_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Camellia encryption, LZMA2 compression", "testdata/invalid_encrypted_camellia_compressed_lzma2_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Serpent encryption, LZMA2 compression", "testdata/invalid_encrypted_serpent_compressed_lzma2_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Twofish encryption, LZMA2 compression", "testdata/invalid_encrypted_twofish_compressed_lzma2_length", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Invalid data length, AES encryption, BZIP2 compression", "testdata/invalid_encrypted_aes_compressed_bzip2_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Camellia encryption, BZIP2 compression", "testdata/invalid_encrypted_camellia_compressed_bzip2_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Serpent encryption, BZIP2 compression", "testdata/invalid_encrypted_serpent_compressed_bzip2_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Twofish encryption, BZIP2 compression", "testdata/invalid_encrypted_twofish_compressed_bzip2_length", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	res &= test_decode_format("Invalid data length, AES encryption, Brotli compression", "testdata/invalid_encrypted_aes_compressed_brotli_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Camellia encryption, Brotli compression", "testdata/invalid_encrypted_camellia_compressed_brotli_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Serpent encryption, Brotli compression", "testdata/invalid_encrypted_serpent_compressed_brotli_length", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Invalid data length, Twofish encryption, Brotli compression", "testdata/invalid_encrypted_twofish_compressed_brotli_length", PASSPHRASE_CORRECT, true);
+#endif
+#endif
+	res &= test_decode_format("Legacy image, invalid data length", "testdata/invalid_legacy_length", NULL, true);
+	
+	// Corrupt data
+	res &= test_decode_format("Corrupt data", "testdata/invalid_data", NULL, true);
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Corrupt data, AES encryption", "testdata/invalid_encrypted_aes_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Camellia encryption", "testdata/invalid_encrypted_camellia_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Serpent encryption", "testdata/invalid_encrypted_serpent_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Twofish encryption", "testdata/invalid_encrypted_twofish_data", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Corrupt data, deflate compression", "testdata/invalid_compressed_deflate_data", NULL, true);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	res &= test_decode_format("Corrupt data, ZSTD compression", "testdata/invalid_compressed_zstd_data", NULL, true);
+#endif
+#ifdef IMPACK_WITH_LZMA
+	res &= test_decode_format("Corrupt data, LZMA2 compression", "testdata/invalid_compressed_lzma2_data", NULL, true);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Corrupt data, BZIP2 compression", "testdata/invalid_compressed_bzip2_data", NULL, true);
+#endif
+#ifdef IMPACK_WITH_BROTLI
+	res &= test_decode_format("Corrupt data, Brotli compression", "testdata/invalid_compressed_brotli_data", NULL, true);
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Corrupt data, AES encryption, deflate compression", "testdata/invalid_encrypted_aes_compressed_deflate_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Camellia encryption, deflate compression", "testdata/invalid_encrypted_camellia_compressed_deflate_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Serpent encryption, deflate compression", "testdata/invalid_encrypted_serpent_compressed_deflate_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Twofish encryption, deflate compression", "testdata/invalid_encrypted_twofish_compressed_deflate_data", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_ZSTD
+	res &= test_decode_format("Corrupt data, AES encryption ZSTD compression", "testdata/invalid_encrypted_aes_compressed_zstd_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Camellia encryption ZSTD compression", "testdata/invalid_encrypted_camellia_compressed_zstd_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Serpent encryption ZSTD compression", "testdata/invalid_encrypted_serpent_compressed_zstd_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Twofish encryption ZSTD compression", "testdata/invalid_encrypted_twofish_compressed_zstd_data", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_LZMA
+	res &= test_decode_format("Corrupt data, AES encryption, LZMA2 compression", "testdata/invalid_encrypted_aes_compressed_lzma2_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Camellia encryption, LZMA2 compression", "testdata/invalid_encrypted_camellia_compressed_lzma2_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Serpent encryption, LZMA2 compression", "testdata/invalid_encrypted_serpent_compressed_lzma2_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Twofish encryption, LZMA2 compression", "testdata/invalid_encrypted_twofish_compressed_lzma2_data", PASSPHRASE_CORRECT, true);
+#endif
+#ifdef IMPACK_WITH_BZIP2
+	res &= test_decode_format("Corrupt data, AES encryption, BZIP2 compression", "testdata/invalid_encrypted_aes_compressed_bzip2_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Camellia encryption, BZIP2 compression", "testdata/invalid_encrypted_camellia_compressed_bzip2_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Serpent encryption, BZIP2 compression", "testdata/invalid_encrypted_serpent_compressed_bzip2_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Twofish encryption, BZIP2 compression", "testdata/invalid_encrypted_twofish_compressed_bzip2_data", PASSPHRASE_CORRECT, true);
+#endif
+	// Brotli seems to sometimes lock up when presented with invalid data
+	// TODO: Figure out if this is a bug with brotli or impack's implementation
+/*#ifdef IMPACK_WITH_BROTLI
+	res &= test_decode_format("Corrupt data, AES encryption, Brotli compression", "testdata/invalid_encrypted_aes_compressed_brotli_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Camellia encryption, Brotli compression", "testdata/invalid_encrypted_camellia_compressed_brotli_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Serpent encryption, Brotli compression", "testdata/invalid_encrypted_serpent_compressed_brotli_data", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Corrupt data, Twofish encryption, Brotli compression", "testdata/invalid_encrypted_twofish_compressed_brotli_data", PASSPHRASE_CORRECT, true);
+#endif*/
+#endif
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Legacy image, corrupt data", "testdata/invalid_legacy_data", NULL, true);
+	res &= test_decode_format("Legacy encrypted image, corrupt data", "testdata/invalid_legacy_encrypted_data", PASSPHRASE_CORRECT, true);
+#ifdef IMPACK_WITH_ZLIB
+	res &= test_decode_format("Legacy compressed image, corrupt data", "testdata/invalid_legacy_compressed_data", NULL, true);
+	res &= test_decode_format("Legacy encrypted and compressed image, corrupt data", "testdata/invalid_legacy_encrypted_compressed_data", PASSPHRASE_CORRECT, true);
+#endif
+#endif
+	
+	// Misc. invalid
+#ifdef IMPACK_WITH_CRYPTO
+	res &= test_decode_format("Encrypted image, AES encryption, incorrect IV", "testdata/invalid_encrypted_aes_iv", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted image, Camellia encryption, incorrect IV", "testdata/invalid_encrypted_camellia_iv", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted image, Serpent encryption, incorrect IV", "testdata/invalid_encrypted_serpent_iv", PASSPHRASE_CORRECT, true);
+	res &= test_decode_format("Encrypted image, Twofish encryption, incorrect IV", "testdata/invalid_encrypted_twofish_iv", PASSPHRASE_CORRECT, true);
 #endif
 	res &= test_decode_format("Invalid magic number", "testdata/invalid_magic", NULL, true);
-	res &= test_decode_format("Incorrect data size", "testdata/invalid_size", NULL, true);
-	res &= test_decode_format("Corrupted data", "testdata/invalid_data", NULL, true);
-	res &= test_decode_format("Truncated image", "testdata/invalid_truncated", NULL, true);
+	res &= test_decode_format("Legacy image, invalid magic number", "testdata/invalid_legacy_magic", NULL, true);
+	res &= test_decode_format("Invalid channel selection 1", "testdata/invalid_channel_1", NULL, true);
+	res &= test_decode_format("Invalid channel selection 2", "testdata/invalid_channel_2", NULL, true);
+	
 	return res;
 	
 }

@@ -70,7 +70,12 @@ void impack_build_info() {
 	printf("  ImPack2 version string: %s\n", IMPACK_VERSION_STRING);
 	printf("  Crypto: ");
 #ifdef IMPACK_WITH_CRYPTO
+	printf("Yes, Argon2: ");
+#ifdef IMPACK_WITH_ARGON2
 	printf("Yes\n");
+#else
+	printf("No\n");
+#endif
 #else
 	printf("No\n");
 #endif

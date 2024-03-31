@@ -63,18 +63,23 @@ Encryption
 
 Data and filename can be encrypted using one of the following algorithms:
 
-ID=1: AES
-ID=2: Camellia
-ID=3: Serpent
-ID=4: Twofish
+ID=1: AES + PBKDF2
+ID=2: Camellia + PBKDF2
+ID=3: Serpent + PBKDF2
+ID=4: Twofish + PBKDF2
+ID=5: AES + Argon2
+ID=6: Camellia + Argon2
+ID=7: Serpent + Argon2
+ID=8: Twofish + Argon2
 
 Encryption is performed in CBC mode using a block size of 16 bytes and a key
-size of 32 bytes. The key is derived from the user's passphrase using PBKDF2
-with HMAC-SHA512 and 100000 iterations. The IV is also used as the salt for
-PBKDF2.
+size of 32 bytes.
 If the last block is only filled partially, padding will be added. It is
 discarded after decryption. Padding is added to the filename and the data
 separately.
+
+PBKDF2 uses HMAC-SHA512 with 100000 iterations.
+Argon2 uses 10 iterations, 2^17 bytes (128 MiB) of memory and 1 thread.
 
 Compression
 -----------

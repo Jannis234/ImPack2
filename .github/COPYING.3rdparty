@@ -1,0 +1,29 @@
+The following third party libraries are bundled by linking them into the
+ImPack2 executables:
+* argon2 - https://github.com/P-H-C/phc-winner-argon2
+* brotli - https://github.com/google/brotli
+* bzip2 - https://sourceware.org/bzip2/
+* charls - https://github.com/team-charls/charls
+* highway - https://github.com/google/highway
+* jbig-kit - https://www.cl.cam.ac.uk/~mgk25/jbigkit/
+* libaom - https://aomedia.org/
+* libavif - https://github.com/AOMediaCodec/libavif
+* libde265 - https://github.com/strukturag/libde265
+* libdeflate - https://github.com/ebiggers/libdeflate
+* libheif - http://www.libheif.org/
+* ligjpeg-turbo - https://libjpeg-turbo.virtualgl.org/
+* libjxl - https://github.com/libjxl/libjxl
+* libnsbmp - https://www.netsurf-browser.org/projects/libnsbmp/
+* libpng - http://libpng.org/pub/png/libpng.html
+* libtiff - https://libtiff.gitlab.io/libtiff/
+* libwebp - https://developers.google.com/speed/webp/
+* nettle - https://www.lysator.liu.se/~nisse/nettle/
+* numactl - https://github.com/numactl/numactl
+* openjpeg - https://www.openjpeg.org/
+* skcms - https://github.com/libpag/skcms
+* x265 - http://x265.org/
+* xz-utils - https://tukaani.org/xz/
+* zlib - https://zlib.net/
+* zstd - https://github.com/facebook/zstd
+The directory "license" contains files with detailed copyright and license
+information for each library.

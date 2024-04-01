@@ -436,6 +436,9 @@ impack_error_t impack_decode_stage3(impack_decode_state_t *state, char *output_p
 					if (state->data_length < remaining) {
 						remaining = state->data_length;
 					}
+					if (remaining == 0) { // The decompressor wants more data but we have none. Data corruption?
+						goto cleanup;
+					}
 					uint32_t padding = 0;
 #ifdef IMPACK_WITH_CRYPTO
 					if (state->encryption != ENCRYPTION_NONE) {

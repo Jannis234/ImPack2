@@ -30,6 +30,7 @@ jobs:
           cd libnsbmp-${{env.LIBNSBMP_VERSION}}
           make PREFIX=/usr COMPONENT_TYPE=lib-static
           sudo make install PREFIX=/usr COMPONENT_TYPE=lib-static
+          sudo mv /usr/libnsbmp.h /usr/include
       - name: Install libjxl
         run: |
           sudo mkdir /libjxl_build

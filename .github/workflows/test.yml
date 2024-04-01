@@ -17,7 +17,8 @@ jobs:
           sudo apt-get install -y --no-install-recommends nettle-dev libargon2-dev libpng-dev libcharls-dev libavif-dev libheif-dev libtiff-dev libwebp-dev libopenjp2-7-dev libjxr-dev libzstd-dev liblzma-dev libbrotli-dev libbz2-dev zlib1g-dev libgtk-3-dev
       - name: Install libnsbmp
         run: |
-          mkdir /libnsbmp_build
+          sudo mkdir /libnsbmp_build
+          sudo chown chown $(whoami) /libnsbmp_build
           cd /libnsbmp_build
           wget https://download.netsurf-browser.org/libs/releases/buildsystem-${{env.LIBNSBMP_BUILDSYSTEM_VERSION}}.tar.gz
           tar -xf buildsystem-${{env.LIBNSBMP_BUILDSYSTEM_VERSION}}.tar.gz
@@ -31,7 +32,8 @@ jobs:
           sudo make install PREFIX=/usr COMPONENT_TYPE=lib-static
       - name: Install libjxl
         run: |
-          mkdir /libjxl_build
+          sudo mkdir /libjxl_build
+          sudo chown chown $(whoami) /libjxl_build
           cd /libjxl_build
           wget https://github.com/libjxl/libjxl/archive/refs/tags/v${{env.LIBJXL_VERSION}}.tar.gz
           tar -xf v${{env.LIBJXL_VERSION}}.tar.gz
@@ -42,7 +44,8 @@ jobs:
           sudo make install
       - name: Install FLIF
         run: |
-          mkdir /flif_build
+          sudo mkdir /flif_build
+          sudo chown chown $(whoami) /flif_build
           cd /flif_build
           wget https://github.com/FLIF-hub/FLIF/archive/refs/tags/v${{env.FLIF_VERSION}}.tar.gz
           tar -xf v${{env.FLIF_VERSION}}.tar.gz

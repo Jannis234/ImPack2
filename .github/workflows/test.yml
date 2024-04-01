@@ -18,7 +18,7 @@ jobs:
       - name: Install libnsbmp
         run: |
           sudo mkdir /libnsbmp_build
-          sudo chown chown $(whoami) /libnsbmp_build
+          sudo chown $(whoami) /libnsbmp_build
           cd /libnsbmp_build
           wget https://download.netsurf-browser.org/libs/releases/buildsystem-${{env.LIBNSBMP_BUILDSYSTEM_VERSION}}.tar.gz
           tar -xf buildsystem-${{env.LIBNSBMP_BUILDSYSTEM_VERSION}}.tar.gz
@@ -33,7 +33,7 @@ jobs:
       - name: Install libjxl
         run: |
           sudo mkdir /libjxl_build
-          sudo chown chown $(whoami) /libjxl_build
+          sudo chown $(whoami) /libjxl_build
           cd /libjxl_build
           wget https://github.com/libjxl/libjxl/archive/refs/tags/v${{env.LIBJXL_VERSION}}.tar.gz
           tar -xf v${{env.LIBJXL_VERSION}}.tar.gz
@@ -45,7 +45,7 @@ jobs:
       - name: Install FLIF
         run: |
           sudo mkdir /flif_build
-          sudo chown chown $(whoami) /flif_build
+          sudo chown $(whoami) /flif_build
           cd /flif_build
           wget https://github.com/FLIF-hub/FLIF/archive/refs/tags/v${{env.FLIF_VERSION}}.tar.gz
           tar -xf v${{env.FLIF_VERSION}}.tar.gz

@@ -398,19 +398,15 @@ bool test_decode() {
 #endif
 #ifdef IMPACK_WITH_ZSTD
 	res &= test_decode_format("Compressed data, ZSTD compression", "testdata/valid_compressed_zstd", NULL, false);
-	//res &= test_decode_format("Corrupted compressed data, ZSTD compression", "testdata/invalid_compressed_zstd", NULL, true);
 #endif
 #ifdef IMPACK_WITH_LZMA
 	res &= test_decode_format("Compressed data, LZMA2 compression", "testdata/valid_compressed_lzma2", NULL, false);
-	//res &= test_decode_format("Corrupted compressed data, LZMA2 compression", "testdata/invalid_compressed_lzma2", NULL, true);
 #endif
 #ifdef IMPACK_WITH_BZIP2
 	res &= test_decode_format("Compressed data, Bzip2 compression", "testdata/valid_compressed_bzip2", NULL, false);
-	//res &= test_decode_format("Corrupted compressed data, Bzip2 compression", "testdata/invalid_compressed_bzip2", NULL, true);
 #endif
 #ifdef IMPACK_WITH_BROTLI
 	res &= test_decode_format("Compressed data, Brotli compression", "testdata/valid_compressed_brotli", NULL, false);
-	//res &= test_decode_format("Corrupted compressed data, Brotli compression", "testdata/invalid_compressed_brotli", NULL, true);
 #endif
 	
 	// Encryption + compression
@@ -457,13 +453,13 @@ bool test_decode() {
 #endif
 #ifdef IMPACK_WITH_BROTLI
 	res &= test_decode_format("Encrypted and compressed data, AES encryption, Brotli compression", "testdata/valid_encrypted_aes_compressed_brotli", PASSPHRASE_CORRECT, false);
-	//res &= test_decode_format("Encrypted and compressed data, AES encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_aes_compressed_brotli", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, AES encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_aes_compressed_brotli", PASSPHRASE_INCORRECT, true);
 	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, Brotli compression", "testdata/valid_encrypted_camellia_compressed_brotli", PASSPHRASE_CORRECT, false);
-	//res &= test_decode_format("Encrypted and compressed data, Camellia encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_camellia_compressed_brotli", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Camellia encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_camellia_compressed_brotli", PASSPHRASE_INCORRECT, true);
 	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, Brotli compression", "testdata/valid_encrypted_serpent_compressed_brotli", PASSPHRASE_CORRECT, false);
-	//res &= test_decode_format("Encrypted and compressed data, Serpent encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_serpent_compressed_brotli", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Serpent encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_serpent_compressed_brotli", PASSPHRASE_INCORRECT, true);
 	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, Brotli compression", "testdata/valid_encrypted_twofish_compressed_brotli", PASSPHRASE_CORRECT, false);
-	//res &= test_decode_format("Encrypted and compressed data, Twofish encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_twofish_compressed_brotli", PASSPHRASE_INCORRECT, true);
+	res &= test_decode_format("Encrypted and compressed data, Twofish encryption, Brotli compression, incorrect passphrase", "testdata/valid_encrypted_twofish_compressed_brotli", PASSPHRASE_INCORRECT, true);
 #endif
 #endif
 	
@@ -717,14 +713,12 @@ bool test_decode() {
 	res &= test_decode_format("Corrupt data, Serpent encryption, BZIP2 compression", "testdata/invalid_encrypted_serpent_compressed_bzip2_data", PASSPHRASE_CORRECT, true);
 	res &= test_decode_format("Corrupt data, Twofish encryption, BZIP2 compression", "testdata/invalid_encrypted_twofish_compressed_bzip2_data", PASSPHRASE_CORRECT, true);
 #endif
-	// Brotli seems to sometimes lock up when presented with invalid data
-	// TODO: Figure out if this is a bug with brotli or impack's implementation
-/*#ifdef IMPACK_WITH_BROTLI
+#ifdef IMPACK_WITH_BROTLI
 	res &= test_decode_format("Corrupt data, AES encryption, Brotli compression", "testdata/invalid_encrypted_aes_compressed_brotli_data", PASSPHRASE_CORRECT, true);
 	res &= test_decode_format("Corrupt data, Camellia encryption, Brotli compression", "testdata/invalid_encrypted_camellia_compressed_brotli_data", PASSPHRASE_CORRECT, true);
 	res &= test_decode_format("Corrupt data, Serpent encryption, Brotli compression", "testdata/invalid_encrypted_serpent_compressed_brotli_data", PASSPHRASE_CORRECT, true);
 	res &= test_decode_format("Corrupt data, Twofish encryption, Brotli compression", "testdata/invalid_encrypted_twofish_compressed_brotli_data", PASSPHRASE_CORRECT, true);
-#endif*/
+#endif
 #endif
 #ifdef IMPACK_WITH_CRYPTO
 	res &= test_decode_format("Legacy image, corrupt data", "testdata/invalid_legacy_data", NULL, true);

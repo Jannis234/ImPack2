@@ -57,17 +57,17 @@ jobs:
         run: |
           cd ${{github.workspace}}
           make WITH_FLIF=1 WITH_JXRLIB=1
-#      - uses: actions/upload-artifact@v4
-#        with:
-#          name: impack-debug
-#          path: |
-#            ${{github.workspace}}/impack
-#            ${{github.workspace}}/impack-gtk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: impack-debug
+          path: |
+            ${{github.workspace}}/impack
+            ${{github.workspace}}/impack-gtk
       - name: Run testsuite
         run: |
           cd ${{github.workspace}}
           make WITH_FLIF=1 WITH_JXRLIB=1 check
-#      - uses: actions/upload-artifact@v4
-#        with:
-#          name: impack-testsuite-debug
-#          path: ${{github.workspace}}/testsuite
+      - uses: actions/upload-artifact@v4
+        with:
+          name: impack-testsuite-debug
+          path: ${{github.workspace}}/testsuite
